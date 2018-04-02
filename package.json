@@ -1,11 +1,16 @@
 {
-  "name": "@aragon/dao-kits",
+  "name": "@aragon/monorepo-dao-kits",
   "version": "1.0.0",
   "description": "Monorepo for all Aragon made DAO Kits or templates",
   "main": "index.js",
-  "scripts": {
-    "test": "truffle test"
+  "devDependencies": {
+    "lerna": "^2.8.0"
   },
-  "author": "",
+  "scripts": {
+	"install": "npm run bootstrap",
+	"bootstrap": "lerna bootstrap",
+    "test": "lerna run --concurrency=1 --stream test"
+  },
+  "author": "Aragon Institution MTU <contact@aragon.one>",
   "license": "GPL-3.0"
 }
