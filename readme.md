@@ -16,6 +16,8 @@ At the moment we cannot recommend to deploy any kits to the mainnet for managing
 
 ## Current kits
 
+// TODO: convert into fancy table
+
 - **kits/beta**: Mainnet ready: **NO**.
 - **kits/demo**: Mainnet ready: **NO**.
 - **kits/dev**: Mainnet ready: **NO**.
