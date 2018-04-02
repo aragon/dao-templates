@@ -1,0 +1,11 @@
+{
+  "name": "@aragon/dao-kits",
+  "version": "1.0.0",
+  "description": "Monorepo for all Aragon made DAO Kits or templates",
+  "main": "index.js",
+  "scripts": {
+    "test": "truffle test"
+  },
+  "author": "",
+  "license": "GPL-3.0"
+}
