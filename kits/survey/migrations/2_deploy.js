@@ -4,64 +4,39 @@ const fs = require('fs')
 const namehash = require('eth-ens-namehash').hash
 
 const daoFactoryMigration = require('@aragon/os/migrations/3_factory')
-const MiniMeTokenFactory = artifacts.require('@aragon/os/contracts/lib/minime/MiniMeTokenFactory')
 const ENS = artifacts.require('@aragon/os/contracts/lib/ens/ENS.sol')
+const SurveyKit = artifacts.require('SurveyKit')
 
-const newRepo = async (apm, name, acc, contract) => {
+const surveyAppId = namehash('survey.aragonpm.eth')
+
+const newRepo = async (apm, name, acc, contract, contentURI = "ipfs:") => {
   const c = await artifacts.require(contract).new()
-  return await apm.newRepoWithVersion(name, acc, [1, 0, 0], c.address, '0x1245')
+  console.log('creating apm repo for', name)
+  return await apm.newRepoWithVersion(name, acc, [1, 0, 0], c.address, contentURI)
 }
 
 module.exports = async (deployer, network, accounts) => {
-  if (network == 'rpc' && false) { // TODO!!
-    console.log("Local testing network, exiting...")
-    return;
-  }
-  let indexObj = require('../index.js')
-  const ens = ENS.at(process.env.ENS || indexObj.networks[network].ens)
+  const ens = ENS.at(process.env.ENS || '0x644f11d76d4b192df168c49a06db4928ea410bbc')
 
   const apmAddr = await artifacts.require('PublicResolver').at(await ens.resolver(namehash('aragonpm.eth'))).addr(namehash('aragonpm.eth'))
 
   if (network == 'rpc' /*TODO!*/ || network == 'devnet') { // Useful for testing to avoid manual deploys with aragon-dev-cli
-    if (await ens.owner(appIds[0]) == '0x0000000000000000000000000000000000000000') {
+    if (await ens.owner(surveyAppId) == '0x0000000000000000000000000000000000000000') {
       const apm = artifacts.require('APMRegistry').at(apmAddr)
 
-      await newRepo(apm, 'voting', accounts[0], 'Voting')
-      await newRepo(apm, 'finance', accounts[0], 'Finance')
-      await newRepo(apm, 'token-manager', accounts[0], 'TokenManager')
-      await newRepo(apm, 'vault', accounts[0], 'Vault')
+      await newRepo(apm, 'survey', accounts[0], 'Survey')
     }
   }
 
   const { daoFact } = await daoFactoryMigration(deployer, network, accounts, artifacts)
 
-  const minimeFac = await MiniMeTokenFactory.new()
+  const kit = await SurveyKit.new(daoFact.address, ens.address)
+  console.log('SurveyKit:', kit.address)
 
-  const aragonid = await ens.owner(namehash('aragonid.eth'))
-  const tmpls = await deployMany(templates, [daoFact.address, minimeFac.address, apmAddr, aragonid, appIds])
+  return
 
-  const ts = tmpls.map((address, i) => ({ name: templates[i], address }) )
-
-  console.log('creating APM packages for templates')
+  console.log('creating APM package for SurveyKit')
 
   const apm = artifacts.require('APMRegistry').at(apmAddr)
-
-  await apm.newRepoWithVersion('democracy-template', accounts[0], [1, 0, 0], tmpls[0], 'ipfs:')
-  await apm.newRepoWithVersion('multisig-template', accounts[0], [1, 0, 0], tmpls[1], 'ipfs:')
-
-  console.log(ts)
-
-  if (indexObj.networks[network] === undefined)
-    indexObj.networks[network] = {}
-  indexObj.networks[network].ens = ens
-  indexObj.networks[network].templates = ts
-  const indexFile = 'module.exports = ' + JSON.stringify(indexObj, null, 2)
-  // could also use https://github.com/yeoman/stringify-object if you wanted single quotes
-  if (network != 'rpc' && network != 'devnet') {
-    fs.writeFileSync('index.js', indexFile)
-    console.log('Template addresses saved to index.js')
-  } else {
-    fs.writeFileSync('index_local.js', indexFile)
-    console.log('Template addresses saved to index_local.js')
-  }
+  await apm.newRepoWithVersion('survey-template', accounts[0], [1, 0, 0], kit.address, 'ipfs:')
 }
