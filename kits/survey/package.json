@@ -1,0 +1,23 @@
+{
+  "name": "@aragon/kits-survey",
+  "version": "1.0.0",
+  "description": "Kit for conducting non-binding token signaling votes",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "migrate": "truffle migrate --network rpc --reset"
+  },
+  "author": "Aragon Institution MTU <contact@aragon.one>",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "eth-ens-namehash": "^2.0.8",
+    "truffle": "^4.0.5",
+    "truffle-hdwallet-provider": "0.0.3"
+  },
+  "dependencies": {
+    "@aragon/apps-survey": "^1.0.0",
+    "@aragon/os": "^3.1.1"
+  }
+}
