@@ -1,4 +1,4 @@
-# DAO Kits
+# DAO Kits
 
 ## What's a DAO Kit
 
