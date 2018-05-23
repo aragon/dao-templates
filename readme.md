@@ -12,12 +12,4 @@ Aragon creates and certifies some of the kits in this repo. This comes without a
 
 All mainnet ready kits will have a `security.md` file in which we do an assessment of the potential risks of that template and our recommendation for deployment. 
 
-At the moment we cannot recommend to deploy any kits to the mainnet for managing real funds.
-
-## Current kits
-
-// TODO: convert into fancy table
-
-- **kits/beta**: Mainnet ready: **NO**.
-- **kits/demo**: Mainnet ready: **NO**.
-- **kits/dev**: Mainnet ready: **NO**.
+At the moment we don't recommend to deploy any kits to the mainnet for managing real funds.
