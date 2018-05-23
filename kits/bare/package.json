@@ -9,6 +9,6 @@
     "deploy:fac:rpc": "aragon contracts exec --network rpc scripts/deploy-dao-factory.js"
   },
   "dependencies": {
-    "@aragon/os": "^3.1.7"
+    "@aragon/os": "3.1.8"
   }
 }

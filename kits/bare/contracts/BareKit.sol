@@ -6,12 +6,13 @@ import "@aragon/os/contracts/acl/ACL.sol";
 import "./KitBase.sol";
 
 contract BareKit is KitBase {
-    event DeployInstance(address dao);
-    event InstalledApp(address appProxy, bytes32 appId);
-
     function BareKit(DAOFactory _fac, ENS _ens) KitBase(_fac, _ens) {}
 
-    function newInstance(bytes32 appId, bytes32[] roles, address authorizedAddress, bytes initialize) returns (Kernel dao, ERCProxy proxy) {
+    function newBareInstance() returns (Kernel dao, ERCProxy proxy) {
+        return newInstance(bytes32(0), new bytes32[](0), address(0), new bytes(0));
+    }
+
+    function newInstance(bytes32 appId, bytes32[] roles, address authorizedAddress, bytes initializeCalldata) returns (Kernel dao, ERCProxy proxy) {
         address root = msg.sender;
         dao = fac.newDAO(this);
         ACL acl = ACL(dao.acl());
@@ -21,6 +22,10 @@ contract BareKit is KitBase {
         // If there is no appId, an empty DAO will be created
         if (appId != bytes32(0)) {
             proxy = dao.newAppInstance(appId, latestVersionAppBase(appId)); 
+
+            if (initializeCalldata.length > 0) {
+                require(address(proxy).call(initializeCalldata));
+            }
 
             for (uint256 i = 0; i < roles.length; i++) {
                 acl.createPermission(authorizedAddress, proxy, roles[i], root);
