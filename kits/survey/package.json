@@ -10,6 +10,10 @@
     "migrate": "truffle migrate --network rpc --reset"
   },
   "author": "Aragon Institution MTU <contact@aragon.one>",
+  "files": [
+    "contracts/",
+    "migrations/"
+  ],
   "license": "GPL-3.0",
   "devDependencies": {
     "eth-ens-namehash": "^2.0.8",

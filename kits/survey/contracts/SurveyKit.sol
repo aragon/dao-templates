@@ -33,20 +33,20 @@ contract SurveyKit is ENSConstants {
 
         acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
 
-        Survey survey = Survey(dao.newAppInstance(SURVEY_APP_ID, latestVersionAppBase(SURVEY_APP_ID))); 
+        Survey survey = Survey(dao.newAppInstance(SURVEY_APP_ID, latestVersionAppBase(SURVEY_APP_ID)));
 
         // TODO: Set scapeHatch address as the default vault, in case a token rescue is required
         // BLOCKED BY: https://github.com/aragon/aragonOS/pull/281
 
         survey.initialize(signalingToken, participation, duration);
 
-        // set survey manager as the entity that can create votes and change participation 
+        // set survey manager as the entity that can create votes and change participation
         // surveyManager can then give this permission to other entities
         acl.createPermission(surveyManager, survey, survey.CREATE_SURVEYS_ROLE(), surveyManager);
         acl.createPermission(surveyManager, survey, survey.MODIFY_PARTICIPATION_ROLE(), surveyManager);
         acl.grantPermission(surveyManager, dao, dao.APP_MANAGER_ROLE());
         acl.setPermissionManager(surveyManager, dao, dao.APP_MANAGER_ROLE());
-        
+
 
         InstalledApp(survey, SURVEY_APP_ID);
         DeployInstance(dao);
