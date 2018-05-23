@@ -1,4 +1,4 @@
-const devMigration = require('@aragon/templates-dev/migrations/2_deploy')
+const devMigration = require('@aragon/kits-dev/migrations/2_deploy')
 
 const Finance = artifacts.require('@aragon/apps-finance/contracts/Finance')
 const TokenManager = artifacts.require('@aragon/apps-token-manager/contracts/TokenManager')
