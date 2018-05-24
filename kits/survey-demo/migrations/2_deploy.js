@@ -14,7 +14,7 @@ const Survey = artifacts.require('@aragon/apps-survey/contracts/Survey')
 
 // Utils
 const surveyAppId = namehash('survey.aragonpm.eth')
-const surveyKitEnsNode = namehash('survey-template.aragonpm.eth')
+const surveyKitEnsNode = namehash('survey-kit.aragonpm.eth')
 const timeTravel = require('@aragon/test-helpers/timeTravel')(web3)
 const pct16 = x => new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
 const createdSurveyDao = receipt => receipt.logs.filter(x => x.event == 'DeployInstance')[0].args.dao
