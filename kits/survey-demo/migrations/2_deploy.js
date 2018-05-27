@@ -155,7 +155,8 @@ module.exports = async (deployer, network, accounts) => {
       (voteParams, index) => voteSurvey(surveys[index].id, voteParams, { from: accounts[0] })
     )
   )
-  await timeTravel(SURVEY_DURATION / SURVEY_CHART_BLOCKS + 1)
+  // Haha, this time travel idea doesn't actually work
+  // await timeTravel(SURVEY_DURATION / SURVEY_CHART_BLOCKS + 1)
 
   const account2Votes = [
     {
@@ -176,7 +177,7 @@ module.exports = async (deployer, network, accounts) => {
       (voteParams, index) => voteSurvey(surveys[index].id, voteParams, { from: accounts[1] })
     )
   )
-  await timeTravel(SURVEY_DURATION / SURVEY_CHART_BLOCKS + 1)
+  // await timeTravel(SURVEY_DURATION / SURVEY_CHART_BLOCKS + 1)
 
   const account3Votes = [
     {
@@ -197,7 +198,7 @@ module.exports = async (deployer, network, accounts) => {
       (voteParams, index) => voteSurvey(surveys[index].id, voteParams, { from: accounts[2] })
     )
   )
-  await timeTravel(SURVEY_DURATION / SURVEY_CHART_BLOCKS + 1)
+  // await timeTravel(SURVEY_DURATION / SURVEY_CHART_BLOCKS + 1)
 
   const account4Votes = [
     {
@@ -218,7 +219,6 @@ module.exports = async (deployer, network, accounts) => {
       (voteParams, index) => voteSurvey(surveys[index].id, voteParams, { from: accounts[3] })
     )
   )
-  await timeTravel(SURVEY_DURATION / SURVEY_CHART_BLOCKS + 1)
 
   console.log('===========')
   console.log('Survey demo DAO set up!')
