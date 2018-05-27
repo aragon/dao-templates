@@ -98,16 +98,16 @@ module.exports = async (deployer, network, accounts) => {
   console.log('Creating some surveys...')
   const surveyMetadata = [
     {
+      question: 'Should we get Carlos Matos?',
+      description: 'Coming to an event near you!',
+      options: ['OMG YES', ':sigh:', "You're telling me, he's real???"],
+      url: 'https://github.com/aragon/nest/issues/4',
+    },
+    {
       question: 'When should the Aragon Network be launched?',
       description: 'The Aragon Network is an upcoming launch by the Aragon team!',
       options: ['Q1 2019', 'Q2 2019', 'Q3 2019', 'Q4 2019', 'Soon'],
       url: 'https://github.com/aragon/nest/issues/1',
-    },
-    {
-      question: 'Should ANT be redeployed as an ERC-777 token?',
-      description: 'The current ANT token is a MiniMe token, but this is costly in gas for most users.',
-      options: ['Yes', 'No'],
-      url: 'https://github.com/aragon/nest/issues/2',
     },
     {
       question: 'What should we name our 0.6 release?',
@@ -116,10 +116,10 @@ module.exports = async (deployer, network, accounts) => {
       url: 'https://github.com/aragon/nest/issues/3',
     },
     {
-      question: 'Should we get Carlos Matos?',
-      description: 'Coming to an event near you!',
-      options: ['OMG YES', ':sigh:', "You're telling me, he's real???"],
-      url: 'https://github.com/aragon/nest/issues/4',
+      question: 'Should ANT be redeployed as an ERC-777 token?',
+      description: 'The current ANT token is a MiniMe token, but this is costly in gas for most users.',
+      options: ['Yes', 'No'],
+      url: 'https://github.com/aragon/nest/issues/2',
     },
   ]
   const surveys = await Promise.all(
