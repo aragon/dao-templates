@@ -138,12 +138,12 @@ module.exports = async (deployer, network, accounts) => {
   console.log('Voting on the surveys...')
   const account1Votes = [
     {
-      options: [5],
-      stakes: [TOKEN_BASE_DECIMAL * 5],
-    },
-    {
       options: [2],
       stakes: [TOKEN_BASE_DECIMAL * 2],
+    },
+    {
+      options: [5],
+      stakes: [TOKEN_BASE_DECIMAL * 5],
     },
     {
       options: [1, 3],
@@ -160,12 +160,12 @@ module.exports = async (deployer, network, accounts) => {
 
   const account2Votes = [
     {
-      options: [1, 2],
-      stakes: [TOKEN_BASE_DECIMAL * 1, TOKEN_BASE_DECIMAL * 1],
-    },
-    {
       options: [1],
       stakes: [TOKEN_BASE_DECIMAL * 1],
+    },
+    {
+      options: [1, 2],
+      stakes: [TOKEN_BASE_DECIMAL * 1, TOKEN_BASE_DECIMAL * 1],
     },
     {
       options: [2],
@@ -181,12 +181,12 @@ module.exports = async (deployer, network, accounts) => {
 
   const account3Votes = [
     {
-      options: [3, 4],
-      stakes: [TOKEN_BASE_DECIMAL * 2, TOKEN_BASE_DECIMAL * 1],
-    },
-    {
       options: [2],
       stakes: [TOKEN_BASE_DECIMAL * 4],
+    },
+    {
+      options: [3, 4],
+      stakes: [TOKEN_BASE_DECIMAL * 2, TOKEN_BASE_DECIMAL * 1],
     },
     {
       options: [2],
