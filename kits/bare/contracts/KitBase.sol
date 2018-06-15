@@ -2,10 +2,12 @@ pragma solidity 0.4.18;
 
 import "@aragon/os/contracts/factory/DAOFactory.sol";
 import "@aragon/os/contracts/apm/Repo.sol";
+import "@aragon/os/contracts/apm/APMNamehash.sol";
 import "@aragon/os/contracts/lib/ens/ENS.sol";
 import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
 
-contract KitBase {
+
+contract KitBase is APMNamehash {
     ENS public ens;
     DAOFactory public fac;
 
