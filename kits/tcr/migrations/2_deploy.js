@@ -24,9 +24,11 @@ module.exports = async (deployer, network, accounts) => {
   }
   let indexObj = require('../' + indexFileName)
 
+  console.log('ens', indexObj.networks[network].ens)
   const ens = ENS.at(indexObj.networks[network].ens)
 
   const apmAddr = await artifacts.require('PublicResolver').at(await ens.resolver(namehash('aragonpm.eth'))).addr(namehash('aragonpm.eth'))
+  console.log('APM address', apmAddr)
 
   if (network == 'rpc' || network == 'devnet') { // Useful for testing to avoid manual deploys with aragon-dev-cli
     if (await ens.owner(curationAppId) == '0x0000000000000000000000000000000000000000') {

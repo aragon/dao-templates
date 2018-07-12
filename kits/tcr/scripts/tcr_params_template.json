@@ -1,0 +1,9 @@
+{
+  "minDeposit": 1000,
+  "applyStageLen": 900,
+  "dispensationPct": 50,
+  "voteQuorum": 50,
+  "minorityBlocSlash": 40,
+  "commitDuration": 600,
+  "revealDuration": 600
+}
