@@ -15,42 +15,44 @@ const newRepo = async (apm, name, acc, contract, contentURI = "ipfs:") => {
   return await apm.newRepoWithVersion(name, acc, [1, 0, 0], c.address, contentURI)
 }
 
-module.exports = async (deployer, network, accounts) => {
-  let indexFileName
-  if (network != 'rpc' && network != 'devnet') {
-    indexFileName = 'index.js'
-  } else {
-    indexFileName = 'index_local.js'
-  }
-  let indexObj = require('../' + indexFileName)
-
-  console.log('ens', indexObj.networks[network].ens)
-  const ens = ENS.at(indexObj.networks[network].ens)
-
-  const apmAddr = await artifacts.require('PublicResolver').at(await ens.resolver(namehash('aragonpm.eth'))).addr(namehash('aragonpm.eth'))
-  console.log('APM address', apmAddr)
-
-  if (network == 'rpc' || network == 'devnet') { // Useful for testing to avoid manual deploys with aragon-dev-cli
-    if (await ens.owner(curationAppId) == '0x0000000000000000000000000000000000000000') {
-      const apm = artifacts.require('APMRegistry').at(apmAddr)
-
-      await newRepo(apm, 'registry', accounts[0], 'RegistryApp')
-      await newRepo(apm, 'staking', accounts[0], 'Staking')
-      await newRepo(apm, 'plcr', accounts[0], 'PLCR')
-      await newRepo(apm, 'tcr', accounts[0], 'Curation')
+module.exports = function (deployer, network, accounts) {
+  deployer.then(async () => {
+    let indexFileName
+    if (network != 'rpc' && network != 'devnet') {
+      indexFileName = 'index.js'
+    } else {
+      indexFileName = 'index_local.js'
     }
-  }
+    let indexObj = require('../' + indexFileName)
 
-  const { daoFact } = await daoFactoryMigration(deployer, network, accounts, artifacts)
+    console.log('ens', indexObj.networks[network].ens)
+    const ens = ENS.at(indexObj.networks[network].ens)
 
-  const kit = await TCRKit.new(daoFact.address, ens.address)
-  console.log('TCRKit:', kit.address)
+    const apmAddr = await artifacts.require('PublicResolver').at(await ens.resolver(namehash('aragonpm.eth'))).addr(namehash('aragonpm.eth'))
+    console.log('APM address', apmAddr)
 
-  if (indexObj.networks[network] === undefined)
-    indexObj.networks[network] = {}
-  indexObj.networks[network].ens = ens.address
-  indexObj.networks[network].tcr_kit = kit.address
-  const indexFile = 'module.exports = ' + JSON.stringify(indexObj, null, 2)
-  fs.writeFileSync(indexFileName, indexFile)
-  console.log('Settings saved to ' + indexFileName)
+    if (network == 'rpc' || network == 'devnet') { // Useful for testing to avoid manual deploys with aragon-dev-cli
+      if (await ens.owner(curationAppId) == '0x0000000000000000000000000000000000000000') {
+        const apm = artifacts.require('APMRegistry').at(apmAddr)
+
+        await newRepo(apm, 'registry', accounts[0], 'RegistryApp')
+        await newRepo(apm, 'staking', accounts[0], 'Staking')
+        await newRepo(apm, 'plcr', accounts[0], 'PLCR')
+        await newRepo(apm, 'tcr', accounts[0], 'Curation')
+      }
+    }
+
+    const { daoFact } = await daoFactoryMigration(deployer, network, accounts, artifacts)
+
+    const kit = await TCRKit.new(daoFact.address, ens.address)
+    console.log('TCRKit:', kit.address)
+
+    if (indexObj.networks[network] === undefined)
+      indexObj.networks[network] = {}
+    indexObj.networks[network].ens = ens.address
+    indexObj.networks[network].tcr_kit = kit.address
+    const indexFile = 'module.exports = ' + JSON.stringify(indexObj, null, 2)
+    fs.writeFileSync(indexFileName, indexFile)
+    console.log('Settings saved to ' + indexFileName)
+  })
 }

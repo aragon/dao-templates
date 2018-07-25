@@ -43,6 +43,7 @@ contract("TCR",  (accounts) => {
   const TIME_UNIT_BLOCKS = 0
   const TIME_UNIT_SECONDS = 1
   let MAX_UINT64
+  let ANY_ENTITY
 
   const salt = 'salt'.repeat(8)
 
@@ -51,7 +52,7 @@ contract("TCR",  (accounts) => {
   before(async () => {
     const TCRKit = getContract('TCRKit').at(tcrKitAddress)
     const r1 = await TCRKit.newInstance(owner, tokenAddress, voteQuorum, minorityBlocSlash, commitDuration, revealDuration)
-    assert.equal(r1.receipt.status, '0x1', "New TCRKit transaction should succeed")
+    assert.equal(r1.receipt.status, '0x1', `New TCRKit ${r1.tx} transaction should succeed`)
     staking = getContract('Staking').at(getApp(r1, 'staking.aragonpm.eth', 0))
     voteStaking = getContract('Staking').at(getApp(r1, 'staking.aragonpm.eth', 1))
     curation = getContract('Curation').at(getApp(r1, 'tcr.aragonpm.eth', 0))
@@ -63,6 +64,7 @@ contract("TCR",  (accounts) => {
     console.log('plcr:        ', plcr.address)
     console.log('curation:    ', curation.address)
     MAX_UINT64 = await curation.MAX_UINT64()
+    ANY_ENTITY = await voteStaking.ANY_ENTITY.call()
     await TCRKit.initCuration(minDeposit, applyStageLen, dispensationPct)
     token = getContract('ERC20').at(tokenAddress)
     // send some eth to users to pay for gas
@@ -87,7 +89,7 @@ contract("TCR",  (accounts) => {
     const stakeReceipt = await stakingContract.stake(amount, "", { from: user })
     assert.equal(stakeReceipt.receipt.status, '0x1', "Staking transaction should succeed")
     // lock
-    const lockReceipt = await stakingContract.lock(amount, TIME_UNIT_SECONDS, time, unlocker, "", "", { from: user })
+    const lockReceipt = await stakingContract.lockNow(amount, TIME_UNIT_SECONDS, time, unlocker, "", "", { from: user })
     assert.equal(lockReceipt.receipt.status, '0x1', "Lock transaction should succeed")
     const lockId = getEvent(lockReceipt, 'Locked', 'lockId')
 
@@ -148,9 +150,9 @@ contract("TCR",  (accounts) => {
     const commitEnd = vote[0]
     await waitUntil(commitEnd)
 
-    const voteStakingInitialWinnerBalance = await voteStaking.unlockedBalanceOf.call(winner)
-    const voteStakingInitialLoserBalance = await voteStaking.unlockedBalanceOf.call(loser)
-    const voteStakingInitialVoterBalance = await voteStaking.unlockedBalanceOf.call(voter)
+    const voteStakingInitialWinnerBalance = await voteStaking.unlockedBalanceOf.call(winner, ANY_ENTITY)
+    const voteStakingInitialLoserBalance = await voteStaking.unlockedBalanceOf.call(loser, ANY_ENTITY)
+    const voteStakingInitialVoterBalance = await voteStaking.unlockedBalanceOf.call(voter, ANY_ENTITY)
 
     // reveal votes
     await plcr.revealVote(voteId, false, salt, { from: applicant })
@@ -158,9 +160,9 @@ contract("TCR",  (accounts) => {
     await plcr.revealVote(voteId, result, salt, { from: voter })
 
     // check balances
-    const voteStakingRevealWinnerBalance = await voteStaking.unlockedBalanceOf.call(winner)
-    const voteStakingRevealLoserBalance = await voteStaking.unlockedBalanceOf.call(loser)
-    const voteStakingRevealVoterBalance = await voteStaking.unlockedBalanceOf.call(voter)
+    const voteStakingRevealWinnerBalance = await voteStaking.unlockedBalanceOf.call(winner, ANY_ENTITY)
+    const voteStakingRevealLoserBalance = await voteStaking.unlockedBalanceOf.call(loser, ANY_ENTITY)
+    const voteStakingRevealVoterBalance = await voteStaking.unlockedBalanceOf.call(voter, ANY_ENTITY)
     const votingReward = voteStake * minorityBlocSlash / 1e18
     assert.equal(voteStakingRevealWinnerBalance.toString(), parseInt(voteStakingInitialWinnerBalance, 10) + voteStake - votingReward, "Winner Voting stake should match")
     assert.equal(voteStakingRevealLoserBalance.toString(), parseInt(voteStakingInitialLoserBalance, 10) + voteStake - votingReward, "Loser Voting stake should match")
@@ -171,9 +173,9 @@ contract("TCR",  (accounts) => {
     await waitUntil(revealEnd)
 
     // resolve challenge
-    const stakingWinnerBalance = await staking.unlockedBalanceOf.call(winner)
-    const stakingLoserBalance = await staking.unlockedBalanceOf.call(loser)
-    const stakingVoterBalance = await staking.unlockedBalanceOf.call(voter)
+    const stakingWinnerBalance = await staking.unlockedBalanceOf.call(winner, ANY_ENTITY)
+    const stakingLoserBalance = await staking.unlockedBalanceOf.call(loser, ANY_ENTITY)
+    const stakingVoterBalance = await staking.unlockedBalanceOf.call(voter, ANY_ENTITY)
     const dispensationReward = minDeposit * dispensationPct / 1e18
 
     const resolveReceipt = await curation.resolveChallenge(entryId)
@@ -189,35 +191,32 @@ contract("TCR",  (accounts) => {
     assert.equal(entryExists, !result, "Entry existence in Registry App is wrong")
 
     // check balances
-    const stakingWinnerResolvedBalance = await staking.unlockedBalanceOf.call(winner)
-    const stakingLoserResolvedBalance = await staking.unlockedBalanceOf.call(loser)
-    const stakingVoterResolvedBalance = await staking.unlockedBalanceOf.call(voter)
-    assert.equal(stakingWinnerResolvedBalance.toString(), parseInt(stakingWinnerBalance, 10) + dispensationReward, "Winner balance should match")
+    const stakingWinnerResolvedBalance = await staking.unlockedBalanceOf.call(winner, ANY_ENTITY)
+    const stakingLoserResolvedBalance = await staking.unlockedBalanceOf.call(loser, ANY_ENTITY)
+    const stakingVoterResolvedBalance = await staking.unlockedBalanceOf.call(voter, ANY_ENTITY)
+    assert.equal(stakingWinnerResolvedBalance.toString(), parseInt(stakingWinnerBalance, 10) + minDeposit + dispensationReward, "Winner balance should match")
     assert.equal(stakingLoserResolvedBalance.toString(), parseInt(stakingLoserBalance, 10), "Loser balance should match")
     assert.equal(stakingVoterResolvedBalance.toString(), parseInt(stakingVoterBalance, 10), "Voter balance should match")
 
     // claim rewards
     const remainingReward = minDeposit - dispensationReward
-    const claimReceipt1 = await curation.claimReward(entryId, { from: winner })
-    assert.equal(claimReceipt1.receipt.status, '0x1', "Winner claim transaction should succeed")
-    assert.equal((await staking.unlockedBalanceOf.call(winner)).toString(), parseInt(stakingWinnerResolvedBalance, 10) + remainingReward / 2, "Winner balance should match")
-
-    /* TODO: fails because of gas?
-    const claimReceipt2 = await curation.claimReward(entryId, { from: voter })
-    assert.equal(claimReceipt2.receipt.status, '0x1', "Voter claim transaction should succeed")
-     assert.equal((await staking.unlockedBalanceOf.call(winner)).toString(), parseInt(stakingWinnerResolvedBalance, 10) + remainingReward / 2, "Winner balance should match")
-     */
+    const claimReceipt1 = await curation.claimReward(voteId, { from: winner })
+    assert.equal(claimReceipt1.receipt.status, '0x1', `Winner claim transaction ${claimReceipt1.tx} should succeed`)
+    assert.equal((await staking.unlockedBalanceOf.call(winner, ANY_ENTITY)).toString(), parseInt(stakingWinnerResolvedBalance, 10) + remainingReward / 2, "Winner balance should match")
+    const claimReceipt2 = await curation.claimReward(voteId, { from: voter })
+    assert.equal(claimReceipt2.receipt.status, '0x1', `Voter claim transaction ${claimReceipt2.tx} should succeed`)
+     assert.equal((await staking.unlockedBalanceOf.call(winner, ANY_ENTITY)).toString(), parseInt(stakingWinnerResolvedBalance, 10) + remainingReward / 2, "Winner balance should match")
 
     // claim from Voting app
     const claimVotingReceipt1 = await plcr.claimTokens(voteId, { from: winner })
-    assert.equal(claimVotingReceipt1.receipt.status, '0x1', "Winner claim to Voting app transaction should succeed")
+    assert.equal(claimVotingReceipt1.receipt.status, '0x1', `Winner claim to Voting app transaction ${claimVotingReceipt1.tx} should succeed`)
     const claimVotingReceipt2 = await plcr.claimTokens(voteId, { from: voter })
-    assert.equal(claimVotingReceipt2.receipt.status, '0x1', "Voter claim to Voting app transaction should succeed")
+    assert.equal(claimVotingReceipt2.receipt.status, '0x1', `Voter claim to Voting app transaction ${claimVotingReceipt2.tx} should succeed`)
     const claimVotingReceipt3 = await plcr.claimTokens(voteId, { from: loser })
-    assert.equal(claimVotingReceipt3.receipt.status, '0x1', "Loser claim to Voting app transaction should succeed")
-    assert.equal((await voteStaking.unlockedBalanceOf.call(winner)).toString(), parseInt(voteStakingRevealWinnerBalance, 10) + votingReward * 3/ 2, "Vote Staking Winner balance should match")
-    assert.equal((await voteStaking.unlockedBalanceOf.call(loser)).toString(), parseInt(voteStakingRevealLoserBalance, 10), "Vote Staking Loser balance should match")
-    assert.equal((await voteStaking.unlockedBalanceOf.call(voter)).toString(), parseInt(voteStakingRevealVoterBalance, 10) + votingReward * 3 / 2, "Vote Staking Voter balance should match")
+    assert.equal(claimVotingReceipt3.receipt.status, '0x1', `Loser claim to Voting app transaction ${claimVotingReceipt3.tx} should succeed`)
+    assert.equal((await voteStaking.unlockedBalanceOf.call(winner, ANY_ENTITY)).toString(), parseInt(voteStakingRevealWinnerBalance, 10) + votingReward * 3/ 2, "Vote Staking Winner balance should match")
+    assert.equal((await voteStaking.unlockedBalanceOf.call(loser, ANY_ENTITY)).toString(), parseInt(voteStakingRevealLoserBalance, 10), "Vote Staking Loser balance should match")
+    assert.equal((await voteStaking.unlockedBalanceOf.call(voter, ANY_ENTITY)).toString(), parseInt(voteStakingRevealVoterBalance, 10) + votingReward * 3 / 2, "Vote Staking Voter balance should match")
   }
 
   it('creates new application, challenges it, rejects challenge', async () => {

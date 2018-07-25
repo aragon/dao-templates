@@ -9,13 +9,17 @@
   "scripts": {
     "deploy:rinkeby": "truffle migrate --network rinkeby --reset",
     "deploy:rpc": "truffle migrate --network rpc --reset",
-    "deploy:devnet": "truffle migrate --network devnet --reset"
+    "deploy:devnet": "truffle migrate --network devnet --reset",
+    "test:rpc": "truffle test --network rpc",
+    "test:devnet": "truffle test --network devnet",
+    "test:gas": "GAS_REPORTER=true npm run test:devnet"
   },
   "author": "Aragon Institution MTU <contact@aragon.one>",
   "license": "GPL-3.0",
   "devDependencies": {
     "@aragon/templates-tokens": "^0.0.1",
     "eth-ens-namehash": "^2.0.8",
+    "eth-gas-reporter": "^0.1.1",
     "truffle": "4.0.5",
     "truffle-hdwallet-provider": "0.0.3"
   },
@@ -24,6 +28,7 @@
     "@aragon/apps-staking": "^0.0.1",
     "@aragon/apps-registry": "^0.0.1",
     "@aragon/apps-plcr": "^0.0.1",
+    "@aragon/kits-bare": "^1.0.1",
     "@aragon/os": "^3.1.1"
   }
 }

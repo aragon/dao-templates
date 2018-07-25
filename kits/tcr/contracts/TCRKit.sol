@@ -38,9 +38,9 @@ contract TCRKit is KitBase {
 
         deployApps(dao);
 
-        //registry.initialize();
-        staking.initialize(stakingToken, new bytes(0), new bytes(0), new bytes(0));
-        voteStaking.initialize(stakingToken, new bytes(0), new bytes(0), new bytes(0));
+        registry.initialize();
+        staking.initialize(false, stakingToken, new bytes(0), new bytes(0), new bytes(0));
+        voteStaking.initialize(true, stakingToken, new bytes(0), new bytes(0), new bytes(0));
         plcr.initialize(voteStaking, voteQuorum, minorityBlocSlash, commitDuration, revealDuration);
 
         // ACLs
