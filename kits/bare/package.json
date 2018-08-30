@@ -5,10 +5,13 @@
   "author": "Aragon One AG <contact@aragon.one>",
   "license": "GPL-3.0",
   "scripts": {
-    "publish:rpc": "apm publish BareKit --network rpc --init $(npm run deploy:fac:rpc | tail -n 1) @ARAGON_ENS",
-    "deploy:fac:rpc": "aragon contracts compile --all && aragon contracts exec --network rpc scripts/deploy-dao-factory.js"
+    "publish:rpc": "aragon apm publish BareKit --network rpc --init $(npm run deploy:fac:rpc | tail -n 1) @ARAGON_ENS",
+    "deploy:fac:rpc": "aragon contracts compile --all --network rpc && aragon contracts exec --network rpc scripts/deploy-dao-factory.js"
   },
   "dependencies": {
-    "@aragon/os": "3.1.8"
+    "@aragon/os": "4.0.0-alpha.2"
+  },
+  "devDependencies": {
+    "@aragon/cli": "^4.1.6"
   }
 }
