@@ -1,8 +1,8 @@
-const daoFactoryMigration = require('@aragon/os/migrations/3_factory')
+const deployDAOFactory = require('@aragon/os/scripts/deploy-daofactory.js')
 
 module.exports = async (callback) => {
-  const { daoFact } = await daoFactoryMigration(Promise.resolve(), null, null, artifacts)
+  const { daoFactory } = await deployDAOFactory(null, { artifacts, verbose: false })
 
-  console.log(daoFact.address)
+  console.log(daoFactory.address)
   callback()
 }
