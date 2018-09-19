@@ -1,0 +1,17 @@
+{
+  "name": "@aragon/kits-bare",
+  "version": "1.0.0",
+  "description": "Generic kit for deploying and setting up a DAO with one app",
+  "author": "Aragon One AG <contact@aragon.one>",
+  "license": "GPL-3.0",
+  "scripts": {
+    "publish:rpc": "aragon apm publish $(npm run deploy:kit:rpc | tail -n 1) --network rpc",
+    "deploy:kit:rpc": "aragon contracts compile --network rpc && aragon contracts exec --network rpc scripts/deploy.js"
+  },
+  "dependencies": {
+    "@aragon/os": "4.0.0-beta.2"
+  },
+  "devDependencies": {
+    "@aragon/cli": "^4.1.6"
+  }
+}
