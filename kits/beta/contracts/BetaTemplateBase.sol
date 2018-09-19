@@ -1,17 +1,15 @@
-pragma solidity 0.4.18;
+pragma solidity 0.4.24;
 
 import "@aragon/os/contracts/apm/APMRegistry.sol";
 import "@aragon/os/contracts/factory/DAOFactory.sol";
 import "@aragon/os/contracts/kernel/Kernel.sol";
 import "@aragon/os/contracts/acl/ACL.sol";
-import "@aragon/os/contracts/lib/minime/MiniMeToken.sol";
+import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 
 import "@aragon/id/contracts/IFIFSResolvingRegistrar.sol";
 
 import "@aragon/apps-voting/contracts/Voting.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
-//import "@aragon/apps-vault/contracts/connectors/ETHConnector.sol";
-//import "@aragon/apps-vault/contracts/connectors/ERC20Connector.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/apps-finance/contracts/Finance.sol";
 
@@ -34,7 +32,7 @@ contract BetaTemplateBase {
 
     address constant ANY_ENTITY = address(-1);
 
-    function BetaTemplateBase(
+    constructor(
         DAOFactory _fac,
         MiniMeTokenFactory _minimeFac,
         APMRegistry _apm,
@@ -67,13 +65,18 @@ contract BetaTemplateBase {
         acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
 
         Voting voting = Voting(dao.newAppInstance(appIds[uint8(Apps.Voting)], latestVersionAppBase(appIds[uint8(Apps.Voting)])));
-        InstalledApp(voting, appIds[uint8(Apps.Voting)]);
+        emit InstalledApp(voting, appIds[uint8(Apps.Voting)]);
         Vault vault = Vault(dao.newAppInstance(appIds[uint8(Apps.Vault)], latestVersionAppBase(appIds[uint8(Apps.Vault)])));
-        InstalledApp(vault, appIds[uint8(Apps.Vault)]);
+        emit InstalledApp(vault, appIds[uint8(Apps.Vault)]);
         Finance finance = Finance(dao.newAppInstance(appIds[uint8(Apps.Finance)], latestVersionAppBase(appIds[uint8(Apps.Finance)])));
-        InstalledApp(finance, appIds[uint8(Apps.Finance)]);
-        TokenManager tokenManager = TokenManager(dao.newAppInstance(appIds[uint8(Apps.TokenManager)], latestVersionAppBase(appIds[uint8(Apps.TokenManager)])));
-        InstalledApp(tokenManager, appIds[uint8(Apps.TokenManager)]);
+        emit InstalledApp(finance, appIds[uint8(Apps.Finance)]);
+        TokenManager tokenManager = TokenManager(
+            dao.newAppInstance(
+                appIds[uint8(Apps.TokenManager)],
+                latestVersionAppBase(appIds[uint8(Apps.TokenManager)])
+            )
+        );
+        emit InstalledApp(tokenManager, appIds[uint8(Apps.TokenManager)]);
 
         token.changeController(tokenManager); // sender has to create tokens
 
@@ -88,20 +91,20 @@ contract BetaTemplateBase {
         acl.createPermission(voting, tokenManager, tokenManager.ASSIGN_ROLE(), voting);
         acl.createPermission(voting, tokenManager, tokenManager.REVOKE_VESTINGS_ROLE(), voting);
 
+        // solium-disable-next-line error-reason
         require(holders.length == stakes.length);
 
         acl.createPermission(this, tokenManager, tokenManager.MINT_ROLE(), this);
 
-        tokenManager.initialize(token, _maxTokens > 1, _maxTokens, true);
+        tokenManager.initialize(token, _maxTokens > 1, _maxTokens);
 
         for (uint256 i = 0; i < holders.length; i++) {
             tokenManager.mint(holders[i], stakes[i]);
         }
 
-        Vault vaultBase = Vault(latestVersionAppBase(appIds[uint8(Apps.Vault)]));
         // inits
-        vault.initialize(vaultBase.erc20ConnectorBase(), vaultBase.ethConnectorBase()); // init with trusted connectors
-        finance.initialize(IVaultConnector(vault), uint64(-1) - uint64(now)); // yuge period
+        vault.initialize();
+        finance.initialize(vault, uint64(-1) - uint64(now)); // yuge period
 
         // clean-up
         acl.grantPermission(voting, dao, dao.APP_MANAGER_ROLE());
@@ -113,7 +116,7 @@ contract BetaTemplateBase {
         // no revokes to save gas as factory can't do anything to orgs (clutters acl representation)
 
         registerAragonID(name, dao);
-        DeployInstance(dao, token);
+        emit DeployInstance(dao, token);
 
         // voting is returned so init can happen later
         return voting;
@@ -121,10 +124,11 @@ contract BetaTemplateBase {
 
     function cacheToken(MiniMeToken token, address owner) internal {
         tokenCache[owner] = token;
-        DeployToken(token, owner);
+        emit DeployToken(token, owner);
     }
 
     function popTokenCache(address owner) internal returns (MiniMeToken) {
+        // solium-disable-next-line error-reason
         require(tokenCache[owner] != address(0));
         MiniMeToken token = MiniMeToken(tokenCache[owner]);
         delete tokenCache[owner];
@@ -133,7 +137,7 @@ contract BetaTemplateBase {
     }
 
     function registerAragonID(string name, address owner) internal {
-        aragonID.register(keccak256(name), owner);
+        aragonID.register(keccak256(abi.encodePacked(name)), owner);
     }
 
     /* solium-disable-next-line */

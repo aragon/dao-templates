@@ -1,11 +1,11 @@
-pragma solidity 0.4.18;
+pragma solidity 0.4.24;
 
 import "./BetaTemplateBase.sol";
 
 
 contract MultisigTemplate is BetaTemplateBase {
 
-    function MultisigTemplate(
+    constructor(
         DAOFactory _fac,
         MiniMeTokenFactory _minimeFac,
         APMRegistry _apm,
@@ -17,7 +17,7 @@ contract MultisigTemplate is BetaTemplateBase {
 
     function newToken(string name, string symbol) external returns (MiniMeToken token) {
         token = minimeFac.createCloneToken(
-            address(0),
+            MiniMeToken(address(0)),
             0,
             name,
             0,
@@ -28,6 +28,9 @@ contract MultisigTemplate is BetaTemplateBase {
     }
 
     function newInstance(string name, address[] signers, uint256 neededSignatures) external {
+        require(signers.length > 0);
+        require(neededSignatures > 0);
+
         uint256[] memory stakes = new uint256[](signers.length);
 
         for (uint256 i = 0; i < signers.length; i++) {
@@ -43,12 +46,18 @@ contract MultisigTemplate is BetaTemplateBase {
             1
         );
 
-        uint256 multisigSupport = neededSignatures * 10 ** 18 / signers.length;
+        uint256 multisigSupport;
+        uint256 neededSignaturesE18 = neededSignatures * 10 ** 18;
+        if (neededSignaturesE18 < signers.length) {
+            multisigSupport = 0;
+        } else {
+            multisigSupport = neededSignaturesE18 / signers.length - 1;
+        }
         voting.initialize(
             token,
             multisigSupport,
             multisigSupport,
-            5 years
+            1825 days // ~5 years
         );
     }
 }
