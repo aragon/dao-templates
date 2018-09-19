@@ -12,7 +12,7 @@ contract KitBase {
     event DeployInstance(address dao);
     event InstalledApp(address appProxy, bytes32 appId);
 
-    function KitBase(DAOFactory _fac, ENS _ens) {
+    constructor (DAOFactory _fac, ENS _ens) {
         fac = _fac;
         ens = _ens;
     }

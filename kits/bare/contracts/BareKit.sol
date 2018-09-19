@@ -6,7 +6,7 @@ import "@aragon/os/contracts/acl/ACL.sol";
 import "./KitBase.sol";
 
 contract BareKit is KitBase {
-    function BareKit(DAOFactory _fac, ENS _ens) KitBase(_fac, _ens) {}
+    constructor (DAOFactory _fac, ENS _ens) KitBase(_fac, _ens) {}
 
     function newBareInstance() public returns (Kernel dao, ERCProxy proxy) {
         return newInstance(bytes32(0), new bytes32[](0), address(0), new bytes(0));
