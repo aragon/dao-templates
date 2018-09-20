@@ -1,8 +1,9 @@
-pragma solidity 0.4.18;
+pragma solidity 0.4.24;
 
 //import "@aragon/os/contracts/factory/APMRegistryFactory.sol";
 //import "@aragon/os/contracts/factory/ENSFactory.sol";
 import "@aragon/id/contracts/FIFSResolvingRegistrar.sol";
+import "@aragon/apps-shared-migrations/contracts/Migrations.sol";
 
 // You might think this file is a bit odd, but let me explain.
 // We only use these contracts in our tests, which
@@ -15,6 +16,7 @@ import "@aragon/id/contracts/FIFSResolvingRegistrar.sol";
 // - Or trick Truffle by claiming we use it in a Solidity test
 //
 // You know which one I went for.
+
 
 contract TestTemplates {
     // ...
