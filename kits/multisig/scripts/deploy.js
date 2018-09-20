@@ -3,24 +3,19 @@ const fs = require('fs')
 
 const namehash = require('eth-ens-namehash').hash
 
+const beta = require('@aragon/kits-beta')
+
 const deployDAOFactory = require('@aragon/os/scripts/deploy-daofactory.js')
 const MiniMeTokenFactory = artifacts.require('@aragon/os/contracts/lib/minime/MiniMeTokenFactory')
 const ENS = artifacts.require('@aragon/os/contracts/lib/ens/ENS.sol')
-
-const templates = ['DemocracyTemplate', 'MultisigTemplate']
 
 // ensure alphabetic order
 const apps = ['finance', 'token-manager', 'vault', 'voting']
 
 const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).appName))
 
-const deployMany = async (cs, params) => {
-  const x = await Promise.all(cs.map(c => artifacts.require(c).new(...params)))
-
-  return x.map(c => c.address)
-}
-
 const newRepo = async (apm, name, acc, contract) => {
+  console.log(`Creating Repo for ${contract}`)
   const c = await artifacts.require(contract).new()
   return await apm.newRepoWithVersion(name, acc, [1, 0, 0], c.address, '0x1245')
 }
@@ -40,7 +35,8 @@ module.exports = async (callback) => {
     console.log("Local testing network, exiting...")
     return;
   }
-  let indexObj = require('../index.js')
+  let indexObj = beta
+  console.log(process.env.ENS || indexObj.networks[network].ens)
   const ens = ENS.at(process.env.ENS || indexObj.networks[network].ens)
   console.log('ens', ens.address)
 
@@ -49,8 +45,9 @@ module.exports = async (callback) => {
   console.log('APM', apmAddr);
 
   if (network == 'rpc' /*TODO!*/ || network == 'devnet') { // Useful for testing to avoid manual deploys with aragon-dev-cli
-    if (await ens.owner(appIds[0]) == '0x0000000000000000000000000000000000000000') {
+    if (await ens.owner(appIds[0]) == '0x0000000000000000000000000000000000000000') {
 
+      console.log('Deploying apps in local network')
       await newRepo(apm, 'voting', owner, 'Voting')
       await newRepo(apm, 'finance', owner, 'Finance')
       await newRepo(apm, 'token-manager', owner, 'TokenManager')
@@ -63,16 +60,15 @@ module.exports = async (callback) => {
   const minimeFac = await MiniMeTokenFactory.new()
 
   const aragonid = await ens.owner(namehash('aragonid.eth'))
-  const tmpls = await deployMany(templates, [daoFactory.address, ens.address, minimeFac.address, aragonid, appIds])
 
-  const ts = tmpls.map((address, i) => ({ name: templates[i], address }) )
+  const templateName = 'MultisigTemplate'
+  const template = await artifacts.require(templateName).new(daoFactory.address, ens.address, minimeFac.address, aragonid, appIds)
 
-  console.log('creating APM packages for templates')
+  const ts = [ { name: templateName, address: template.address } ]
 
-  await apm.newRepoWithVersion('democracy-template', owner, [1, 0, 0], tmpls[0], 'ipfs:')
-  await apm.newRepoWithVersion('multisig-template', owner, [1, 0, 0], tmpls[1], 'ipfs:')
+  console.log(`creating APM package for Multisig template at ${template.address}`)
 
-  console.log(ts)
+  await apm.newRepoWithVersion('multisig-template', owner, [1, 0, 0], template.address, 'ipfs:')
 
   if (indexObj.networks[network] === undefined)
     indexObj.networks[network] = {}

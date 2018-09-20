@@ -1,18 +1,18 @@
 {
-  "name": "@aragon/kits-beta",
-  "version": "1.1.4",
-  "description": "Beta template for v0.5 Aragon orgs",
+  "name": "@aragon/kits-multisig",
+  "version": "1.0.0",
+  "description": "Multisig template for v0.5 Aragon orgs",
   "main": "index.js",
   "scripts": {
-    "prepublish": "truffle compile",
+    "prepublish": "truffle compile && node scripts/extract-abis.js",
     "deploy:rinkeby": "truffle exec --network rinkeby scripts/deploy.js",
     "deploy:rpc": "truffle exec --network rpc scripts/deploy.js",
-    "deploy:devnet": "echo No need to deploy anyting here",
-    "docker:wait-gas": "truffle exec scripts/sleep-until-gaslimit.js --network devnet 6900000",
-    "docker:run": "docker-compose up -d",
-    "docker:stop": "docker-compose down",
+    "deploy:devnet": "truffle exec --network devnet scripts/deploy.js",
+    "docker:wait-gas": "truffle exec ./node_modules/@aragon/kits-beta/scripts/sleep-until-gaslimit.js --network devnet 6900000",
+    "docker:run": "cd ./node_modules/@aragon/kits-beta/; docker-compose -f docker-compose.yml up -d; RESULT=$?; cd -; $(exit $RESULT)",
+    "docker:stop": "cd ./node_modules/@aragon/kits-beta/; docker-compose down; cd -",
     "lint": "solium --dir ./contracts",
-    "test": "truffle compile && npm run docker:run && npm run docker:wait-gas && (export `grep ^OWNER .env`; ./scripts/deploy.sh && truffle test --network devnet test/docker.js) && npm run docker:stop",
+    "test": "truffle compile && npm run docker:run && npm run docker:wait-gas && (export `grep ^OWNER ./node_modules/@aragon/kits-beta/.env`; ./node_modules/@aragon/kits-beta/scripts/deploy.sh && truffle test --network devnet test/multisig.js) && npm run docker:stop",
     "coverage": "./node_modules/@aragon/test-helpers/run-coverage.sh",
     "console": "node_modules/.bin/truffle console",
     "ganache-cli:dev": "./node_modules/@aragon/test-helpers/ganache-cli.sh",
@@ -42,6 +42,7 @@
     "@aragon/apps-vault": "^3.0.0-beta.1",
     "@aragon/apps-finance": "^2.0.0-beta.1",
     "@aragon/apps-token-manager": "^2.0.0-beta.1",
-    "@aragon/kits-bare": "^1.0.0"
+    "@aragon/kits-bare": "^1.0.0",
+    "@aragon/kits-beta": "^1.1.3"
   }
 }

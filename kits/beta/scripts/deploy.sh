@@ -22,6 +22,3 @@ npm run deploy:devnet
 cd -
 printf "\nDeploying beta templates...\n"
 npm run deploy:devnet
-
-printf "\nRunning tests...\n"
-./node_modules/.bin/truffle test --network devnet test/docker.js

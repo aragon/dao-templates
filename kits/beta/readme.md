@@ -2,6 +2,7 @@
 
 ## Description
 
+This is the common base needed for [Democracy](https://github.com/aragon/dao-kits/blob/master/kits/democracy/readme.md) and [Multisig](https://github.com/aragon/dao-kits/blob/master/kits/multisig/readme.md) templates, both in separate packages in this repo.
 In both templates, a Voting app is created that has power over all important
 functionality in the organization.
 
@@ -42,30 +43,7 @@ On success it will emit a `DeployToken(token, cacheOwner)` event.
 - On success it will emit a `DeployInstance(dao, token)` event.
 - Requires `cacheOwner` to send this transaction too.
 
-#### Democracy Template
-
-```
-demTemp.newInstance(name, holders, stakes, supportNeeded, minAcceptanceQuorum, voteDuration)
-```
-
-- `name`: Name for org, will assign `[name].aragonid.eth` (check capitalization).
-- `holders`: Array of token holder addresses.
-- `stakes`: Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`)
-- `supportNeeded, minAcceptanceQuorum, voteDuration`: Check [Voting app spec]
-(https://wiki.aragon.one/dev/apps/voting/).
-
-
-#### Multisig Template
-
-```
-msTemp.newInstance(name, signers, neededSignatures)
-```
-
-- `name`: Name for org, will assign `[name].aragonid.eth` (check capitalization).
-- `signers`: Array of addresses that are the multisig signatoires
-(they will be issued 1 token).
-- `neededSignatures`: Number of signers that need to sign to execute an action
-(parametrized Voting app under the hood).
+Then see each template documentation for each specific transactions.
 
 ## ENS, APM and aragonID
 

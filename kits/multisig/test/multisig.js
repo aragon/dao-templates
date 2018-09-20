@@ -1,0 +1,197 @@
+const getBlockNumber = require('@aragon/test-helpers/blockNumber')(web3)
+const getBlock = require('@aragon/test-helpers/block')(web3)
+//const timeTravel = require('@aragon/test-helpers/timeTravel')(web3)
+const getBalance = require('@aragon/test-helpers/balance')(web3)
+const namehash = require('eth-ens-namehash').hash
+const keccak256 = require('js-sha3').keccak_256
+
+const { encodeCallScript, EMPTY_SCRIPT } = require('@aragon/test-helpers/evmScript')
+
+const Voting = artifacts.require('Voting')
+
+const apps = ['finance', 'token-manager', 'vault', 'voting']
+const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).appName))
+
+const getContract = name => artifacts.require(name)
+const getTemplate = (indexObj, templateName) => getContract(templateName).at(indexObj.networks['devnet'].templates.filter(x => x.name == templateName)[0].address)
+const pct16 = x => new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
+const getEventResult = (receipt, event, param) => receipt.logs.filter(l => l.event == event)[0].args[param]
+const createdVoteId = receipt => getEventResult(receipt, 'StartVote', 'voteId')
+const getAppProxy = (receipt, id) => receipt.logs.filter(l => l.event == 'InstalledApp' && l.args.appId == id)[0].args.appProxy
+
+
+contract('Multisig Template', accounts => {
+    const ETH = '0x0'
+    let daoAddress, tokenAddress
+    let template, receiptInstance, voting
+    const owner = process.env.OWNER //'0x1f7402f55e142820ea3812106d0657103fc1709e'
+    const holder20 = accounts[6]
+    const holder29 = accounts[7]
+    const holder51 = accounts[8]
+    const nonHolder = accounts[9]
+    let indexObj = require('../index_local.js')
+
+    const signers = [holder20, holder29, holder51]
+    const neededSignatures = 2
+    const multisigSupport = new web3.BigNumber(10 ** 18).times(neededSignatures).dividedToIntegerBy(signers.length).minus(1)
+
+    before(async () => {
+        // transfer some ETH to other accounts
+        await web3.eth.sendTransaction({ from: owner, to: holder20, value: web3.toWei(1, 'ether') })
+        await web3.eth.sendTransaction({ from: owner, to: holder29, value: web3.toWei(1, 'ether') })
+        await web3.eth.sendTransaction({ from: owner, to: holder51, value: web3.toWei(1, 'ether') })
+        await web3.eth.sendTransaction({ from: owner, to: nonHolder, value: web3.toWei(1, 'ether') })
+
+        // create Democracy Template
+        template = await getTemplate(indexObj, 'MultisigTemplate')
+        // create Token
+        const receiptToken = await template.newToken('MultisigToken', 'MTT')
+        tokenAddress = getEventResult(receiptToken, 'DeployToken', 'token')
+        // create Instance
+        receiptInstance = await template.newInstance('MultisigDao', signers, neededSignatures)
+        daoAddress = getEventResult(receiptInstance, 'DeployInstance', 'dao')
+        // generated Voting app
+        const votingProxyAddress = getAppProxy(receiptInstance, appIds[3])
+        voting = Voting.at(votingProxyAddress)
+    })
+
+    context('Creating a DAO and signing', () => {
+
+        it('creates and initializes a DAO with its Token', async() => {
+            assert.notEqual(tokenAddress, '0x0', 'Token not generated')
+            assert.notEqual(daoAddress, '0x0', 'Instance not generated')
+            assert.equal((await voting.supportRequiredPct()).toString(), multisigSupport.toString())
+            assert.equal((await voting.minAcceptQuorumPct()).toString(), multisigSupport.toString())
+            const maxUint64 = new web3.BigNumber(2).pow(64).minus(1)
+            // TODO assert.equal((await voting.voteTime()).toString(), maxUint64.toString())
+            // check that it's initialized and can not be initialized again
+            try {
+                await voting.initialize(tokenAddress, 1e18, 1e18, 1000)
+            } catch (err) {
+                assert.equal(err.receipt.status, 0, "It should have thrown")
+                return
+            }
+            assert.isFalse(true, "It should have thrown")
+        })
+
+        context('creating vote', () => {
+            let voteId = {}
+            let executionTarget = {}, script
+
+            beforeEach(async () => {
+                executionTarget = await getContract('ExecutionTarget').new()
+                const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
+                script = encodeCallScript([action, action])
+                voteId = createdVoteId(await voting.newVote(script, 'metadata', true, true, { from: owner }))
+            })
+
+            it('has correct state', async() => {
+                const [isOpen, isExecuted, creator, startDate, snapshotBlock, requiredSupport, minQuorum, y, n, totalVoters, execScript] = await voting.getVote(voteId)
+
+                assert.isTrue(isOpen, 'vote should be open')
+                assert.isFalse(isExecuted, 'vote should be executed')
+                assert.equal(creator, owner, 'creator should be correct')
+                assert.equal(snapshotBlock, await getBlockNumber() - 1, 'snapshot block should be correct')
+                assert.equal(requiredSupport.toString(), multisigSupport.toString(), 'min quorum should be app min quorum')
+                assert.equal(minQuorum.toString(), multisigSupport.toString(), 'min quorum should be app min quorum')
+                assert.equal(y, 0, 'initial yea should be 0')
+                assert.equal(n, 0, 'initial nay should be 0')
+                assert.equal(totalVoters.toString(), signers.length, 'total voters should be number of signers')
+                assert.equal(execScript, script, 'script should be correct')
+                assert.equal(await voting.getVoteMetadata(voteId), 'metadata', 'should have returned correct metadata')
+            })
+
+            it('holder can vote', async () => {
+                await voting.vote(voteId, false, true, { from: holder29 })
+                const state = await voting.getVote(voteId)
+
+                assert.equal(state[8].toString(), 1, 'nay vote should have been counted')
+            })
+
+            it('holder can modify vote', async () => {
+                await voting.vote(voteId, true, true, { from: holder29 })
+                await voting.vote(voteId, false, true, { from: holder29 })
+                await voting.vote(voteId, true, true, { from: holder29 })
+                const state = await voting.getVote(voteId)
+
+                assert.equal(state[7].toString(), 1, 'yea vote should have been counted')
+                assert.equal(state[8], 0, 'nay vote should have been removed')
+            })
+
+            it('throws when non-holder votes', async () => {
+                try {
+                    await voting.vote(voteId, true, true, { from: nonHolder })
+                } catch (err) {
+                    assert.equal(err.receipt.status, 0, "It should have thrown")
+                    return
+                }
+                assert.isFalse(true, "It should have thrown")
+            })
+
+            it('automatically executes if vote is approved by enough signers', async () => {
+                await voting.vote(voteId, true, true, { from: holder29 })
+                await voting.vote(voteId, true, true, { from: holder20 })
+                assert.equal((await executionTarget.counter()).toString(), 2, 'should have executed result')
+            })
+
+            it('cannot execute vote if not enough signatures', async () => {
+                await voting.vote(voteId, true, true, { from: holder20 })
+                assert.equal(await executionTarget.counter(), 0, 'should have not executed result')
+                try {
+                    await voting.executeVote(voteId, {from: owner})
+                } catch (err) {
+                    assert.equal(err.receipt.status, 0, "It should have thrown")
+                    return
+                }
+                assert.isFalse(true, "It should have thrown")
+            })
+        })
+    })
+
+    context('finance access', () => {
+        let financeProxyAddress, finance, vaultProxyAddress, vault, voteId = {}, script
+        const payment = new web3.BigNumber(2e16)
+        beforeEach(async () => {
+            // generated Finance app
+            financeProxyAddress = getAppProxy(receiptInstance, appIds[0])
+            finance = getContract('Finance').at(financeProxyAddress)
+            // generated Vault app
+            vaultProxyAddress = getAppProxy(receiptInstance, appIds[2])
+            vault = getContract('Vault').at(vaultProxyAddress)
+            // Fund Finance
+            //await logBalances(financeProxyAddress, vaultProxyAddress)
+            await finance.sendTransaction({ value: payment, from: owner })
+            //await logBalances(financeProxyAddress, vaultProxyAddress)
+            const action = { to: financeProxyAddress, calldata: finance.contract.newPayment.getData(ETH, nonHolder, payment, 0, 0, 1, "voting payment") }
+            script = encodeCallScript([action])
+            voteId = createdVoteId(await voting.newVote(script, 'metadata', true, true, { from: owner }))
+        })
+
+        it('finance can not be accessed directly (without a vote)', async () => {
+            try {
+                await finance.newPayment(ETH, nonHolder, 2e16, 0, 0, 1, "voting payment")
+            } catch (err) {
+                assert.equal(err.receipt.status, 0, "It should have thrown")
+                return
+            }
+            assert.isFalse(true, "It should have thrown")
+        })
+
+        it('transfers funds if vote is approved', async () => {
+            const receiverInitialBalance = await getBalance(nonHolder)
+            //await logBalances(financeProxyAddress, vaultProxyAddress)
+            await voting.vote(voteId, true, true, { from: holder29 })
+            await voting.vote(voteId, true, true, { from: holder20 })
+            //await logBalances(financeProxyAddress, vaultProxyAddress)
+            assert.equal((await getBalance(nonHolder)).toString(), receiverInitialBalance.plus(payment).toString(), 'Receiver didn\'t get the payment')
+        })
+    })
+
+    const logBalances = async(financeProxyAddress, vaultProxyAddress) => {
+        console.log('Owner ETH: ' + await getBalance(owner))
+        console.log('Finance ETH: ' + await getBalance(financeProxyAddress))
+        console.log('Vault ETH: ' + await getBalance(vaultProxyAddress))
+        console.log('Receiver ETH: ' + await getBalance(nonHolder))
+        console.log('-----------------')
+    }
+})

@@ -1,6 +1,6 @@
 pragma solidity 0.4.24;
 
-import "./BetaTemplateBase.sol";
+import "@aragon/kits-beta/contracts/BetaTemplateBase.sol";
 
 
 contract DemocracyTemplate is BetaTemplateBase {
