@@ -63,7 +63,7 @@ module.exports = async (callback) => {
   const minimeFac = await MiniMeTokenFactory.new()
 
   const aragonid = await ens.owner(namehash('aragonid.eth'))
-  const tmpls = await deployMany(templates, [daoFactory.address, minimeFac.address, apmAddr, aragonid, appIds])
+  const tmpls = await deployMany(templates, [daoFactory.address, ens.address, minimeFac.address, aragonid, appIds])
 
   const ts = tmpls.map((address, i) => ({ name: templates[i], address }) )
 

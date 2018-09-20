@@ -1,6 +1,5 @@
 pragma solidity 0.4.24;
 
-import "@aragon/os/contracts/apm/APMRegistry.sol";
 import "@aragon/os/contracts/factory/DAOFactory.sol";
 import "@aragon/os/contracts/kernel/Kernel.sol";
 import "@aragon/os/contracts/acl/ACL.sol";
@@ -13,10 +12,10 @@ import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/apps-finance/contracts/Finance.sol";
 
+import "@aragon/kits-bare/contracts/KitBase.sol";
 
-contract BetaTemplateBase {
-    APMRegistry public apm;
-    DAOFactory public fac;
+
+contract BetaTemplateBase is KitBase {
     MiniMeTokenFactory public minimeFac;
     IFIFSResolvingRegistrar public aragonID;
     bytes32[4] public appIds;
@@ -34,15 +33,14 @@ contract BetaTemplateBase {
 
     constructor(
         DAOFactory _fac,
+        ENS _ens,
         MiniMeTokenFactory _minimeFac,
-        APMRegistry _apm,
         IFIFSResolvingRegistrar _aragonID,
         bytes32[4] _appIds
     )
+        KitBase(_fac, _ens)
         public
     {
-        apm = _apm;
-        fac = _fac;
         minimeFac = _minimeFac;
         aragonID = _aragonID;
         appIds = _appIds;
@@ -107,13 +105,8 @@ contract BetaTemplateBase {
         finance.initialize(vault, uint64(-1) - uint64(now)); // yuge period
 
         // clean-up
-        acl.grantPermission(voting, dao, dao.APP_MANAGER_ROLE());
-        acl.setPermissionManager(voting, dao, dao.APP_MANAGER_ROLE());
-        acl.grantPermission(voting, acl, acl.CREATE_PERMISSIONS_ROLE());
-        acl.setPermissionManager(voting, acl, acl.CREATE_PERMISSIONS_ROLE());
-        acl.grantPermission(voting, tokenManager, tokenManager.MINT_ROLE());
-        acl.setPermissionManager(voting, tokenManager, tokenManager.MINT_ROLE());
-        // no revokes to save gas as factory can't do anything to orgs (clutters acl representation)
+        cleanupDAOPermissions(dao, acl, voting);
+        cleanupPermission(acl, voting, tokenManager, tokenManager.MINT_ROLE());
 
         registerAragonID(name, dao);
         emit DeployInstance(dao, token);
@@ -138,17 +131,5 @@ contract BetaTemplateBase {
 
     function registerAragonID(string name, address owner) internal {
         aragonID.register(keccak256(abi.encodePacked(name)), owner);
-    }
-
-    /* solium-disable-next-line */
-    function latestVersionAppBase(bytes32 appId) public view returns (address base) {
-        Repo repo = Repo(PublicResolver(ens().resolver(appId)).addr(appId));
-        (,base,) = repo.getLatest();
-
-        return base;
-    }
-
-    function ens() internal view returns (AbstractENS) {
-        return apm.registrar().ens();
     }
 }

@@ -6,12 +6,12 @@ import "./BetaTemplateBase.sol";
 contract DemocracyTemplate is BetaTemplateBase {
     constructor(
         DAOFactory _fac,
+        ENS _ens,
         MiniMeTokenFactory _minimeFac,
-        APMRegistry _apm,
         IFIFSResolvingRegistrar _aragonID,
         bytes32[4] _appIds
     )
-        BetaTemplateBase(_fac, _minimeFac, _apm, _aragonID, _appIds)
+        BetaTemplateBase(_fac, _ens, _minimeFac, _aragonID, _appIds)
         public
     {}
 
