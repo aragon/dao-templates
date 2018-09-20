@@ -5,6 +5,7 @@ import "@aragon/os/contracts/apm/Repo.sol";
 import "@aragon/os/contracts/lib/ens/ENS.sol";
 import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
 
+
 contract KitBase {
     ENS public ens;
     DAOFactory public fac;
@@ -22,5 +23,19 @@ contract KitBase {
         (,base,) = repo.getLatest();
 
         return base;
+    }
+
+    function cleanupDAOPermissions(Kernel dao, ACL acl, address root) internal {
+        // Kernel permission clean up
+        cleanupPermission(acl, root, dao, dao.APP_MANAGER_ROLE());
+
+        // ACL permission clean up
+        cleanupPermission(acl, root, acl, acl.CREATE_PERMISSIONS_ROLE());
+    }
+
+    function cleanupPermission(ACL acl, address root, address app, bytes32 permission) internal {
+        acl.grantPermission(root, app, permission);
+        acl.revokePermission(this, app, permission);
+        acl.setPermissionManager(root, app, permission);
     }
 }
