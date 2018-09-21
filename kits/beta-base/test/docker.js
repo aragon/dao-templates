@@ -10,7 +10,7 @@ const getContract = name => artifacts.require(name)
 const getEventResult = (receipt, event, param) => receipt.logs.filter(l => l.event == event)[0].args[param]
 const getAppProxy = (receipt, id) => receipt.logs.filter(l => l.event == 'InstalledApp' && l.args.appId == id)[0].args.appProxy
 
-contract('Beta Base Template', accounts => {
+contract('Beta Base Kit', accounts => {
     let beta, tokenAddress
     const owner = process.env.OWNER //'0x1f7402f55e142820ea3812106d0657103fc1709e'
     const indexObj = require('../index_local.js')
@@ -23,8 +23,8 @@ contract('Beta Base Template', accounts => {
         const aragonId = await ens.owner(namehash('aragonid.eth'))
         const { daoFactory } = await deployDAOFactory(null, { artifacts, verbose: false })
 
-        // Beta base template
-        beta = await getContract('BetaTemplateBaseMock').new(daoFactory.address, ensAddress, minimeFac.address, aragonId, appIds)
+        // Beta base kit
+        beta = await getContract('BetaKitBaseMock').new(daoFactory.address, ensAddress, minimeFac.address, aragonId, appIds)
 
         // Token
         const tokenReceipt = await beta.newToken('test', 'TST')

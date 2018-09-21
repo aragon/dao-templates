@@ -1,9 +1,9 @@
 pragma solidity 0.4.24;
 
-import "../../BetaTemplateBase.sol";
+import "../../BetaKitBase.sol";
 
 
-contract BetaTemplateBaseMock is BetaTemplateBase {
+contract BetaKitBaseMock is BetaKitBase {
     event CreateToken(address token);
     event PopToken(address token);
 
@@ -14,7 +14,7 @@ contract BetaTemplateBaseMock is BetaTemplateBase {
         IFIFSResolvingRegistrar _aragonID,
         bytes32[4] _appIds
     )
-        BetaTemplateBase(_fac, _ens, _minimeFac, _aragonID, _appIds)
+        BetaKitBase(_fac, _ens, _minimeFac, _aragonID, _appIds)
         public
     {}
 

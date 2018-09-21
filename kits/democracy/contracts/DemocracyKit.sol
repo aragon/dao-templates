@@ -1,9 +1,11 @@
 pragma solidity 0.4.24;
 
-import "@aragon/kits-beta/contracts/BetaTemplateBase.sol";
+import "@aragon/kits-beta/contracts/BetaKitBase.sol";
 
 
-contract DemocracyTemplate is BetaTemplateBase {
+contract DemocracyKit is BetaKitBase {
+    address constant NO_ENTITY = address(0);
+
     constructor(
         DAOFactory _fac,
         ENS _ens,
@@ -11,7 +13,7 @@ contract DemocracyTemplate is BetaTemplateBase {
         IFIFSResolvingRegistrar _aragonID,
         bytes32[4] _appIds
     )
-        BetaTemplateBase(_fac, _ens, _minimeFac, _aragonID, _appIds)
+        BetaKitBase(_fac, _ens, _minimeFac, _aragonID, _appIds)
         public
     {}
 
@@ -51,5 +53,10 @@ contract DemocracyTemplate is BetaTemplateBase {
             minAcceptanceQuorum,
             voteDuration
         );
+
+        // burn support modification permission
+        ACL acl = ACL(Kernel(voting.kernel()).acl());
+        acl.createPermission(NO_ENTITY, voting, voting.MODIFY_SUPPORT_ROLE(), NO_ENTITY);
+        cleanupPermission(acl, voting, acl, acl.CREATE_PERMISSIONS_ROLE());
     }
 }

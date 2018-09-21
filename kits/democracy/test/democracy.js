@@ -13,17 +13,17 @@ const apps = ['finance', 'token-manager', 'vault', 'voting']
 const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).appName))
 
 const getContract = name => artifacts.require(name)
-const getTemplate = (indexObj, templateName) => getContract(templateName).at(indexObj.networks['devnet'].templates.filter(x => x.name == templateName)[0].address)
+const getKit = (indexObj, kitName) => getContract(kitName).at(indexObj.networks['devnet'].kits.filter(x => x.name == kitName)[0].address)
 const pct16 = x => new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
 const getEventResult = (receipt, event, param) => receipt.logs.filter(l => l.event == event)[0].args[param]
 const createdVoteId = receipt => getEventResult(receipt, 'StartVote', 'voteId')
 const getAppProxy = (receipt, id) => receipt.logs.filter(l => l.event == 'InstalledApp' && l.args.appId == id)[0].args.appProxy
 
 
-contract('Democracy Template', accounts => {
+contract('Democracy Kit', accounts => {
     const ETH = '0x0'
     let daoAddress, tokenAddress
-    let template, receiptInstance, voting
+    let kit, receiptInstance, voting
 
     const owner = process.env.OWNER //'0x1f7402f55e142820ea3812106d0657103fc1709e'
     const holder20 = accounts[6]
@@ -43,16 +43,19 @@ contract('Democracy Template', accounts => {
         await web3.eth.sendTransaction({ from: owner, to: holder51, value: web3.toWei(1, 'ether') })
         await web3.eth.sendTransaction({ from: owner, to: nonHolder, value: web3.toWei(1, 'ether') })
 
-        // create Democracy Template
-        template = await getTemplate(indexObj, 'DemocracyTemplate')
+        // create Democracy Kit
+        kit = await getKit(indexObj, 'DemocracyKit')
         const holders = [holder20, holder29, holder51]
         const stakes = [20e18, 29e18, 51e18]
+
         // create Token
-        const receiptToken = await template.newToken('DemocracyToken', 'DTT', { from: owner })
+        const receiptToken = await kit.newToken('DemocracyToken', 'DTT', { from: owner })
         tokenAddress = getEventResult(receiptToken, 'DeployToken', 'token')
+
         // create Instance
-        receiptInstance = await template.newInstance('DemocracyDao', holders, stakes, neededSupport, minimumAcceptanceQuorum, votingTime, { from: owner })
+        receiptInstance = await kit.newInstance('DemocracyDao-' + Math.random() * 1000, holders, stakes, neededSupport, minimumAcceptanceQuorum, votingTime, { from: owner })
         daoAddress = getEventResult(receiptInstance, 'DeployInstance', 'dao')
+
         // generated Voting app
         const votingProxyAddress = getAppProxy(receiptInstance, appIds[3])
         voting = Voting.at(votingProxyAddress)
@@ -64,10 +67,10 @@ contract('Democracy Template', accounts => {
             const holders = [holder20, holder29, holder51]
             const stakes = [20e18, 29e18]
             // create Token
-            await template.newToken('BadDemocracyToken', 'DTT')
+            await kit.newToken('BadDemocracyToken', 'DTT')
             // create Instance
             try {
-                await template.newInstance('BadDemocracyDao', holders, stakes, neededSupport, minimumAcceptanceQuorum, votingTime)
+                await kit.newInstance('BadDemocracyDao', holders, stakes, neededSupport, minimumAcceptanceQuorum, votingTime)
             } catch (err) {
                 assert.equal(err.receipt.status, 0, "It should have thrown")
                 return
@@ -84,6 +87,16 @@ contract('Democracy Template', accounts => {
             // check that it's initialized and can not be initialized again
             try {
                 await voting.initialize(tokenAddress, neededSupport, minimumAcceptanceQuorum, votingTime)
+            } catch (err) {
+                assert.equal(err.receipt.status, 0, "It should have thrown")
+                return
+            }
+            assert.isFalse(true, "It should have thrown")
+        })
+
+        it('fails trying to modify support threshold', async () => {
+            try {
+                await voting.changeSupportRequiredPct(neededSupport.add(1))
             } catch (err) {
                 assert.equal(err.receipt.status, 0, "It should have thrown")
                 return

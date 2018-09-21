@@ -10,7 +10,6 @@ contract ExecutionTarget {
     }
 
     function failExecute() public pure {
-        // solium-disable-next-line error-reason
         revert();
     }
 

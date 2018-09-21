@@ -1,5 +1,5 @@
 const abis = {
-  DemocracyTemplate: require('../build/contracts/DemocracyTemplate').abi,
+  DemocracyKit: require('../build/contracts/DemocracyKit').abi,
 }
 
 require('fs').writeFileSync('abis.json', JSON.stringify(abis, null, 2))

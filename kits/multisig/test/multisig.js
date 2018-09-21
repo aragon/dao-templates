@@ -13,42 +13,42 @@ const apps = ['finance', 'token-manager', 'vault', 'voting']
 const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).appName))
 
 const getContract = name => artifacts.require(name)
-const getTemplate = (indexObj, templateName) => getContract(templateName).at(indexObj.networks['devnet'].templates.filter(x => x.name == templateName)[0].address)
+const getKit = (indexObj, kitName) => getContract(kitName).at(indexObj.networks['devnet'].kits.filter(x => x.name == kitName)[0].address)
 const pct16 = x => new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
 const getEventResult = (receipt, event, param) => receipt.logs.filter(l => l.event == event)[0].args[param]
 const createdVoteId = receipt => getEventResult(receipt, 'StartVote', 'voteId')
 const getAppProxy = (receipt, id) => receipt.logs.filter(l => l.event == 'InstalledApp' && l.args.appId == id)[0].args.appProxy
 
 
-contract('Multisig Template', accounts => {
+contract('Multisig Kit', accounts => {
     const ETH = '0x0'
     let daoAddress, tokenAddress
-    let template, receiptInstance, voting
+    let kit, receiptInstance, voting
     const owner = process.env.OWNER //'0x1f7402f55e142820ea3812106d0657103fc1709e'
-    const holder20 = accounts[6]
-    const holder29 = accounts[7]
-    const holder51 = accounts[8]
+    const signer1 = accounts[6]
+    const signer2 = accounts[7]
+    const signer3 = accounts[8]
     const nonHolder = accounts[9]
     let indexObj = require('../index_local.js')
 
-    const signers = [holder20, holder29, holder51]
+    const signers = [signer1, signer2, signer3]
     const neededSignatures = 2
     const multisigSupport = new web3.BigNumber(10 ** 18).times(neededSignatures).dividedToIntegerBy(signers.length).minus(1)
 
     before(async () => {
         // transfer some ETH to other accounts
-        await web3.eth.sendTransaction({ from: owner, to: holder20, value: web3.toWei(1, 'ether') })
-        await web3.eth.sendTransaction({ from: owner, to: holder29, value: web3.toWei(1, 'ether') })
-        await web3.eth.sendTransaction({ from: owner, to: holder51, value: web3.toWei(1, 'ether') })
+        await web3.eth.sendTransaction({ from: owner, to: signer1, value: web3.toWei(1, 'ether') })
+        await web3.eth.sendTransaction({ from: owner, to: signer2, value: web3.toWei(1, 'ether') })
+        await web3.eth.sendTransaction({ from: owner, to: signer3, value: web3.toWei(1, 'ether') })
         await web3.eth.sendTransaction({ from: owner, to: nonHolder, value: web3.toWei(1, 'ether') })
 
-        // create Democracy Template
-        template = await getTemplate(indexObj, 'MultisigTemplate')
+        // create Multisig Kit
+        kit = await getKit(indexObj, 'MultisigKit')
         // create Token
-        const receiptToken = await template.newToken('MultisigToken', 'MTT')
+        const receiptToken = await kit.newToken('MultisigToken', 'MTT')
         tokenAddress = getEventResult(receiptToken, 'DeployToken', 'token')
         // create Instance
-        receiptInstance = await template.newInstance('MultisigDao', signers, neededSignatures)
+        receiptInstance = await kit.newInstance('MultisigDao-' + Math.random() * 1000, signers, neededSignatures)
         daoAddress = getEventResult(receiptInstance, 'DeployInstance', 'dao')
         // generated Voting app
         const votingProxyAddress = getAppProxy(receiptInstance, appIds[3])
@@ -73,6 +73,36 @@ contract('Multisig Template', accounts => {
             }
             assert.isFalse(true, "It should have thrown")
         })
+
+        it('fails trying to modify support threshold directly', async () => {
+            try {
+                await voting.changeSupportRequiredPct(multisigSupport.add(1), { from: owner })
+            } catch (err) {
+                assert.equal(err.receipt.status, 0, "It should have thrown")
+                return
+            }
+            assert.isFalse(true, "It should have thrown")
+        })
+
+        /* TODO
+        it('changes support threshold thru voting', async () => {
+            const action = { to: voting.address, calldata: voting.contract.changeSupportRequiredPct.getData(multisigSupport.add(1)) }
+            const script = encodeCallScript([action, action])
+            const voteId1 = createdVoteId(await voting.newVote(script, 'metadata', true, true, { from: signer1 }))
+            await voting.vote(voteId1, true, true, { from: signer1 })
+            await voting.vote(voteId1, true, true, { from: signer2 })
+            const executionTarget = await getContract('ExecutionTarget').new()
+            await executionTarget.execute()
+            const vote = await voting.getVote(voteId1)
+            assert.equal(vote[5], multisigSupport.add(1), 'Support should have changed')
+            // back to original value
+            const action = { to: voting.address, calldata: voting.contract.changeSupportRequiredPct.getData(multisigSupport) }
+            const script = encodeCallScript([action, action])
+            const voteId2 = createdVoteId(await voting.newVote(script, 'metadata', true, true, { from: signer1 }))
+            await voting.vote(voteId2, true, true, { from: signer1 })
+            await voting.vote(voteId2, true, true, { from: signer2 })
+        })
+         */
 
         context('creating vote', () => {
             let voteId = {}
@@ -102,16 +132,16 @@ contract('Multisig Template', accounts => {
             })
 
             it('holder can vote', async () => {
-                await voting.vote(voteId, false, true, { from: holder29 })
+                await voting.vote(voteId, false, true, { from: signer2 })
                 const state = await voting.getVote(voteId)
 
                 assert.equal(state[8].toString(), 1, 'nay vote should have been counted')
             })
 
             it('holder can modify vote', async () => {
-                await voting.vote(voteId, true, true, { from: holder29 })
-                await voting.vote(voteId, false, true, { from: holder29 })
-                await voting.vote(voteId, true, true, { from: holder29 })
+                await voting.vote(voteId, true, true, { from: signer2 })
+                await voting.vote(voteId, false, true, { from: signer2 })
+                await voting.vote(voteId, true, true, { from: signer2 })
                 const state = await voting.getVote(voteId)
 
                 assert.equal(state[7].toString(), 1, 'yea vote should have been counted')
@@ -129,13 +159,13 @@ contract('Multisig Template', accounts => {
             })
 
             it('automatically executes if vote is approved by enough signers', async () => {
-                await voting.vote(voteId, true, true, { from: holder29 })
-                await voting.vote(voteId, true, true, { from: holder20 })
+                await voting.vote(voteId, true, true, { from: signer2 })
+                await voting.vote(voteId, true, true, { from: signer1 })
                 assert.equal((await executionTarget.counter()).toString(), 2, 'should have executed result')
             })
 
             it('cannot execute vote if not enough signatures', async () => {
-                await voting.vote(voteId, true, true, { from: holder20 })
+                await voting.vote(voteId, true, true, { from: signer1 })
                 assert.equal(await executionTarget.counter(), 0, 'should have not executed result')
                 try {
                     await voting.executeVote(voteId, {from: owner})
@@ -180,8 +210,8 @@ contract('Multisig Template', accounts => {
         it('transfers funds if vote is approved', async () => {
             const receiverInitialBalance = await getBalance(nonHolder)
             //await logBalances(financeProxyAddress, vaultProxyAddress)
-            await voting.vote(voteId, true, true, { from: holder29 })
-            await voting.vote(voteId, true, true, { from: holder20 })
+            await voting.vote(voteId, true, true, { from: signer2 })
+            await voting.vote(voteId, true, true, { from: signer1 })
             //await logBalances(financeProxyAddress, vaultProxyAddress)
             assert.equal((await getBalance(nonHolder)).toString(), receiverInitialBalance.plus(payment).toString(), 'Receiver didn\'t get the payment')
         })
@@ -193,5 +223,9 @@ contract('Multisig Template', accounts => {
         console.log('Vault ETH: ' + await getBalance(vaultProxyAddress))
         console.log('Receiver ETH: ' + await getBalance(nonHolder))
         console.log('-----------------')
+    }
+
+    const sleep = function(s) {
+        return new Promise(resolve => setTimeout(resolve, s*1000));
     }
 })

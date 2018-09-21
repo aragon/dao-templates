@@ -15,7 +15,7 @@ import "@aragon/apps-finance/contracts/Finance.sol";
 import "@aragon/kits-bare/contracts/KitBase.sol";
 
 
-contract BetaTemplateBase is KitBase {
+contract BetaKitBase is KitBase {
     MiniMeTokenFactory public minimeFac;
     IFIFSResolvingRegistrar public aragonID;
     bytes32[4] public appIds;
@@ -89,7 +89,6 @@ contract BetaTemplateBase is KitBase {
         acl.createPermission(voting, tokenManager, tokenManager.ASSIGN_ROLE(), voting);
         acl.createPermission(voting, tokenManager, tokenManager.REVOKE_VESTINGS_ROLE(), voting);
 
-        // solium-disable-next-line error-reason
         require(holders.length == stakes.length);
 
         acl.createPermission(this, tokenManager, tokenManager.MINT_ROLE(), this);
@@ -105,7 +104,7 @@ contract BetaTemplateBase is KitBase {
         finance.initialize(vault, uint64(-1) - uint64(now)); // yuge period
 
         // clean-up
-        cleanupDAOPermissions(dao, acl, voting);
+        cleanupPermission(acl, voting, dao, dao.APP_MANAGER_ROLE());
         cleanupPermission(acl, voting, tokenManager, tokenManager.MINT_ROLE());
 
         registerAragonID(name, dao);
@@ -121,7 +120,6 @@ contract BetaTemplateBase is KitBase {
     }
 
     function popTokenCache(address owner) internal returns (MiniMeToken) {
-        // solium-disable-next-line error-reason
         require(tokenCache[owner] != address(0));
         MiniMeToken token = MiniMeToken(tokenCache[owner]);
         delete tokenCache[owner];

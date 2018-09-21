@@ -1,7 +1,5 @@
 pragma solidity 0.4.24;
 
-//import "@aragon/os/contracts/factory/APMRegistryFactory.sol";
-//import "@aragon/os/contracts/factory/ENSFactory.sol";
 import "@aragon/id/contracts/FIFSResolvingRegistrar.sol";
 import "@aragon/apps-shared-migrations/contracts/Migrations.sol";
 
@@ -18,6 +16,6 @@ import "@aragon/apps-shared-migrations/contracts/Migrations.sol";
 // You know which one I went for.
 
 
-contract TestTemplates {
+contract TestKits {
     // ...
 }

@@ -1,5 +1,5 @@
 const abis = {
-  MultisigTemplate: require('../build/contracts/MultisigTemplate').abi,
+  MultisigKit: require('../build/contracts/MultisigKit').abi,
 }
 
 require('fs').writeFileSync('abis.json', JSON.stringify(abis, null, 2))
