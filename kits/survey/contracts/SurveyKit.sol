@@ -1,33 +1,41 @@
-pragma solidity 0.4.18;
+pragma solidity 0.4.24;
 
+import "@aragon/os/contracts/apm/APMNamehash.sol";
 import "@aragon/os/contracts/apm/Repo.sol";
 import "@aragon/os/contracts/factory/DAOFactory.sol";
 import "@aragon/os/contracts/kernel/Kernel.sol";
 import "@aragon/os/contracts/acl/ACL.sol";
-import "@aragon/os/contracts/lib/minime/MiniMeToken.sol";
+import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 import "@aragon/os/contracts/lib/ens/ENS.sol";
 import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
-import "@aragon/os/contracts/ens/ENSConstants.sol";
 
 import "@aragon/apps-survey/contracts/Survey.sol";
 
 
-contract SurveyKit is ENSConstants {
+contract SurveyKit is APMNamehash {
     ENS public ens;
     DAOFactory public fac;
 
-    bytes32 constant public APM_NODE = keccak256(ETH_TLD_NODE, keccak256("aragonpm"));
-    bytes32 constant public SURVEY_APP_ID = keccak256(APM_NODE, keccak256("survey")); // survey.aragonpm.eth
+    bytes32 constant public SURVEY_APP_ID = apmNamehash("survey"); // survey.aragonpm.eth
 
     event DeployInstance(address dao);
     event InstalledApp(address appProxy, bytes32 appId);
 
-    function SurveyKit(DAOFactory _fac, ENS _ens) {
+    constructor(DAOFactory _fac, ENS _ens) public {
         ens = _ens;
         fac = _fac; // factory must be set up w/o EVMScript support
     }
 
-    function newInstance(MiniMeToken signalingToken, address surveyManager, address scapeHatch, uint64 duration, uint256 participation) returns (Kernel, Survey) {
+    function newInstance(
+        MiniMeToken signalingToken,
+        address surveyManager,
+        address scapeHatch,
+        uint64 duration,
+        uint256 participation
+    )
+        public
+        returns (Kernel, Survey)
+    {
         Kernel dao = fac.newDAO(this);
         ACL acl = ACL(dao.acl());
 
@@ -35,8 +43,8 @@ contract SurveyKit is ENSConstants {
 
         Survey survey = Survey(dao.newAppInstance(SURVEY_APP_ID, latestVersionAppBase(SURVEY_APP_ID))); 
 
-        // TODO: Set scapeHatch address as the default vault, in case a token rescue is required
-        // BLOCKED BY: https://github.com/aragon/aragonOS/pull/281
+        // Set scapeHatch address as the default vault, in case a token rescue is required
+        dao.setApp(dao.APP_BASES_NAMESPACE(), dao.DEFAULT_VAULT_APP_ID(), scapeHatch);
 
         survey.initialize(signalingToken, participation, duration);
 
@@ -48,8 +56,8 @@ contract SurveyKit is ENSConstants {
         acl.setPermissionManager(surveyManager, dao, dao.APP_MANAGER_ROLE());
         
 
-        InstalledApp(survey, SURVEY_APP_ID);
-        DeployInstance(dao);
+        emit InstalledApp(survey, SURVEY_APP_ID);
+        emit DeployInstance(dao);
 
         return (dao, survey);
     }

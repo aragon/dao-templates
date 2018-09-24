@@ -3,7 +3,7 @@ const fs = require('fs')
 
 const namehash = require('eth-ens-namehash').hash
 
-const daoFactoryMigration = require('@aragon/os/migrations/3_factory')
+const deployDAOFactory = require('@aragon/os/scripts/deploy-daofactory.js')
 const ENS = artifacts.require('@aragon/os/contracts/lib/ens/ENS.sol')
 const SurveyKit = artifacts.require('SurveyKit')
 
@@ -28,9 +28,9 @@ module.exports = async (deployer, network, accounts) => {
     }
   }
 
-  const { daoFact } = await daoFactoryMigration(deployer, network, accounts, artifacts)
+  const { daoFactory } = await deployDAOFactory(null, { artifacts, verbose: false })
 
-  const kit = await SurveyKit.new(daoFact.address, ens.address)
+  const kit = await SurveyKit.new(daoFactory.address, ens.address)
   console.log('SurveyKit:', kit.address)
 
   return

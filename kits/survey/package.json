@@ -13,11 +13,12 @@
   "license": "GPL-3.0",
   "devDependencies": {
     "eth-ens-namehash": "^2.0.8",
-    "truffle": "4.0.5",
+    "truffle": "4.1.14",
     "truffle-hdwallet-provider": "0.0.3"
   },
   "dependencies": {
-    "@aragon/apps-survey": "^0.0.1",
-    "@aragon/os": "^3.1.1"
+    "@aragon/apps-shared-minime": "^1.0.0",
+    "@aragon/apps-survey": "^1.0.0-beta.1",
+    "@aragon/os": "4.0.0-beta.2"
   }
 }
