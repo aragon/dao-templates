@@ -1,5 +1,5 @@
 {
-  "appName": "democracykit.aragonpm.eth",
+  "appName": "democracy-kit.aragonpm.eth",
   "version": "1.0.0",
   "roles": [],
   "path": "contracts/DemocracyKit.sol"

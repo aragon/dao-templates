@@ -84,25 +84,24 @@ contract('Multisig Kit', accounts => {
             assert.isFalse(true, "It should have thrown")
         })
 
-        /* TODO
         it('changes support threshold thru voting', async () => {
-            const action = { to: voting.address, calldata: voting.contract.changeSupportRequiredPct.getData(multisigSupport.add(1)) }
-            const script = encodeCallScript([action, action])
-            const voteId1 = createdVoteId(await voting.newVote(script, 'metadata', true, true, { from: signer1 }))
-            await voting.vote(voteId1, true, true, { from: signer1 })
+            const action1 = { to: voting.address, calldata: voting.contract.changeSupportRequiredPct.getData(multisigSupport.add(1)) }
+            const script1 = encodeCallScript([action1])
+            const voteId1 = createdVoteId(await voting.newVote(script1, 'metadata', true, true, { from: signer1 }))
             await voting.vote(voteId1, true, true, { from: signer2 })
-            const executionTarget = await getContract('ExecutionTarget').new()
-            await executionTarget.execute()
+            const supportThreshold1 = await voting.supportRequiredPct()
+            assert.equal(supportThreshold1.toString(), multisigSupport.add(1).toString(), 'Support should have changed')
             const vote = await voting.getVote(voteId1)
-            assert.equal(vote[5], multisigSupport.add(1), 'Support should have changed')
+            assert.equal(vote[5].toString(), multisigSupport.toString(), 'Support for previous vote should not have changed')
             // back to original value
-            const action = { to: voting.address, calldata: voting.contract.changeSupportRequiredPct.getData(multisigSupport) }
-            const script = encodeCallScript([action, action])
-            const voteId2 = createdVoteId(await voting.newVote(script, 'metadata', true, true, { from: signer1 }))
-            await voting.vote(voteId2, true, true, { from: signer1 })
+            const action2 = { to: voting.address, calldata: voting.contract.changeSupportRequiredPct.getData(multisigSupport) }
+            const script2 = encodeCallScript([action2])
+            const voteId2 = createdVoteId(await voting.newVote(script2, 'metadata', true, true, { from: signer1 }))
             await voting.vote(voteId2, true, true, { from: signer2 })
+            await voting.vote(voteId2, true, true, { from: signer3 })
+            const supportThreshold2 = await voting.supportRequiredPct()
+            assert.equal(supportThreshold2.toString(), multisigSupport.toString(), 'Support should have changed again')
         })
-         */
 
         context('creating vote', () => {
             let voteId = {}
