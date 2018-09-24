@@ -5,7 +5,7 @@ See [Beta templates description](https://github.com/aragon/dao-kits/blob/master/
 ## Usage
 
 ```
-msTemp.newInstance(name, signers, neededSignatures)
+multisig.newInstance(name, signers, neededSignatures)
 ```
 
 - `name`: Name for org, will assign `[name].aragonid.eth` (check capitalization).
@@ -24,3 +24,11 @@ Then just:
 ```
 npm run deploy:rinkeby
 ```
+
+## Gas usage
+
+Tested running `GAS_REPORTER=true truffle test --network devnet test/gas.js`
+
+- Create the Kit:      2842826
+- Create new token:    1708050
+- Deploy new instance: 5522866

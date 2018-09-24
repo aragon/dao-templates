@@ -5,7 +5,7 @@ See [Beta templates description](https://github.com/aragon/dao-kits/blob/master/
 ## Usage
 
 ```
-demTemp.newInstance(name, holders, stakes, supportNeeded, minAcceptanceQuorum, voteDuration)
+democracy.newInstance(name, holders, stakes, supportNeeded, minAcceptanceQuorum, voteDuration)
 ```
 
 - `name`: Name for org, will assign `[name].aragonid.eth` (check capitalization).
@@ -24,3 +24,11 @@ Then just:
 ```
 npm run deploy:rinkeby
 ```
+
+## Gas usage
+
+Tested running `GAS_REPORTER=true truffle test --network devnet test/gas.js`, plus `deploy-kit.js` script in `beta-base`.
+
+- Create the Kit:      2816197
+- Create new token:    1738117
+- Deploy new instance: 5502756
