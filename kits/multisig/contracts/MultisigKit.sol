@@ -62,6 +62,7 @@ contract MultisigKit is BetaKitBase {
         // support modification permission
         ACL acl = ACL(Kernel(voting.kernel()).acl());
         acl.createPermission(voting, voting, voting.MODIFY_SUPPORT_ROLE(), voting);
+
         cleanupPermission(acl, voting, acl, acl.CREATE_PERMISSIONS_ROLE());
     }
 }

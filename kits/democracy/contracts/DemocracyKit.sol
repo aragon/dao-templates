@@ -56,7 +56,7 @@ contract DemocracyKit is BetaKitBase {
 
         // burn support modification permission
         ACL acl = ACL(Kernel(voting.kernel()).acl());
-        acl.petrifyPermission(voting, voting.MODIFY_SUPPORT_ROLE());
+        acl.lockPermission(voting, voting.MODIFY_SUPPORT_ROLE());
 
         cleanupPermission(acl, voting, acl, acl.CREATE_PERMISSIONS_ROLE());
     }
