@@ -108,8 +108,7 @@ contract BetaKitBase is KitBase, IsContract {
         // Required for initializing the Token Manager
         token.changeController(tokenManager);
 
-        // Permissions
-        acl.createPermission(acl.ANY_ENTITY(), voting, voting.CREATE_VOTES_ROLE(), voting);
+        // permissions
         acl.createPermission(voting, voting, voting.MODIFY_QUORUM_ROLE(), voting);
 
         acl.createPermission(finance, vault, vault.TRANSFER_ROLE(), voting);
