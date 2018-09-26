@@ -24,6 +24,20 @@ Then just:
 npm run deploy:rinkeby
 ```
 
+## Permissions
+
+| App           | Permission       | Grantee | Manager |
+|---------------|------------------|---------|---------|
+| Voting        | MODIFY_QUORUM    | Voting  | Voting  |
+| Vault         | TRANSFER         | Finance | Voting  |
+| Finance       | CREATE_PAYMENTS  | Voting  | Voting  |
+| Finance       | EXECUTE_PAYMENTS | Voting  | Voting  |
+| Finance       | DISABLE_PAYMENTS | Voting  | Voting  |
+| Token Manager | ASSIGN           | Voting  | Voting  |
+| Token Manager | REVOKE_VESTINGS  | Voting  | Voting  |
+| Voting        | CREATE_VOTES     | Any     | Voting  |
+| Voting        | MODIFY_SUPPORT   | None    | None    |
+
 ## Gas usage
 
 Tested running `GAS_REPORTER=true truffle test --network devnet test/gas.js`, plus `deploy-kit.js` script in `beta-base`.
