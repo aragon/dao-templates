@@ -30,7 +30,7 @@ npm run deploy:rinkeby
 |---------------|------------------|---------|---------|
 | Voting        | CREATE_VOTES     | Any     | Voting  |
 | Voting        | MODIFY_QUORUM    | Voting  | Voting  |
-| Voting        | MODIFY_SUPPORT   | None    | None    |
+| Voting        | MODIFY_SUPPORT   | None    | Burned  |
 | Vault         | TRANSFER         | Finance | Voting  |
 | Finance       | CREATE_PAYMENTS  | Voting  | Voting  |
 | Finance       | EXECUTE_PAYMENTS | Voting  | Voting  |
