@@ -55,6 +55,13 @@ contract SurveyKit is APMNamehash {
         acl.grantPermission(surveyManager, dao, dao.APP_MANAGER_ROLE());
         acl.setPermissionManager(surveyManager, dao, dao.APP_MANAGER_ROLE());
 
+        /// EVMScriptRegistry permissions
+        EVMScriptRegistry reg = EVMScriptRegistry(dao.getApp(dao.APP_ADDR_NAMESPACE(), EVMSCRIPT_REGISTRY_APP_ID));
+        acl.createBurnedPermission(reg, reg.REGISTRY_ADD_EXECUTOR_ROLE());
+        acl.createBurnedPermission(reg, reg.REGISTRY_MANAGER_ROLE());
+
+        cleanupDAOPermissions(dao, acl, surveyManager);
+
         emit InstalledApp(survey, SURVEY_APP_ID);
         emit DeployInstance(dao);
 

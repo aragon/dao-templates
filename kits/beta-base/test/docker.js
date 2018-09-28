@@ -12,7 +12,8 @@ const getEventResult = (receipt, event, param) => receipt.logs.filter(l => l.eve
 const getAppProxy = (receipt, id) => receipt.logs.filter(l => l.event == 'InstalledApp' && l.args.appId == id)[0].args.appProxy
 
 contract('Beta Base Kit', accounts => {
-    let beta, tokenAddress
+    let beta, tokenAddress, daoAddress
+    let financeAddress, tokenManagerAddress, vaultAddress, votingAddress
     const owner = process.env.OWNER //'0x1f7402f55e142820ea3812106d0657103fc1709e'
     const indexObj = require('../index_local.js')
     const network = 'devnet' // TODO
@@ -34,13 +35,13 @@ contract('Beta Base Kit', accounts => {
 
     it('creates DAO', async() => {
         const daoReceipt = await beta.createDaoExt('Test-' + Math.random() * 1000, tokenAddress, [owner], [1], 1)
-        const daoAddress = getEventResult(daoReceipt, 'DeployInstance', 'dao')
+        daoAddress = getEventResult(daoReceipt, 'DeployInstance', 'dao')
         const tokenAddr = getEventResult(daoReceipt, 'DeployInstance', 'token')
         // generated Voting app
-        const financeAddress = getAppProxy(daoReceipt, appIds[0])
-        const tokenManagerAddress = getAppProxy(daoReceipt, appIds[1])
-        const vaultAddress = getAppProxy(daoReceipt, appIds[2])
-        const votingAddress = getAppProxy(daoReceipt, appIds[3])
+        financeAddress = getAppProxy(daoReceipt, appIds[0])
+        tokenManagerAddress = getAppProxy(daoReceipt, appIds[1])
+        vaultAddress = getAppProxy(daoReceipt, appIds[2])
+        votingAddress = getAppProxy(daoReceipt, appIds[3])
 
         assert.notEqual(daoAddress, '0x0', 'DAO not generated')
         assert.equal(tokenAddr, tokenAddress, 'Token address should match')
@@ -48,6 +49,41 @@ contract('Beta Base Kit', accounts => {
         assert.notEqual(tokenManagerAddress, '0x0', 'Token Manager not generated')
         assert.notEqual(vaultAddress, '0x0', 'Vault not generated')
         assert.notEqual(votingAddress, '0x0', 'Voting not generated')
+    })
+
+    it('has correct permissions', async () =>{
+        const dao = await getContract('Kernel').at(daoAddress)
+        const acl = await getContract('ACL').at(await dao.acl())
+
+        // app manager role
+        assert.equal(await acl.getPermissionManager(daoAddress, (await dao.APP_MANAGER_ROLE())), votingAddress, 'App manager role manager should match')
+
+        // evm script registry
+        const regConstants = await getContract('EVMScriptRegistryConstants').new()
+        const reg = await getContract('EVMScriptRegistry').at(await dao.getApp(await dao.APP_ADDR_NAMESPACE(), (await regConstants.EVMSCRIPT_REGISTRY_APP_ID())));
+        assert.equal(await acl.getPermissionManager(reg.address, (await reg.REGISTRY_ADD_EXECUTOR_ROLE())), votingAddress, 'Registry add executor role manager should match')
+        assert.equal(await acl.getPermissionManager(reg.address, (await reg.REGISTRY_MANAGER_ROLE())), votingAddress, 'Registry Manager role manager should match')
+
+        // voting
+        const voting = await getContract('Voting').at(votingAddress)
+        assert.equal(await acl.getPermissionManager(votingAddress, (await voting.MODIFY_QUORUM_ROLE())), votingAddress, 'Voting Modify quorum role manager should match')
+
+        // vault
+        const vault = await getContract('Vault').at(vaultAddress)
+        assert.equal(await acl.getPermissionManager(vaultAddress, (await vault.TRANSFER_ROLE())), votingAddress, 'Vault Transfer role role manager should match')
+        assert.isTrue(await acl.hasPermission(financeAddress, vaultAddress, (await vault.TRANSFER_ROLE())), 'Finance should have Vault Transfer role')
+
+        // finance
+        const finance = await getContract('Finance').at(financeAddress)
+        assert.equal(await acl.getPermissionManager(financeAddress, (await finance.CREATE_PAYMENTS_ROLE())), votingAddress, 'Finance Create Payments role manager should match')
+        assert.equal(await acl.getPermissionManager(financeAddress, (await finance.EXECUTE_PAYMENTS_ROLE())), votingAddress, 'Finance Execute Payments role manager should match')
+        assert.equal(await acl.getPermissionManager(financeAddress, (await finance.DISABLE_PAYMENTS_ROLE())), votingAddress, 'Finance Disable Payments role manager should match')
+
+        // token manager
+        const tokenManager = await getContract('TokenManager').at(tokenManagerAddress)
+        assert.equal(await acl.getPermissionManager(tokenManagerAddress, (await tokenManager.ASSIGN_ROLE())), votingAddress, 'Token Manager Assign role manager should match')
+        assert.equal(await acl.getPermissionManager(tokenManagerAddress, (await tokenManager.REVOKE_VESTINGS_ROLE())), votingAddress, 'Token Manager Revoke vestings role manager should match')
+
     })
 
     it('caches token and pops cached token', async  () => {
