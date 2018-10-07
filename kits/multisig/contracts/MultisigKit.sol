@@ -28,9 +28,11 @@ contract MultisigKit is BetaKitBase {
     }
 
     function newInstance(string name, address[] signers, uint256 neededSignatures) external {
-        require(signers.length > 0);
+        require(signers.length > 0 && neededSignatures > 0);
+        require(neededSignatures <= signers.length);
+        // We can avoid safemath checks here as it's very unlikely a user will pass in enough
+        // signers to cause this to overflow
         uint256 neededSignaturesE18 = neededSignatures * 10 ** 18;
-        require(neededSignaturesE18 >= signers.length);
 
         uint256[] memory stakes = new uint256[](signers.length);
 
