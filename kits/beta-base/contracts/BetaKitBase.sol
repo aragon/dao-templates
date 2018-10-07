@@ -28,8 +28,6 @@ contract BetaKitBase is KitBase {
     event DeployToken(address token, address indexed cacheOwner);
     event DeployInstance(address dao, address indexed token);
 
-    address constant ANY_ENTITY = address(-1);
-
     constructor(
         DAOFactory _fac,
         ENS _ens,
@@ -79,8 +77,8 @@ contract BetaKitBase is KitBase {
 
         token.changeController(tokenManager); // sender has to create tokens
 
-        // permissions
-        acl.createPermission(ANY_ENTITY, voting, voting.CREATE_VOTES_ROLE(), voting);
+        // Permissions
+        acl.createPermission(acl.ANY_ENTITY(), voting, voting.CREATE_VOTES_ROLE(), voting);
         acl.createPermission(voting, voting, voting.MODIFY_QUORUM_ROLE(), voting);
 
         acl.createPermission(finance, vault, vault.TRANSFER_ROLE(), voting);
