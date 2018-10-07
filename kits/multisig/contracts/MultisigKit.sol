@@ -4,7 +4,6 @@ import "@aragon/kits-beta/contracts/BetaKitBase.sol";
 
 
 contract MultisigKit is BetaKitBase {
-
     constructor(
         DAOFactory _fac,
         ENS _ens,
@@ -52,7 +51,7 @@ contract MultisigKit is BetaKitBase {
         // We are subtracting 1 because comparison in Voting app is strict,
         // while Multisig needs to allow equal too. So for instance in 2 out of 4
         // multisig, we would define 50 * 10 ^ 16 - 1 instead of just 50 * 10 ^ 16,
-        // so 2 signatures => 2 * 10 ^ 18 / 4 = 50 * 10 ^ 16 > 50 * 10 ^ 16 - 1 would pas
+        // so 2 signatures => 2 * 10 ^ 18 / 4 = 50 * 10 ^ 16 > 50 * 10 ^ 16 - 1 would pass
         uint256 multisigSupport = neededSignaturesE18 / signers.length - 1;
         voting.initialize(
             token,
@@ -61,7 +60,7 @@ contract MultisigKit is BetaKitBase {
             1825 days // ~5 years
         );
 
-        // support modification permission
+        // Include support modification permission to handle changes to the multisig's size
         ACL acl = ACL(Kernel(voting.kernel()).acl());
         acl.createPermission(voting, voting, voting.MODIFY_SUPPORT_ROLE(), voting);
 

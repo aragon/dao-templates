@@ -75,7 +75,8 @@ contract BetaKitBase is KitBase {
         );
         emit InstalledApp(tokenManager, appIds[uint8(Apps.TokenManager)]);
 
-        token.changeController(tokenManager); // sender has to create tokens
+        // Required for initializing the Token Manager
+        token.changeController(tokenManager);
 
         // Permissions
         acl.createPermission(acl.ANY_ENTITY(), voting, voting.CREATE_VOTES_ROLE(), voting);
@@ -93,20 +94,21 @@ contract BetaKitBase is KitBase {
         finance.initialize(vault, uint64(-1) - uint64(now)); // yuge period
         tokenManager.initialize(token, _maxTokens > 1, _maxTokens);
 
+        // Set up the token stakes
         acl.createPermission(this, tokenManager, tokenManager.MINT_ROLE(), this);
 
         for (uint256 i = 0; i < holders.length; i++) {
             tokenManager.mint(holders[i], stakes[i]);
         }
 
-        // clean-up
+        // Clean-up
         cleanupPermission(acl, voting, dao, dao.APP_MANAGER_ROLE());
         cleanupPermission(acl, voting, tokenManager, tokenManager.MINT_ROLE());
 
         registerAragonID(name, dao);
         emit DeployInstance(dao, token);
 
-        // voting is returned so init can happen later
+        // Voting is returned so its init can happen later
         return voting;
     }
 

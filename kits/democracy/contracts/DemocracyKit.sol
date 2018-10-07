@@ -4,8 +4,6 @@ import "@aragon/kits-beta/contracts/BetaKitBase.sol";
 
 
 contract DemocracyKit is BetaKitBase {
-    address constant NO_ENTITY = address(0);
-
     constructor(
         DAOFactory _fac,
         ENS _ens,
@@ -54,7 +52,7 @@ contract DemocracyKit is BetaKitBase {
             voteDuration
         );
 
-        // burn support modification permission
+        // Burn support modification permission
         ACL acl = ACL(Kernel(voting.kernel()).acl());
         acl.createBurnedPermission(voting, voting.MODIFY_SUPPORT_ROLE());
 
