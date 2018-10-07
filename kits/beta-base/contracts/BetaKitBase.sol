@@ -88,18 +88,16 @@ contract BetaKitBase is KitBase {
         acl.createPermission(voting, tokenManager, tokenManager.ASSIGN_ROLE(), voting);
         acl.createPermission(voting, tokenManager, tokenManager.REVOKE_VESTINGS_ROLE(), voting);
 
+        // App inits
+        vault.initialize();
+        finance.initialize(vault, uint64(-1) - uint64(now)); // yuge period
+        tokenManager.initialize(token, _maxTokens > 1, _maxTokens);
 
         acl.createPermission(this, tokenManager, tokenManager.MINT_ROLE(), this);
-
-        tokenManager.initialize(token, _maxTokens > 1, _maxTokens);
 
         for (uint256 i = 0; i < holders.length; i++) {
             tokenManager.mint(holders[i], stakes[i]);
         }
-
-        // inits
-        vault.initialize();
-        finance.initialize(vault, uint64(-1) - uint64(now)); // yuge period
 
         // clean-up
         cleanupPermission(acl, voting, dao, dao.APP_MANAGER_ROLE());
