@@ -29,7 +29,7 @@ contract SurveyKit is APMNamehash {
     function newInstance(
         MiniMeToken signalingToken,
         address surveyManager,
-        address scapeHatch,
+        address escapeHatch,
         uint64 duration,
         uint256 participation
     )
@@ -41,20 +41,19 @@ contract SurveyKit is APMNamehash {
 
         acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
 
-        Survey survey = Survey(dao.newAppInstance(SURVEY_APP_ID, latestVersionAppBase(SURVEY_APP_ID))); 
+        Survey survey = Survey(dao.newAppInstance(SURVEY_APP_ID, latestVersionAppBase(SURVEY_APP_ID)));
 
-        // Set scapeHatch address as the default vault, in case a token rescue is required
-        dao.setApp(dao.APP_BASES_NAMESPACE(), dao.DEFAULT_VAULT_APP_ID(), scapeHatch);
+        // Set escapeHatch address as the default vault, in case a token rescue is required
+        dao.setApp(dao.APP_BASES_NAMESPACE(), dao.DEFAULT_VAULT_APP_ID(), escapeHatch);
 
         survey.initialize(signalingToken, participation, duration);
 
-        // set survey manager as the entity that can create votes and change participation 
+        // Set survey manager as the entity that can create votes and change participation
         // surveyManager can then give this permission to other entities
         acl.createPermission(surveyManager, survey, survey.CREATE_SURVEYS_ROLE(), surveyManager);
         acl.createPermission(surveyManager, survey, survey.MODIFY_PARTICIPATION_ROLE(), surveyManager);
         acl.grantPermission(surveyManager, dao, dao.APP_MANAGER_ROLE());
         acl.setPermissionManager(surveyManager, dao, dao.APP_MANAGER_ROLE());
-        
 
         emit InstalledApp(survey, SURVEY_APP_ID);
         emit DeployInstance(dao);
