@@ -56,6 +56,8 @@ contract BetaKitBase is KitBase {
         internal
         returns (Voting)
     {
+        require(holders.length == stakes.length);
+
         Kernel dao = fac.newDAO(this);
 
         ACL acl = ACL(dao.acl());
@@ -89,7 +91,6 @@ contract BetaKitBase is KitBase {
         acl.createPermission(voting, tokenManager, tokenManager.ASSIGN_ROLE(), voting);
         acl.createPermission(voting, tokenManager, tokenManager.REVOKE_VESTINGS_ROLE(), voting);
 
-        require(holders.length == stakes.length);
 
         acl.createPermission(this, tokenManager, tokenManager.MINT_ROLE(), this);
 
