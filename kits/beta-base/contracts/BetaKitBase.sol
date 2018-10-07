@@ -27,7 +27,6 @@ contract BetaKitBase is KitBase {
 
     event DeployToken(address token, address indexed cacheOwner);
     event DeployInstance(address dao, address indexed token);
-    event InstalledApp(address appProxy, bytes32 appId);
 
     address constant ANY_ENTITY = address(-1);
 
