@@ -12,7 +12,7 @@ distribution.
 ## Install local environment
 
 - Install [Docker CE](https://docs.docker.com/install/)
-- `cd templates/beta && npm run docker:run`
+- `cd kits/beta-base && npm run docker:run`
 - Outputted ENS address has to be provided to the client
 - That's really it 🦅🚀
 
@@ -33,8 +33,8 @@ transaction was already mined).
 
 ### 1. Token creation
 
-- `demTemp.newToken(name, symbol)`
-- `msTemp.newToken(name)`
+- `democracyTemp.newToken(name, symbol)`
+- `multiSigTemp.newToken(name)`
 
 On success it will emit a `DeployToken(token, cacheOwner)` event.
 
@@ -43,7 +43,7 @@ On success it will emit a `DeployToken(token, cacheOwner)` event.
 - On success it will emit a `DeployInstance(dao, token)` event.
 - Requires `cacheOwner` to send this transaction too.
 
-Then see each template documentation for each specific transactions.
+Then see each template's documentation for their own specific transactions.
 
 ## ENS, APM and aragonID
 
@@ -55,9 +55,9 @@ Using it as the ENS registry, we can find everything else by using ENS.
 - `APM` -> `ens.addr('aragonpm.eth')`
 - `AragonID` -> `ens.owner('aragonid.eth')` (notice it is owner and not addr)
 
-## aragonID
+### aragonID
 
-After fetching AragonID's from the ENS, registering a name for an address can be done:
+After fetching AragonID from ENS, registering a name for an address can be done:
 
 ```
 aragonID.register(keccak256(name), addr)
@@ -65,7 +65,7 @@ aragonID.register(keccak256(name), addr)
 
 Note that if the name already exists, the transaction will revert (see gotchas).
 
-## APM
+### APM
 
 The deployed APM Registry has a pretty tight governance mechanism which only allows
 certain individuals (Aragon core team) to create new repos and different repos
@@ -104,11 +104,4 @@ cheaper than $100 at given current gas and ETH prices.
 
 ## Deploying templates
 
-After deploying ENS, APM and AragonID. Change `index.js` ENS address for the
-deployment network.
-
-Then just:
-
-```
-npm run deploy:rinkeby
-```
+See instructions in each template's individual documentation.

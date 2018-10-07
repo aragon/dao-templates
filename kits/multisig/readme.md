@@ -8,11 +8,11 @@ See [Beta templates description](https://github.com/aragon/dao-kits/blob/master/
 multisig.newInstance(name, signers, neededSignatures)
 ```
 
-- `name`: Name for org, will assign `[name].aragonid.eth` (check capitalization).
-- `signers`: Array of addresses that are the multisig signatoires
-(they will be issued 1 token).
+- `name`: Name for org, will assign `[name].aragonid.eth` (check capitalization)
+- `signers`: Array of addresses that are the multisig signatories
+  (they will be issued 1 token)
 - `neededSignatures`: Number of signers that need to sign to execute an action
-(parametrized Voting app under the hood).
+  (parametrizing the Voting app under the hood)
 
 ## Deploying templates
 
