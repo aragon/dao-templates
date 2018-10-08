@@ -26,17 +26,19 @@ npm run deploy:rinkeby
 
 ## Permissions
 
-| App           | Permission       | Grantee | Manager |
-|---------------|------------------|---------|---------|
-| Voting        | CREATE_VOTES     | Any     | Voting  |
-| Voting        | MODIFY_QUORUM    | Voting  | Voting  |
-| Voting        | MODIFY_SUPPORT   | None    | Burned  |
-| Vault         | TRANSFER         | Finance | Voting  |
-| Finance       | CREATE_PAYMENTS  | Voting  | Voting  |
-| Finance       | EXECUTE_PAYMENTS | Voting  | Voting  |
-| Finance       | DISABLE_PAYMENTS | Voting  | Voting  |
-| Token Manager | ASSIGN           | Voting  | Voting  |
-| Token Manager | REVOKE_VESTINGS  | Voting  | Voting  |
+| App           | Permission         | Grantee | Manager |
+|---------------|--------------------|---------|---------|
+| Voting        | CREATE_VOTES       | Any     | Voting  |
+| Voting        | MODIFY_QUORUM      | Voting  | Voting  |
+| Voting        | MODIFY_SUPPORT     | None    | Burned  |
+| Vault         | TRANSFER           | Finance | Voting  |
+| Finance       | CREATE_PAYMENTS    | Voting  | Voting  |
+| Finance       | EXECUTE_PAYMENTS   | Voting  | Voting  |
+| Finance       | DISABLE_PAYMENTS   | Voting  | Voting  |
+| Token Manager | ASSIGN             | Voting  | Voting  |
+| Token Manager | REVOKE_VESTINGS    | Voting  | Voting  |
+| Kernel        | APP_MANAGER        | Voting  | Voting  |
+| ACL           | CREATE_PERMISSIONS | Voting  | Voting  |
 
 ## Gas usage
 
