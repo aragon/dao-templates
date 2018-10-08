@@ -8,6 +8,9 @@ const keccak256 = require('js-sha3').keccak_256
 
 const { encodeCallScript, EMPTY_SCRIPT } = require('@aragon/test-helpers/evmScript')
 
+const Finance = artifacts.require('Finance')
+const TokenManager = artifacts.require('TokenManager')
+const Vault = artifacts.require('Vault')
 const Voting = artifacts.require('Voting')
 
 const apps = ['finance', 'token-manager', 'vault', 'voting']
@@ -24,7 +27,9 @@ const getAppProxy = (receipt, id) => receipt.logs.filter(l => l.event == 'Instal
 contract('Democracy Kit', accounts => {
     const ETH = '0x0'
     let daoAddress, tokenAddress
-    let kit, receiptInstance, voting
+    let financeAddress, tokenManagerAddress, vaultAddress, votingAddress
+    let finance, tokenManager, vault, voting
+    let kit, receiptInstance
 
     const owner = process.env.OWNER //'0x1f7402f55e142820ea3812106d0657103fc1709e'
     const holder20 = accounts[6]
@@ -57,9 +62,15 @@ contract('Democracy Kit', accounts => {
         receiptInstance = await kit.newInstance('DemocracyDao-' + Math.random() * 1000, holders, stakes, neededSupport, minimumAcceptanceQuorum, votingTime, { from: owner })
         daoAddress = getEventResult(receiptInstance, 'DeployInstance', 'dao')
 
-        // generated Voting app
-        const votingProxyAddress = getAppProxy(receiptInstance, appIds[3])
-        voting = Voting.at(votingProxyAddress)
+        // generated apps
+        financeAddress = getAppProxy(receiptInstance, appIds[0])
+        finance = await Finance.at(financeAddress)
+        tokenManagerAddress = getAppProxy(receiptInstance, appIds[1])
+        tokenManager = TokenManager.at(tokenManagerAddress)
+        vaultAddress = getAppProxy(receiptInstance, appIds[2])
+        vault = await Vault.at(vaultAddress)
+        votingAddress = getAppProxy(receiptInstance, appIds[3])
+        voting = Voting.at(votingAddress)
     })
 
     context('Creating a DAO and votes', () => {
@@ -93,6 +104,39 @@ contract('Democracy Kit', accounts => {
                 return
             }
             assert.isFalse(true, "It should have thrown")
+        })
+
+        it('has correct permissions', async () =>{
+            const dao = await getContract('Kernel').at(daoAddress)
+            const acl = await getContract('ACL').at(await dao.acl())
+
+            const checkRole = async (appAddress, permission, managerAddress, appName='', roleName='', granteeAddress=managerAddress) => {
+                assert.equal(await acl.getPermissionManager(appAddress, permission), managerAddress, `${appName} ${roleName} Manager should match`)
+                assert.isTrue(await acl.hasPermission(granteeAddress, appAddress, permission), `Grantee should have ${appName} role ${roleName}`)
+            }
+
+            // app manager role
+            await checkRole(daoAddress, await dao.APP_MANAGER_ROLE(), votingAddress, 'Kernel', 'APP_MANAGER')
+
+            // create permissions role
+            await checkRole(acl.address, await acl.CREATE_PERMISSIONS_ROLE(), votingAddress, 'ACL', 'CREATE_PERMISSION')
+
+            // voting
+            await checkRole(votingAddress, await voting.CREATE_VOTES_ROLE(), votingAddress, 'Voting', 'CREATE_VOTES', await acl.ANY_ENTITY())
+            await checkRole(votingAddress, await voting.MODIFY_QUORUM_ROLE(), votingAddress, 'Voting', 'MODIFY_QUORUM')
+            assert.equal(await acl.getPermissionManager(votingAddress, await voting.MODIFY_SUPPORT_ROLE()), await acl.BURN_ENTITY(), 'Voting MODIFY_SUPPORT Manager should be burned')
+
+            // vault
+            await checkRole(vaultAddress, await vault.TRANSFER_ROLE(), votingAddress, 'Vault', 'TRANSFER', financeAddress)
+
+            // finance
+            await checkRole(financeAddress, await finance.CREATE_PAYMENTS_ROLE(), votingAddress, 'Finance', 'CREATE_PAYMENTS')
+            await checkRole(financeAddress, await finance.EXECUTE_PAYMENTS_ROLE(), votingAddress, 'Finance', 'EXECUTE_PAYMENTS')
+            await checkRole(financeAddress, await finance.DISABLE_PAYMENTS_ROLE(), votingAddress, 'Finance', 'DISABLE_PAYMENTS')
+
+            // token manager
+            await checkRole(tokenManagerAddress, await tokenManager.ASSIGN_ROLE(), votingAddress, 'TokenManager', 'ASSIGN')
+            await checkRole(tokenManagerAddress, await tokenManager.REVOKE_VESTINGS_ROLE(), votingAddress, 'TokenManager', 'REVOKE_VESTINGS')
         })
 
         it('fails trying to modify support threshold', async () => {
