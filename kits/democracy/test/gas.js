@@ -1,19 +1,6 @@
-const namehash = require('eth-ens-namehash').hash
-
-const deploy_ens = require('@aragon/os/scripts/deploy-beta-ens.js')
-const deploy_apm = require('@aragon/os/scripts/deploy-beta-apm.js')
-const deploy_id = require('@aragon/id/scripts/deploy-beta-aragonid.js')
-const deployDAOFactory = require('@aragon/os/scripts/deploy-daofactory.js')
-
-// ensure alphabetic order
-const apps = ['finance', 'token-manager', 'vault', 'voting']
-const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).appName))
-
 const getContract = name => artifacts.require(name)
 const getKit = (indexObj, kitName) => getContract(kitName).at(indexObj.networks['devnet'].kits.filter(x => x.name == kitName)[0].address)
 const pct16 = x => new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
-const getEventResult = (receipt, event, param) => receipt.logs.filter(l => l.event == event)[0].args[param]
-
 
 contract('Democracy Kit', accounts => {
     let kit
