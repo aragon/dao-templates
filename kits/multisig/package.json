@@ -4,7 +4,7 @@
   "description": "Multisig Kit for v0.5 Aragon orgs",
   "main": "index.js",
   "scripts": {
-    "prepublish": "truffle compile && npm run abi:extract -- --no-compile",
+    "prepublishOnly": "truffle compile && npm run abi:extract -- --no-compile",
     "abi:extract": "truffle-extract --output abi/ --keys abi",
     "deploy:rinkeby": "truffle exec --network rinkeby scripts/deploy.js",
     "deploy:rpc": "truffle exec --network rpc ./scripts/deploy.js",
@@ -20,6 +20,14 @@
     "ganache-cli:dev": "./node_modules/@aragon/test-helpers/ganache-cli.sh",
     "ganache-cli:coverage": "SOLIDITY_COVERAGE=true npm run ganache-cli:dev"
   },
+  "files": [
+    "abi/",
+    "build/",
+    "contracts/",
+    "scripts/",
+    "truffle.js",
+    "test/"
+  ],
   "author": "Aragon Institution MTU <contact@aragon.one>",
   "license": "GPL-3.0",
   "devDependencies": {
