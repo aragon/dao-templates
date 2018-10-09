@@ -120,7 +120,7 @@ contract BetaKitBase is KitBase, IsContract {
 
         // App inits
         vault.initialize();
-        finance.initialize(vault, uint64(-1) - uint64(now)); // yuge period
+        finance.initialize(vault, 30 days);
         tokenManager.initialize(token, _maxTokens > 1, _maxTokens);
 
         // Set up the token stakes
