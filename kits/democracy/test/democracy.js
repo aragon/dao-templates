@@ -121,6 +121,12 @@ contract('Democracy Kit', accounts => {
             // create permissions role
             await checkRole(acl.address, await acl.CREATE_PERMISSIONS_ROLE(), votingAddress, 'ACL', 'CREATE_PERMISSION')
 
+            // evm script registry
+            const regConstants = await getContract('EVMScriptRegistryConstants').new()
+            const reg = await getContract('EVMScriptRegistry').at(await dao.getApp(await dao.APP_ADDR_NAMESPACE(), (await regConstants.EVMSCRIPT_REGISTRY_APP_ID())))
+            await checkRole(reg.address, await reg.REGISTRY_ADD_EXECUTOR_ROLE(), votingAddress, 'EVMScriptRegistry', 'ADD_EXECUTOR')
+            await checkRole(reg.address, await reg.REGISTRY_MANAGER_ROLE(), votingAddress, 'EVMScriptRegistry', 'REGISTRIY_MANAGER')
+
             // voting
             await checkRole(votingAddress, await voting.CREATE_VOTES_ROLE(), votingAddress, 'Voting', 'CREATE_VOTES', await acl.ANY_ENTITY())
             await checkRole(votingAddress, await voting.MODIFY_QUORUM_ROLE(), votingAddress, 'Voting', 'MODIFY_QUORUM')
