@@ -4,9 +4,10 @@ import "@aragon/os/contracts/factory/DAOFactory.sol";
 import "@aragon/os/contracts/apm/Repo.sol";
 import "@aragon/os/contracts/lib/ens/ENS.sol";
 import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
+import "@aragon/os/contracts/evmscript/IEVMScriptRegistry.sol"; // needed for EVMSCRIPT_REGISTRY_APP_ID
 
 
-contract KitBase {
+contract KitBase is EVMScriptRegistryConstants {
     ENS public ens;
     DAOFactory public fac;
 

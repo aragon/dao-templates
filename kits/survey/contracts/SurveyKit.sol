@@ -11,20 +11,19 @@ import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
 
 import "@aragon/apps-survey/contracts/Survey.sol";
 
+import "@aragon/kits-bare/contracts/KitBase.sol";
 
-contract SurveyKit is APMNamehash {
+
+contract SurveyKit is APMNamehash, KitBase {
     ENS public ens;
     DAOFactory public fac;
 
     bytes32 constant public SURVEY_APP_ID = apmNamehash("survey"); // survey.aragonpm.eth
 
-    event DeployInstance(address dao);
-    event InstalledApp(address appProxy, bytes32 appId);
+    event DeployInstance(address dao, address indexed token);
 
-    constructor(DAOFactory _fac, ENS _ens) public {
-        ens = _ens;
-        fac = _fac; // factory must be set up w/o EVMScript support
-    }
+    // factory must be set up w/o EVMScript support
+    constructor(DAOFactory _fac, ENS _ens) KitBase(_fac, _ens) public {}
 
     function newInstance(
         MiniMeToken signalingToken,
@@ -55,16 +54,11 @@ contract SurveyKit is APMNamehash {
         acl.grantPermission(surveyManager, dao, dao.APP_MANAGER_ROLE());
         acl.setPermissionManager(surveyManager, dao, dao.APP_MANAGER_ROLE());
 
+        cleanupDAOPermissions(dao, acl, surveyManager);
+
         emit InstalledApp(survey, SURVEY_APP_ID);
-        emit DeployInstance(dao);
+        emit DeployInstance(dao, signalingToken);
 
         return (dao, survey);
-    }
-
-    function latestVersionAppBase(bytes32 appId) public view returns (address base) {
-        Repo repo = Repo(PublicResolver(ens.resolver(appId)).addr(appId));
-        (,base,) = repo.getLatest();
-
-        return base;
     }
 }

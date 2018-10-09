@@ -46,6 +46,8 @@ contract MultisigKit is BetaKitBase {
         );
 
         Voting voting = Voting(dao.getApp(dao.APP_ADDR_NAMESPACE(), appIds[uint8(Apps.Voting)]));
+        TokenManager tokenManager = TokenManager(dao.getApp(dao.APP_ADDR_NAMESPACE(), appIds[uint8(Apps.TokenManager)]));
+
         // We are subtracting 1 because comparison in Voting app is strict,
         // while Multisig needs to allow equal too. So for instance in 2 out of 4
         // multisig, we would define 50 * 10 ^ 16 - 1 instead of just 50 * 10 ^ 16,
@@ -60,8 +62,12 @@ contract MultisigKit is BetaKitBase {
             1825 days // ~5 years
         );
 
-        // Include support modification permission to handle changes to the multisig's size
         ACL acl = ACL(dao.acl());
+
+        // Create vote permission
+        acl.createPermission(tokenManager, voting, voting.CREATE_VOTES_ROLE(), voting);
+
+        // Include support modification permission to handle changes to the multisig's size
         acl.createPermission(voting, voting, voting.MODIFY_SUPPORT_ROLE(), voting);
 
         cleanupPermission(acl, voting, acl, acl.CREATE_PERMISSIONS_ROLE());

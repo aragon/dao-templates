@@ -108,8 +108,7 @@ contract BetaKitBase is KitBase, IsContract {
         // Required for initializing the Token Manager
         token.changeController(tokenManager);
 
-        // Permissions
-        acl.createPermission(acl.ANY_ENTITY(), voting, voting.CREATE_VOTES_ROLE(), voting);
+        // permissions
         acl.createPermission(voting, voting, voting.MODIFY_QUORUM_ROLE(), voting);
 
         acl.createPermission(finance, vault, vault.TRANSFER_ROLE(), voting);
@@ -131,7 +130,16 @@ contract BetaKitBase is KitBase, IsContract {
             tokenManager.mint(holders[i], stakes[i]);
         }
 
-        // Clean-up
+        // inits
+        vault.initialize();
+        finance.initialize(vault, uint64(-1) - uint64(now)); // yuge period
+
+        // EVMScriptRegistry permissions
+        EVMScriptRegistry reg = EVMScriptRegistry(dao.getApp(dao.APP_ADDR_NAMESPACE(), EVMSCRIPT_REGISTRY_APP_ID));
+        acl.createPermission(voting, reg, reg.REGISTRY_ADD_EXECUTOR_ROLE(), voting);
+        acl.createPermission(voting, reg, reg.REGISTRY_MANAGER_ROLE(), voting);
+
+        // clean-up
         cleanupPermission(acl, voting, dao, dao.APP_MANAGER_ROLE());
         cleanupPermission(acl, voting, tokenManager, tokenManager.MINT_ROLE());
 
