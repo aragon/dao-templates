@@ -29,9 +29,6 @@ contract MultisigKit is BetaKitBase {
     function newInstance(string name, address[] signers, uint256 neededSignatures) external {
         require(signers.length > 0 && neededSignatures > 0);
         require(neededSignatures <= signers.length);
-        // We can avoid safemath checks here as it's very unlikely a user will pass in enough
-        // signers to cause this to overflow
-        uint256 neededSignaturesE18 = neededSignatures * 10 ** 18;
 
         uint256[] memory stakes = new uint256[](signers.length);
 
@@ -53,7 +50,9 @@ contract MultisigKit is BetaKitBase {
         // while Multisig needs to allow equal too. So for instance in 2 out of 4
         // multisig, we would define 50 * 10 ^ 16 - 1 instead of just 50 * 10 ^ 16,
         // so 2 signatures => 2 * 10 ^ 18 / 4 = 50 * 10 ^ 16 > 50 * 10 ^ 16 - 1 would pass
-        uint256 multisigSupport = neededSignaturesE18 / signers.length - 1;
+        // We can avoid safemath checks here as it's very unlikely a user will pass in enough
+        // signers to cause this to overflow
+        uint256 multisigSupport = neededSignatures * 10 ** 18 / signers.length - 1;
         voting.initialize(
             token,
             multisigSupport,
