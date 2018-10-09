@@ -1,6 +1,6 @@
 pragma solidity 0.4.24;
 
-import "@aragon/kits-beta/contracts/BetaKitBase.sol";
+import "@aragon/kits-beta-base/contracts/BetaKitBase.sol";
 
 
 contract DemocracyKit is BetaKitBase {
@@ -38,13 +38,15 @@ contract DemocracyKit is BetaKitBase {
         external
     {
         MiniMeToken token = popTokenCache(msg.sender);
-        Voting voting = createDAO(
+        Kernel dao = createDAO(
             name,
             token,
             holders,
             tokens,
             uint256(-1)
         );
+
+        Voting voting = Voting(dao.getApp(dao.APP_ADDR_NAMESPACE(), appIds[uint8(Apps.Voting)]));
         voting.initialize(
             token,
             supportNeeded,
@@ -53,7 +55,7 @@ contract DemocracyKit is BetaKitBase {
         );
 
         // Burn support modification permission
-        ACL acl = ACL(Kernel(voting.kernel()).acl());
+        ACL acl = ACL(dao.acl());
         acl.createBurnedPermission(voting, voting.MODIFY_SUPPORT_ROLE());
 
         cleanupPermission(acl, voting, acl, acl.CREATE_PERMISSIONS_ROLE());

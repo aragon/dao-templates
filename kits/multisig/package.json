@@ -4,15 +4,16 @@
   "description": "Multisig Kit for v0.5 Aragon orgs",
   "main": "index.js",
   "scripts": {
-    "prepublish": "truffle compile && node scripts/extract-abis.js",
+    "prepublish": "truffle compile && npm run abi:extract -- --no-compile",
+    "abi:extract": "truffle-extract --output abi/ --keys abi",
     "deploy:rinkeby": "truffle exec --network rinkeby scripts/deploy.js",
     "deploy:rpc": "truffle exec --network rpc ./scripts/deploy.js",
-    "deploy:devnet": "export `grep ^OWNER ./node_modules/@aragon/kits-beta/.env`; truffle exec --network devnet ./scripts/deploy.js",
-    "docker:wait-gas": "truffle exec ./node_modules/@aragon/kits-beta/scripts/sleep-until-gaslimit.js --network devnet 6900000",
-    "docker:run": "cd ./node_modules/@aragon/kits-beta/; docker-compose -f docker-compose.yml up -d; RESULT=$?; cd -; $(exit $RESULT)",
-    "docker:stop": "cd ./node_modules/@aragon/kits-beta/; docker-compose down; cd -",
+    "deploy:devnet": "truffle exec --network devnet ./scripts/deploy.js",
+    "docker:wait-gas": "truffle exec ./node_modules/@aragon/kits-beta-base/scripts/sleep-until-gaslimit.js --network devnet 6900000",
+    "docker:run": "cd ./node_modules/@aragon/kits-beta-base/; docker-compose -f docker-compose.yml up -d; RESULT=$?; cd -; $(exit $RESULT)",
+    "docker:stop": "cd ./node_modules/@aragon/kits-beta-base/; docker-compose down; cd -",
     "lint": "solium --dir ./contracts",
-    "test:devnet": "export `grep ^OWNER ./node_modules/@aragon/kits-beta/.env`; truffle test --network devnet test/multisig.js",
+    "test:devnet": "truffle test --network devnet test/multisig.js",
     "test": "truffle compile && npm run docker:run && npm run docker:wait-gas && npm run deploy:devnet && npm run test:devnet && npm run docker:stop",
     "coverage": "./node_modules/@aragon/test-helpers/run-coverage.sh",
     "console": "truffle dev",
@@ -24,12 +25,14 @@
   "devDependencies": {
     "@aragon/id": "^2.0.0",
     "@aragon/test-helpers": "^1.0.0",
+    "dotenv": "^6.1.0",
     "eth-ens-namehash": "^2.0.8",
     "eth-gas-reporter": "^0.1.1",
     "ganache-cli": "^6.0.3",
     "solidity-coverage": "0.5.8",
     "solium": "^1.0.4",
-    "truffle": "4.1.14"
+    "truffle": "4.1.14",
+    "truffle-extract": "^1.2.1"
   },
   "dependencies": {
     "@aragon/os": "4.0.0-beta.3",
@@ -40,6 +43,6 @@
     "@aragon/apps-finance": "^2.0.0-beta.1",
     "@aragon/apps-token-manager": "^2.0.0-beta.1",
     "@aragon/kits-bare": "^1.0.0",
-    "@aragon/kits-beta": "^1.1.3"
+    "@aragon/kits-beta-base": "^1.0.0"
   }
 }

@@ -1,7 +1,8 @@
+require('dotenv').config({ path: '@aragon/kits-beta-base/.env'})
 const deploy_ens = require('@aragon/os/scripts/deploy-beta-ens.js')
 const deploy_apm = require('@aragon/os/scripts/deploy-beta-apm.js')
 const deploy_id = require('@aragon/id/scripts/deploy-beta-aragonid.js')
-const deploy_kit = require('@aragon/kits-beta/scripts/deploy_kit.js')
+const deploy_kit = require('@aragon/kits-beta-base/scripts/deploy_kit.js')
 
 module.exports = async (callback) => {
   console.log('Deploying Multisig Kit')

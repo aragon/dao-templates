@@ -1,6 +1,6 @@
 pragma solidity 0.4.24;
 
-import "@aragon/kits-beta/contracts/BetaKitBase.sol";
+import "@aragon/kits-beta-base/contracts/BetaKitBase.sol";
 
 
 contract MultisigKit is BetaKitBase {
@@ -40,7 +40,7 @@ contract MultisigKit is BetaKitBase {
         }
 
         MiniMeToken token = popTokenCache(msg.sender);
-        Voting voting = createDAO(
+        Kernel dao = createDAO(
             name,
             token,
             signers,
@@ -48,6 +48,7 @@ contract MultisigKit is BetaKitBase {
             1
         );
 
+        Voting voting = Voting(dao.getApp(dao.APP_ADDR_NAMESPACE(), appIds[uint8(Apps.Voting)]));
         // We are subtracting 1 because comparison in Voting app is strict,
         // while Multisig needs to allow equal too. So for instance in 2 out of 4
         // multisig, we would define 50 * 10 ^ 16 - 1 instead of just 50 * 10 ^ 16,
@@ -61,7 +62,7 @@ contract MultisigKit is BetaKitBase {
         );
 
         // Include support modification permission to handle changes to the multisig's size
-        ACL acl = ACL(Kernel(voting.kernel()).acl());
+        ACL acl = ACL(dao.acl());
         acl.createPermission(voting, voting, voting.MODIFY_SUPPORT_ROLE(), voting);
 
         cleanupPermission(acl, voting, acl, acl.CREATE_PERMISSIONS_ROLE());

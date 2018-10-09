@@ -1,3 +1,4 @@
+require('dotenv').config()
 const fs = require('fs')
 
 const namehash = require('eth-ens-namehash').hash

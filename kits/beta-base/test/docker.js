@@ -1,3 +1,4 @@
+require('dotenv').config()
 const namehash = require('eth-ens-namehash').hash
 
 const deployDAOFactory = require('@aragon/os/scripts/deploy-daofactory.js')

@@ -12,10 +12,12 @@ import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/apps-finance/contracts/Finance.sol";
 
+import "@aragon/os/contracts/common/IsContract.sol";
+
 import "@aragon/kits-bare/contracts/KitBase.sol";
 
 
-contract BetaKitBase is KitBase {
+contract BetaKitBase is KitBase, IsContract {
     MiniMeTokenFactory public minimeFac;
     IFIFSResolvingRegistrar public aragonID;
     bytes32[4] public appIds;
@@ -38,6 +40,8 @@ contract BetaKitBase is KitBase {
         KitBase(_fac, _ens)
         public
     {
+        require(isContract(address(_fac.regFactory())));
+
         minimeFac = _minimeFac;
         aragonID = _aragonID;
         appIds = _appIds;
@@ -51,7 +55,7 @@ contract BetaKitBase is KitBase {
         uint256 _maxTokens
     )
         internal
-        returns (Voting)
+        returns (Kernel)
     {
         require(holders.length == stakes.length);
 
@@ -61,16 +65,42 @@ contract BetaKitBase is KitBase {
 
         acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
 
-        Voting voting = Voting(dao.newAppInstance(appIds[uint8(Apps.Voting)], latestVersionAppBase(appIds[uint8(Apps.Voting)])));
+        Voting voting = Voting(
+            dao.newAppInstance(
+                appIds[uint8(Apps.Voting)],
+                latestVersionAppBase(appIds[uint8(Apps.Voting)]),
+                new bytes(0),
+                true
+            )
+        );
         emit InstalledApp(voting, appIds[uint8(Apps.Voting)]);
-        Vault vault = Vault(dao.newAppInstance(appIds[uint8(Apps.Vault)], latestVersionAppBase(appIds[uint8(Apps.Vault)])));
+
+        Vault vault = Vault(
+            dao.newAppInstance(
+                appIds[uint8(Apps.Vault)],
+                latestVersionAppBase(appIds[uint8(Apps.Vault)]),
+                new bytes(0),
+                true
+            )
+        );
         emit InstalledApp(vault, appIds[uint8(Apps.Vault)]);
-        Finance finance = Finance(dao.newAppInstance(appIds[uint8(Apps.Finance)], latestVersionAppBase(appIds[uint8(Apps.Finance)])));
+
+        Finance finance = Finance(
+            dao.newAppInstance(
+                appIds[uint8(Apps.Finance)],
+                latestVersionAppBase(appIds[uint8(Apps.Finance)]),
+                new bytes(0),
+                true
+            )
+        );
         emit InstalledApp(finance, appIds[uint8(Apps.Finance)]);
+
         TokenManager tokenManager = TokenManager(
             dao.newAppInstance(
                 appIds[uint8(Apps.TokenManager)],
-                latestVersionAppBase(appIds[uint8(Apps.TokenManager)])
+                latestVersionAppBase(appIds[uint8(Apps.TokenManager)]),
+                new bytes(0),
+                true
             )
         );
         emit InstalledApp(tokenManager, appIds[uint8(Apps.TokenManager)]);
@@ -108,8 +138,7 @@ contract BetaKitBase is KitBase {
         registerAragonID(name, dao);
         emit DeployInstance(dao, token);
 
-        // Voting is returned so its init can happen later
-        return voting;
+        return dao;
     }
 
     function cacheToken(MiniMeToken token, address owner) internal {
