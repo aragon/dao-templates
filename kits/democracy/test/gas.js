@@ -1,3 +1,4 @@
+require('dotenv').config({ path: './node_modules/@aragon/kits-beta-base/.env'})
 const getContract = name => artifacts.require(name)
 const getKit = (indexObj, kitName) => getContract(kitName).at(indexObj.networks['devnet'].kits.filter(x => x.name == kitName)[0].address)
 const pct16 = x => new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))

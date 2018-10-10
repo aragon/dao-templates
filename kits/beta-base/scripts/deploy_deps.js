@@ -1,4 +1,4 @@
-require('dotenv').config()
+require('dotenv').config({ path: '../.env' })
 const fs = require('fs')
 
 const namehash = require('eth-ens-namehash').hash
@@ -20,7 +20,7 @@ const newRepo = async (apm, name, acc, contract) => {
 const owner = process.env.OWNER
 
 module.exports = async (callback) => {
-  console.log('Deploying Democracy Kit')
+  console.log(`Deploying dependencies, owner: ${owner}`)
 
   if (process.argv.length < 5) {
     errorOut('Usage: truffle exec --network <network> scripts/deploy_deps.js')

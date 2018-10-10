@@ -1,4 +1,4 @@
-require('dotenv').config({ path: '@aragon/kits-beta-base/.env'})
+require('dotenv').config({ path: './node_modules/@aragon/kits-beta-base/.env'})
 const getBlockNumber = require('@aragon/test-helpers/blockNumber')(web3)
 const getBlock = require('@aragon/test-helpers/block')(web3)
 //const timeTravel = require('@aragon/test-helpers/timeTravel')(web3)
