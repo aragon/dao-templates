@@ -57,7 +57,7 @@ contract DemocracyKit is BetaKitBase {
         ACL acl = ACL(dao.acl());
 
         // create vote permission
-        acl.createPermission(ANY_ENTITY, voting, voting.CREATE_VOTES_ROLE(), voting);
+        acl.createPermission(acl.ANY_ENTITY(), voting, voting.CREATE_VOTES_ROLE(), voting);
 
         // burn support modification permission
         acl.createBurnedPermission(voting, voting.MODIFY_SUPPORT_ROLE());
