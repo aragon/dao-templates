@@ -24,7 +24,7 @@ contract SurveyKit is APMNamehash, KitBase {
 
     constructor(DAOFactory _fac, ENS _ens) KitBase(_fac, _ens) public {
         // factory must be set up w/o EVMScript support
-        //require(address(_fac.regFactory()) == address(0));
+        require(address(_fac.regFactory()) == address(0));
     }
 
     function newInstance(
