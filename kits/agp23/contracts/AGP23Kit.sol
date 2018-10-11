@@ -1,3 +1,5 @@
+pragma solidity 0.4.24;
+
 import "@aragon/apps-voting/contracts/Voting.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
@@ -12,12 +14,12 @@ import "@aragon/os/contracts/common/EtherTokenConstant.sol";
 
 contract AGP23Kit is KitBase, APMNamehash, EtherTokenConstant {
     MiniMeTokenFactory tokenFactory;
-    uint256 constant public MAIN_VOTING_SUPPORT = 50 * 10**16;
-    uint256 constant public MAIN_VOTING_ACCEPTANCE = 33 * 10**16; // not exact but works, quorum of 1 would work as well
+    uint256 constant public MAIN_VOTING_SUPPORT = 50 * 10**16; // 50%
+    uint256 constant public MAIN_VOTING_ACCEPTANCE = 33 * 10**16; // 33%, not exact but it works, quorum of 1 would work as well
     uint64 constant public MAIN_VOTING_VOTE_TIME = 4 weeks;
 
-    uint256 constant public VETO_VOTING_SUPPORT = 50 * 10**16;
-    uint256 constant public VETO_VOTING_ACCEPTANCE = 1 * 10**16;
+    uint256 constant public VETO_VOTING_SUPPORT = 50 * 10**16; // >50% of the casted votes have to be YES
+    uint256 constant public VETO_VOTING_ACCEPTANCE = 1 * 10**16; // >1% of ANT must vote YES to veto
     uint64 constant public VETO_VOTING_VOTE_TIME = 3 weeks;
 
     uint256 constant public ETH_DAEMON_REWARD = 0; // 1 * 10**16; // 0.01 ETH
@@ -114,6 +116,7 @@ contract AGP23Kit is KitBase, APMNamehash, EtherTokenConstant {
         acl.setPermissionManager(mainVoting, mainVoting, mainVoting.CREATE_VOTES_ROLE());
         acl.createPermission(votingDaemon, vetoVoting, vetoVoting.CREATE_VOTES_ROLE(), mainVoting);
 
+        // TODO: Burn CHANGE_QUORUM and CHANGE_SUPPORT roles in voting apps?
         emit DeployInstance(dao);
 
         return (dao, acl, mainVoting);
