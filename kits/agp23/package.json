@@ -1,0 +1,23 @@
+{
+  "name": "@aragon/kits-agp23",
+  "version": "1.0.0-beta.1",
+  "description": "Kit for deploying AGP23",
+  "author": "Aragon One AG <contact@aragon.one>",
+  "license": "GPL-3.0",
+  "scripts": {
+    "publish:rpc": "aragon apm publish --network rpc --init @ARAGON_ENS",
+    "publish:rinkeby": "aragon apm publish --network rinkeby --init @ARAGON_ENS --apm.ens-registry \"0xfbae32d1cde62858bc45f51efc8cc4fa1415447e\""
+  },
+  "dependencies": {
+    "@aragon/apps-shared-minime": "^1.0.0",
+    "@aragon/apps-token-manager": "^2.0.0-beta.2",
+    "@aragon/apps-vault": "^3.0.0-beta.2",
+    "@aragon/apps-voting": "2.0.0-beta.2",
+    "@aragon/apps-voting-daemon": "^1.0.0",
+    "@aragon/kits-bare": "^1.0.0-beta.1",
+    "@aragon/os": "^4.0.0-beta.2"
+  },
+  "devDependencies": {
+    "@aragon/cli": "^5.0.0"
+  }
+}

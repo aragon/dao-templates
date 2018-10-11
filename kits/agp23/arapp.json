@@ -1,0 +1,6 @@
+{
+  "appName": "agp23-kit.aragonpm.eth",
+  "version": "3.0.0",
+  "roles": [],
+  "path": "contracts/AGP23Kit.sol"
+}
