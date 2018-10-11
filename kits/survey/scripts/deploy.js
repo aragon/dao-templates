@@ -17,6 +17,13 @@ const newRepo = async (apm, name, acc, contract, contentURI = "ipfs:") => {
 }
 
 module.exports = async (callback) => {
+  // get network
+  if (process.argv.length < 5 || process.argv[3] != '--network') {
+    console.error('Usage: truffle exec --network <network> scripts/deploy.js')
+    exit(1)
+  }
+  const network = process.argv[4]
+
   console.log('Deploying Survey Kit')
 
   const ens = ENS.at(process.env.ENS || '0x644f11d76d4b192df168c49a06db4928ea410bbc')
@@ -28,11 +35,6 @@ module.exports = async (callback) => {
   const apmAddr = await artifacts.require('PublicResolver').at(await ens.resolver(namehash('aragonpm.eth'))).addr(namehash('aragonpm.eth'))
   const apm = artifacts.require('APMRegistry').at(apmAddr)
 
-  // get network
-  if (process.argv.length < 5) {
-    errorOut('Usage: truffle exec --network <network> scripts/deploy.js')
-  }
-  const network = process.argv[4]
   if (network == 'rpc' /*TODO!*/ || network == 'devnet') { // Useful for testing to avoid manual deploys with aragon-dev-cli
     if (await ens.owner(surveyAppId) == '0x0000000000000000000000000000000000000000') {
       console.log('Deploying Survey App', network)
