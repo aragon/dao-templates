@@ -38,7 +38,10 @@ contract DemocracyKit is BetaKitBase {
         external
     {
         MiniMeToken token = popTokenCache(msg.sender);
-        Kernel dao = createDAO(
+        Kernel dao;
+        ACL acl;
+        Voting voting;
+        (dao, acl, , , , voting) = createDAO(
             name,
             token,
             holders,
@@ -46,15 +49,12 @@ contract DemocracyKit is BetaKitBase {
             uint256(-1)
         );
 
-        Voting voting = Voting(dao.getApp(dao.APP_ADDR_NAMESPACE(), appIds[uint8(Apps.Voting)]));
         voting.initialize(
             token,
             supportNeeded,
             minAcceptanceQuorum,
             voteDuration
         );
-
-        ACL acl = ACL(dao.acl());
 
         // create vote permission
         acl.createPermission(acl.ANY_ENTITY(), voting, voting.CREATE_VOTES_ROLE(), voting);

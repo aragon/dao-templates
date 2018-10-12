@@ -55,27 +55,32 @@ contract BetaKitBase is KitBase, IsContract {
         uint256 _maxTokens
     )
         internal
-        returns (Kernel)
+        returns (
+            Kernel dao,
+            ACL acl,
+            Finance finance,
+            TokenManager tokenManager,
+            Vault vault,
+            Voting voting
+        )
     {
         require(holders.length == stakes.length);
 
-        Kernel dao = fac.newDAO(this);
+        dao = fac.newDAO(this);
 
-        ACL acl = ACL(dao.acl());
+        acl = ACL(dao.acl());
 
         acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
 
-        Voting voting = Voting(
+        voting = Voting(
             dao.newAppInstance(
                 appIds[uint8(Apps.Voting)],
-                latestVersionAppBase(appIds[uint8(Apps.Voting)]),
-                new bytes(0),
-                true
+                latestVersionAppBase(appIds[uint8(Apps.Voting)])
             )
         );
         emit InstalledApp(voting, appIds[uint8(Apps.Voting)]);
 
-        Vault vault = Vault(
+        vault = Vault(
             dao.newAppInstance(
                 appIds[uint8(Apps.Vault)],
                 latestVersionAppBase(appIds[uint8(Apps.Vault)]),
@@ -85,22 +90,18 @@ contract BetaKitBase is KitBase, IsContract {
         );
         emit InstalledApp(vault, appIds[uint8(Apps.Vault)]);
 
-        Finance finance = Finance(
+        finance = Finance(
             dao.newAppInstance(
                 appIds[uint8(Apps.Finance)],
-                latestVersionAppBase(appIds[uint8(Apps.Finance)]),
-                new bytes(0),
-                true
+                latestVersionAppBase(appIds[uint8(Apps.Finance)])
             )
         );
         emit InstalledApp(finance, appIds[uint8(Apps.Finance)]);
 
-        TokenManager tokenManager = TokenManager(
+        tokenManager = TokenManager(
             dao.newAppInstance(
                 appIds[uint8(Apps.TokenManager)],
-                latestVersionAppBase(appIds[uint8(Apps.TokenManager)]),
-                new bytes(0),
-                true
+                latestVersionAppBase(appIds[uint8(Apps.TokenManager)])
             )
         );
         emit InstalledApp(tokenManager, appIds[uint8(Apps.TokenManager)]);
@@ -142,7 +143,7 @@ contract BetaKitBase is KitBase, IsContract {
         registerAragonID(name, dao);
         emit DeployInstance(dao, token);
 
-        return dao;
+        return (dao, acl, finance, tokenManager, vault, voting);
     }
 
     function cacheToken(MiniMeToken token, address owner) internal {

@@ -37,16 +37,17 @@ contract MultisigKit is BetaKitBase {
         }
 
         MiniMeToken token = popTokenCache(msg.sender);
-        Kernel dao = createDAO(
+        Kernel dao;
+        ACL acl;
+        TokenManager tokenManager;
+        Voting voting;
+        (dao, acl, , tokenManager, , voting) = createDAO(
             name,
             token,
             signers,
             stakes,
             1
         );
-
-        Voting voting = Voting(dao.getApp(dao.APP_ADDR_NAMESPACE(), appIds[uint8(Apps.Voting)]));
-        TokenManager tokenManager = TokenManager(dao.getApp(dao.APP_ADDR_NAMESPACE(), appIds[uint8(Apps.TokenManager)]));
 
         // We are subtracting 1 because comparison in Voting app is strict,
         // while Multisig needs to allow equal too. So for instance in 2 out of 4
@@ -61,8 +62,6 @@ contract MultisigKit is BetaKitBase {
             multisigSupport,
             1825 days // ~5 years
         );
-
-        ACL acl = ACL(dao.acl());
 
         // Create vote permission
         acl.createPermission(tokenManager, voting, voting.CREATE_VOTES_ROLE(), voting);
