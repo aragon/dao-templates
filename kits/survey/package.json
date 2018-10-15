@@ -12,6 +12,7 @@
   "author": "Aragon Institution MTU <contact@aragon.one>",
   "license": "GPL-3.0",
   "devDependencies": {
+    "dotenv": "^6.1.0",
     "eth-ens-namehash": "^2.0.8",
     "truffle": "4.1.14"
   },
