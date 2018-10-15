@@ -48,4 +48,4 @@ Tested running `GAS_REPORTER=true truffle test --network devnet test/gas.js`, pl
 
 - Create the Kit:      2816197
 - Create new token:    1738117
-- Deploy new instance: 5502756
+- Deploy new instance: 5690035

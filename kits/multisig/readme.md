@@ -48,5 +48,5 @@ npm run deploy:rinkeby
 Tested running `GAS_REPORTER=true truffle test --network devnet test/gas.js`
 
 - Create the Kit:      2842826
-- Create new token:    1708050
-- Deploy new instance: 5522866
+- Create new token:    1723050
+- Deploy new instance: 5708934
