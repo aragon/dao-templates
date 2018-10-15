@@ -1,0 +1,43 @@
+{
+  "name": "@aragon/kits-beta-base",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Beta Base contract for Kits for v0.5 Aragon orgs",
+  "main": "index.js",
+  "scripts": {
+    "prepublish": "truffle compile",
+    "docker:wait-gas": "truffle exec scripts/sleep-until-gaslimit.js --network devnet 6900000",
+    "docker:run": "docker-compose up -d",
+    "docker:stop": "docker-compose down",
+    "lint": "solium --dir ./contracts",
+    "deploy:deps": "truffle exec --network devnet scripts/deploy_deps.js",
+    "test": "truffle compile && npm run docker:run && npm run docker:wait-gas && npm run deploy:deps && truffle test --network devnet test/docker.js && npm run docker:stop",
+    "coverage": "./node_modules/@aragon/test-helpers/run-coverage.sh",
+    "console": "truffle dev",
+    "ganache-cli:dev": "./node_modules/@aragon/test-helpers/ganache-cli.sh",
+    "ganache-cli:coverage": "SOLIDITY_COVERAGE=true npm run ganache-cli:dev"
+  },
+  "author": "Aragon Institution MTU <contact@aragon.one>",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "@aragon/id": "^2.0.1",
+    "@aragon/test-helpers": "^1.0.0",
+    "dotenv": "^6.1.0",
+    "eth-ens-namehash": "^2.0.8",
+    "eth-gas-reporter": "^0.1.1",
+    "ganache-cli": "^6.0.3",
+    "solidity-coverage": "0.5.8",
+    "solium": "^1.0.4",
+    "truffle": "4.1.14"
+  },
+  "dependencies": {
+    "@aragon/os": "4.0.0-beta.3",
+    "@aragon/apps-shared-minime": "^1.0.0",
+    "@aragon/apps-shared-migrations": "^1.0.0",
+    "@aragon/apps-voting": "^2.0.0-beta.1",
+    "@aragon/apps-vault": "^3.0.0-beta.1",
+    "@aragon/apps-finance": "^2.0.0-beta.1",
+    "@aragon/apps-token-manager": "^2.0.0-beta.1",
+    "@aragon/kits-bare": "^1.0.0"
+  }
+}
