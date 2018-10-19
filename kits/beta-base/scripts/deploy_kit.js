@@ -13,6 +13,8 @@ const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).app
 const globalArtifacts = this.artifacts // Not injected unless called directly via truffle
 const defaultOwner = process.env.OWNER
 const defaultENSAddress = process.env.ENS
+const defaultDAOFactoryAddress = process.env.DAO_FACTORY
+const defaultMinimeTokenFactoryAddress = process.env.MINIME_TOKEN_FACTORY
 
 module.exports = async (
   truffleExecCallback,
@@ -20,9 +22,12 @@ module.exports = async (
     artifacts = globalArtifacts,
     owner = defaultOwner,
     ensAddress = defaultENSAddress,
+    daoFactoryAddress = defaultDAOFactoryAddress,
+    minimeTokenFactoryAddress = defaultMinimeTokenFactoryAddress,
     kitName,
     network,
-    verbose = true
+    verbose = true,
+    returnKit = false
   } = {}
 ) => {
   const log = (...args) => {
@@ -32,6 +37,7 @@ module.exports = async (
   log(`${kitName} in ${network} network`)
 
   const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory')
+  const DAOFactory = artifacts.require('DAOFactory')
   const ENS = artifacts.require('ENS')
 
   const newRepo = async (apm, name, acc, contract) => {
@@ -40,35 +46,51 @@ module.exports = async (
     return await apm.newRepoWithVersion(name, acc, [1, 0, 0], c.address, '0x1245')
   }
 
-  log('owner', owner)
-
-  if (network == 'rpc' && false) { // TODO!!
-    log("Local testing network, exiting...")
-    return;
-  }
-
   let indexFileName
-  if (network != 'rpc' && network != 'devnet') {
-    indexFileName = 'index.js'
-  } else {
-    indexFileName = 'index_local.js'
+  if (!returnKit) {
+    if (network != 'rpc' && network != 'devnet') {
+      indexFileName = 'index.js'
+    } else {
+      indexFileName = 'index_local.js'
+    }
   }
 
-  if (ensAddress === undefined) {
+  if (!ensAddress) {
     const betaIndex = require('../' + indexFileName)
     ensAddress = betaIndex.networks[network].ens
   }
-  log('ens', ensAddress)
+  log('Using ENS', ensAddress)
   const ens = ENS.at(ensAddress)
 
-  const { daoFactory } = await deployDAOFactory(null, { artifacts, verbose: false })
-  const minimeFac = await MiniMeTokenFactory.new()
-  const aragonid = await ens.owner(namehash('aragonid.eth'))
+  let daoFactory
+  if (daoFactoryAddress) {
+    log(`Using provided DAOFactory: ${daoFactoryAddress}`)
+    daoFactory = DAOFactory.at(daoFactoryAddress)
+  } else {
+    daoFactory = (await deployDAOFactory(null, { artifacts, verbose: false })).daoFactory
+    log('Deployed DAOFactory:', daoFactory.address)
+  }
 
+  let minimeFac
+  if (minimeTokenFactoryAddress) {
+    log(`Using provided MiniMeTokenFactory: ${minimeTokenFactoryAddress}`)
+    minimeFac = MiniMeTokenFactory.at(minimeTokenFactoryAddress)
+  } else {
+    minimeFac = await MiniMeTokenFactory.new()
+    log('Deployed MiniMeTokenFactory:', minimeFac.address)
+  }
+
+  const aragonid = await ens.owner(namehash('aragonid.eth'))
   const kit = await artifacts.require(kitName).new(daoFactory.address, ens.address, minimeFac.address, aragonid, appIds)
+
+  if (returnKit) {
+    return kit
+  }
 
   const ts = [ { name: kitName, address: kit.address } ]
   log(ts)
+
+  log('Creating APM package with owner', owner)
 
   if (network == 'devnet') { // Useful for testing to avoid manual deploys with aragon-dev-cli
     const apmAddr = await artifacts.require('PublicResolver').at(await ens.resolver(namehash('aragonpm.eth'))).addr(namehash('aragonpm.eth'))

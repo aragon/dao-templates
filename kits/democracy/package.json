@@ -18,7 +18,9 @@
     "coverage": "./node_modules/@aragon/test-helpers/run-coverage.sh",
     "console": "truffle dev",
     "ganache-cli:dev": "./node_modules/@aragon/test-helpers/ganache-cli.sh",
-    "ganache-cli:coverage": "SOLIDITY_COVERAGE=true npm run ganache-cli:dev"
+    "ganache-cli:coverage": "SOLIDITY_COVERAGE=true npm run ganache-cli:dev",
+    "publish:rpc": "aragon apm publish $(npm run deploy:kit:rpc | tail -n 1) --network rpc",
+    "deploy:kit:rpc": "aragon contracts compile --network rpc && aragon contracts exec --network rpc scripts/deploy-democracy.js"
   },
   "files": [
     "abi/",
