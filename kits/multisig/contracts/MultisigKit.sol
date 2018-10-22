@@ -14,7 +14,24 @@ contract MultisigKit is BetaKitBase {
         BetaKitBase(_fac, _ens, _minimeFac, _aragonID, _appIds) public
     {}
 
-    function newToken(string name, string symbol) external returns (MiniMeToken token) {
+    function newDemoInstance(string name) external {
+        address[] memory holders = new address[](1);
+        holders[0] = msg.sender;
+        newTokenAndInstance(name, name, holders, 1);
+    }
+
+    function newTokenAndInstance(
+        string name,
+        string symbol,
+        address[] signers,
+        uint256 neededSignatures
+    ) public
+    {
+        newToken(name, symbol);
+        newInstance(name, signers, neededSignatures);
+    }
+
+    function newToken(string name, string symbol) public returns (MiniMeToken token) {
         token = minimeFac.createCloneToken(
             MiniMeToken(address(0)),
             0,
@@ -26,7 +43,7 @@ contract MultisigKit is BetaKitBase {
         cacheToken(token, msg.sender);
     }
 
-    function newInstance(string name, address[] signers, uint256 neededSignatures) external {
+    function newInstance(string name, address[] signers, uint256 neededSignatures) public {
         require(signers.length > 0 && neededSignatures > 0);
         require(neededSignatures <= signers.length);
 
