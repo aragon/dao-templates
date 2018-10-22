@@ -31,8 +31,8 @@ contract DemocracyKit is BetaKitBase {
         string name,
         address[] holders,
         uint256[] tokens,
-        uint256 supportNeeded,
-        uint256 minAcceptanceQuorum,
+        uint64 supportNeeded,
+        uint64 minAcceptanceQuorum,
         uint64 voteDuration
     )
         external

@@ -58,8 +58,8 @@ contract MultisigKit is BetaKitBase {
         uint256 multisigSupport = neededSignatures * 10 ** 18 / signers.length - 1;
         voting.initialize(
             token,
-            multisigSupport,
-            multisigSupport,
+            uint64(multisigSupport),
+            uint64(multisigSupport),
             1825 days // ~5 years
         );
 
