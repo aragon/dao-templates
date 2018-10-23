@@ -19,7 +19,7 @@
     "console": "truffle dev",
     "ganache-cli:dev": "./node_modules/@aragon/test-helpers/ganache-cli.sh",
     "ganache-cli:coverage": "SOLIDITY_COVERAGE=true npm run ganache-cli:dev",
-    "publish:rpc": "aragon apm publish $(npm run deploy:kit:rpc | tail -n 1) --network rpc",
+    "publish:rpc": "aragon apm publish major $(npm run deploy:kit:rpc | tail -n 1) --environment default",
     "deploy:kit:rpc": "aragon contracts compile --network rpc && aragon contracts exec --network rpc scripts/democracy-deploy.js"
   },
   "files": [
@@ -33,7 +33,7 @@
   "author": "Aragon Institution MTU <contact@aragon.one>",
   "license": "GPL-3.0",
   "devDependencies": {
-    "@aragon/cli": "^5.1.1",
+    "@aragon/cli": "^5.2.0-beta.1",
     "@aragon/id": "^2.0.1",
     "@aragon/test-helpers": "^1.0.0",
     "dotenv": "^6.1.0",
