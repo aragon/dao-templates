@@ -12,6 +12,6 @@
     "@aragon/os": "4.0.0-rc.1"
   },
   "devDependencies": {
-    "@aragon/cli": "^5.2.0-beta.1"
+    "@aragon/cli": "^5.2.0-beta.2"
   }
 }
