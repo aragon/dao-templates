@@ -60,7 +60,7 @@ contract('Beta Base Kit', accounts => {
 
         // evm script registry
         const regConstants = await getContract('EVMScriptRegistryConstants').new()
-        const reg = await getContract('EVMScriptRegistry').at(await dao.getApp(await dao.APP_ADDR_NAMESPACE(), (await regConstants.EVMSCRIPT_REGISTRY_APP_ID())));
+        const reg = await getContract('EVMScriptRegistry').at(await acl.getEVMScriptRegistry())
         assert.equal(await acl.getPermissionManager(reg.address, (await reg.REGISTRY_ADD_EXECUTOR_ROLE())), votingAddress, 'Registry add executor role manager should match')
         assert.equal(await acl.getPermissionManager(reg.address, (await reg.REGISTRY_MANAGER_ROLE())), votingAddress, 'Registry Manager role manager should match')
 

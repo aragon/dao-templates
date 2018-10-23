@@ -112,7 +112,7 @@ contract('Multisig Kit', accounts => {
 
             // evm script registry
             const regConstants = await getContract('EVMScriptRegistryConstants').new()
-            const reg = await getContract('EVMScriptRegistry').at(await dao.getApp(await dao.APP_ADDR_NAMESPACE(), (await regConstants.EVMSCRIPT_REGISTRY_APP_ID())))
+            const reg = await getContract('EVMScriptRegistry').at(await acl.getEVMScriptRegistry())
             await checkRole(reg.address, await reg.REGISTRY_ADD_EXECUTOR_ROLE(), votingAddress, 'EVMScriptRegistry', 'ADD_EXECUTOR')
             await checkRole(reg.address, await reg.REGISTRY_MANAGER_ROLE(), votingAddress, 'EVMScriptRegistry', 'REGISTRY_MANAGER')
 

@@ -132,7 +132,7 @@ contract BetaKitBase is KitBase, IsContract {
         }
 
         // EVMScriptRegistry permissions
-        EVMScriptRegistry reg = EVMScriptRegistry(dao.getApp(dao.APP_ADDR_NAMESPACE(), EVMSCRIPT_REGISTRY_APP_ID));
+        EVMScriptRegistry reg = EVMScriptRegistry(acl.getEVMScriptRegistry());
         acl.createPermission(voting, reg, reg.REGISTRY_ADD_EXECUTOR_ROLE(), voting);
         acl.createPermission(voting, reg, reg.REGISTRY_MANAGER_ROLE(), voting);
 
