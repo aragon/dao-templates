@@ -5,7 +5,7 @@
   "description": "Beta Base contract for Kits for v0.5 Aragon orgs",
   "main": "index.js",
   "scripts": {
-    "prepublish": "truffle compile",
+    "prepublishOnly": "truffle compile",
     "docker:wait-gas": "truffle exec scripts/sleep-until-gaslimit.js --network devnet 6900000",
     "docker:run": "docker-compose up -d",
     "docker:stop": "docker-compose down",

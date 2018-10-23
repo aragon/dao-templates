@@ -49,10 +49,10 @@
     "@aragon/os": "4.0.0-rc.1",
     "@aragon/apps-shared-minime": "^1.0.0",
     "@aragon/apps-shared-migrations": "^1.0.0",
-    "@aragon/apps-voting": "^2.0.0-rc.1",
+    "@aragon/apps-voting": "^2.0.0-rc.3",
     "@aragon/apps-vault": "^3.0.0-rc.1",
-    "@aragon/apps-finance": "^2.0.0-rc.1",
-    "@aragon/apps-token-manager": "^2.0.0-rc.1",
+    "@aragon/apps-finance": "^2.0.0-rc.2",
+    "@aragon/apps-token-manager": "^2.0.0-rc.2",
     "@aragon/kits-bare": "^1.0.0",
     "@aragon/kits-beta-base": "^1.0.0"
   }
