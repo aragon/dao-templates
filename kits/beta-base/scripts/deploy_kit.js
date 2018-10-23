@@ -55,6 +55,10 @@ module.exports = async (
     }
   }
 
+  if (returnKit && !ensAddress) {
+    errorOut('ENS environment variable not passed, aborting.')
+  }
+
   if (!ensAddress) {
     const betaIndex = require('../' + indexFileName)
     ensAddress = betaIndex.networks[network].ens
@@ -90,9 +94,8 @@ module.exports = async (
   const ts = [ { name: kitName, address: kit.address } ]
   log(ts)
 
-  log('Creating APM package with owner', owner)
-
   if (network == 'devnet') { // Useful for testing to avoid manual deploys with aragon-dev-cli
+    log('Creating APM package with owner', owner)
     const apmAddr = await artifacts.require('PublicResolver').at(await ens.resolver(namehash('aragonpm.eth'))).addr(namehash('aragonpm.eth'))
     const apm = artifacts.require('APMRegistry').at(apmAddr)
     log('APM', apmAddr);

@@ -15,22 +15,6 @@ contract DemocracyKit is BetaKitBase {
         public
     {}
 
-    function newDemoInstance(string name) external {
-        address[] memory holders = new address[](1);
-        holders[0] = msg.sender;
-        uint256[] memory balances = new uint256[](1);
-        balances[0] = 10 ** 18; // 1 token
-        newTokenAndInstance(
-            name,
-            name,
-            holders,
-            balances,
-            50 * 10 ** 16, // 50% support
-            20 * 10 ** 16, // 20% quorum
-            1 days
-        );
-    }
-
     function newTokenAndInstance(
         string name,
         string symbol,
