@@ -1,9 +1,12 @@
 pragma solidity 0.4.24;
 
+import "@aragon/os/contracts/common/Uint256Helpers.sol";
 import "@aragon/kits-beta-base/contracts/BetaKitBase.sol";
 
 
 contract MultisigKit is BetaKitBase {
+    using Uint256Helpers for uint256;
+
     constructor(
         DAOFactory _fac,
         ENS _ens,
@@ -14,7 +17,18 @@ contract MultisigKit is BetaKitBase {
         BetaKitBase(_fac, _ens, _minimeFac, _aragonID, _appIds) public
     {}
 
-    function newToken(string name, string symbol) external returns (MiniMeToken token) {
+    function newTokenAndInstance(
+        string name,
+        string symbol,
+        address[] signers,
+        uint256 neededSignatures
+    ) public
+    {
+        newToken(name, symbol);
+        newInstance(name, signers, neededSignatures);
+    }
+
+    function newToken(string name, string symbol) public returns (MiniMeToken token) {
         token = minimeFac.createCloneToken(
             MiniMeToken(address(0)),
             0,
@@ -26,7 +40,7 @@ contract MultisigKit is BetaKitBase {
         cacheToken(token, msg.sender);
     }
 
-    function newInstance(string name, address[] signers, uint256 neededSignatures) external {
+    function newInstance(string name, address[] signers, uint256 neededSignatures) public {
         require(signers.length > 0 && neededSignatures > 0);
         require(neededSignatures <= signers.length);
 
@@ -58,8 +72,8 @@ contract MultisigKit is BetaKitBase {
         uint256 multisigSupport = neededSignatures * 10 ** 18 / signers.length - 1;
         voting.initialize(
             token,
-            multisigSupport,
-            multisigSupport,
+            multisigSupport.toUint64(),
+            multisigSupport.toUint64(),
             1825 days // ~5 years
         );
 

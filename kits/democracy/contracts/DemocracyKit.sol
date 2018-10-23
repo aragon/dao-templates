@@ -15,7 +15,28 @@ contract DemocracyKit is BetaKitBase {
         public
     {}
 
-    function newToken(string name, string symbol) external returns (MiniMeToken token) {
+    function newTokenAndInstance(
+        string name,
+        string symbol,
+        address[] holders,
+        uint256[] tokens,
+        uint64 supportNeeded,
+        uint64 minAcceptanceQuorum,
+        uint64 voteDuration
+    ) public
+    {
+        newToken(name, symbol);
+        newInstance(
+            name,
+            holders,
+            tokens,
+            supportNeeded,
+            minAcceptanceQuorum,
+            voteDuration
+        );
+    }
+
+    function newToken(string name, string symbol) public returns (MiniMeToken token) {
         token = minimeFac.createCloneToken(
             MiniMeToken(address(0)),
             0,
@@ -31,11 +52,11 @@ contract DemocracyKit is BetaKitBase {
         string name,
         address[] holders,
         uint256[] tokens,
-        uint256 supportNeeded,
-        uint256 minAcceptanceQuorum,
+        uint64 supportNeeded,
+        uint64 minAcceptanceQuorum,
         uint64 voteDuration
     )
-        external
+        public
     {
         MiniMeToken token = popTokenCache(msg.sender);
         Kernel dao;

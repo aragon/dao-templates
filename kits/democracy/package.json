@@ -18,7 +18,9 @@
     "coverage": "./node_modules/@aragon/test-helpers/run-coverage.sh",
     "console": "truffle dev",
     "ganache-cli:dev": "./node_modules/@aragon/test-helpers/ganache-cli.sh",
-    "ganache-cli:coverage": "SOLIDITY_COVERAGE=true npm run ganache-cli:dev"
+    "ganache-cli:coverage": "SOLIDITY_COVERAGE=true npm run ganache-cli:dev",
+    "publish:rpc": "aragon apm publish major $(npm run deploy:kit:rpc | tail -n 1) --environment default",
+    "deploy:kit:rpc": "aragon contracts compile --all && aragon contracts exec --network rpc scripts/democracy-deploy.js"
   },
   "files": [
     "abi/",
@@ -31,6 +33,7 @@
   "author": "Aragon Institution MTU <contact@aragon.one>",
   "license": "GPL-3.0",
   "devDependencies": {
+    "@aragon/cli": "^5.2.0-beta.2",
     "@aragon/id": "^2.0.1",
     "@aragon/test-helpers": "^1.0.0",
     "dotenv": "^6.1.0",
@@ -43,13 +46,13 @@
     "truffle-extract": "^1.2.1"
   },
   "dependencies": {
-    "@aragon/os": "4.0.0-beta.3",
+    "@aragon/os": "4.0.0-rc.1",
     "@aragon/apps-shared-minime": "^1.0.0",
     "@aragon/apps-shared-migrations": "^1.0.0",
-    "@aragon/apps-voting": "^2.0.0-beta.1",
-    "@aragon/apps-vault": "^3.0.0-beta.1",
-    "@aragon/apps-finance": "^2.0.0-beta.1",
-    "@aragon/apps-token-manager": "^2.0.0-beta.1",
+    "@aragon/apps-voting": "^2.0.0-rc.3",
+    "@aragon/apps-vault": "^3.0.0-rc.1",
+    "@aragon/apps-finance": "^2.0.0-rc.2",
+    "@aragon/apps-token-manager": "^2.0.0-rc.2",
     "@aragon/kits-bare": "^1.0.0",
     "@aragon/kits-beta-base": "^1.0.0"
   }

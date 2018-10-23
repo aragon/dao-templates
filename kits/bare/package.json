@@ -5,13 +5,13 @@
   "author": "Aragon One AG <contact@aragon.one>",
   "license": "GPL-3.0",
   "scripts": {
-    "publish:rpc": "aragon apm publish $(npm run deploy:kit:rpc | tail -n 1) --network rpc",
-    "deploy:kit:rpc": "aragon contracts compile --network rpc && aragon contracts exec --network rpc scripts/deploy.js"
+    "publish:rpc": "aragon apm publish major $(npm run deploy:kit:rpc | tail -n 1) --environment default",
+    "deploy:kit:rpc": "aragon contracts compile --all && aragon contracts exec --network rpc scripts/deploy.js"
   },
   "dependencies": {
-    "@aragon/os": "4.0.0-beta.2"
+    "@aragon/os": "4.0.0-rc.1"
   },
   "devDependencies": {
-    "@aragon/cli": "^4.1.6"
+    "@aragon/cli": "^5.2.0-beta.2"
   }
 }
