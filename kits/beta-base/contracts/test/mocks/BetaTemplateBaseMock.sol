@@ -39,7 +39,14 @@ contract BetaKitBaseMock is BetaKitBase {
         uint256 _maxTokens
     )
         public
-        returns (Kernel)
+        returns (
+            Kernel dao,
+            ACL acl,
+            Finance finance,
+            TokenManager tokenManager,
+            Vault vault,
+            Voting voting
+        )
     {
         return createDAO(_name, _token, _holders, _stakes, _maxTokens);
     }
