@@ -5,7 +5,7 @@ const deployDAOFactory = require('@aragon/os/scripts/deploy-daofactory.js')
 
 
 const apps = ['finance', 'token-manager', 'vault', 'voting']
-const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).appName))
+const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).environments.default.appName))
 
 const getContract = name => artifacts.require(name)
 const getEventResult = (receipt, event, param) => receipt.logs.filter(l => l.event == event)[0].args[param]

@@ -9,7 +9,7 @@ const deploy_id = require('@aragon/id/scripts/deploy-beta-aragonid.js')
 
 // ensure alphabetic order
 const apps = ['finance', 'token-manager', 'vault', 'voting']
-const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).appName))
+const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).environments.default.appName))
 
 const newRepo = async (apm, name, acc, contract) => {
   console.log(`Creating Repo for ${contract}`)

@@ -14,7 +14,7 @@ const Vault = artifacts.require('Vault')
 const Voting = artifacts.require('Voting')
 
 const apps = ['finance', 'token-manager', 'vault', 'voting']
-const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).appName))
+const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).environments.default.appName))
 
 const getContract = name => artifacts.require(name)
 const getKit = (indexObj, kitName) => getContract(kitName).at(indexObj.networks['devnet'].kits.filter(x => x.name == kitName)[0].address)
