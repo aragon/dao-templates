@@ -77,7 +77,7 @@ contract('Beta Base Kit', accounts => {
         const finance = await getContract('Finance').at(financeAddress)
         assert.equal(await acl.getPermissionManager(financeAddress, (await finance.CREATE_PAYMENTS_ROLE())), votingAddress, 'Finance Create Payments role manager should match')
         assert.equal(await acl.getPermissionManager(financeAddress, (await finance.EXECUTE_PAYMENTS_ROLE())), votingAddress, 'Finance Execute Payments role manager should match')
-        assert.equal(await acl.getPermissionManager(financeAddress, (await finance.DISABLE_PAYMENTS_ROLE())), votingAddress, 'Finance Disable Payments role manager should match')
+        assert.equal(await acl.getPermissionManager(financeAddress, (await finance.MANAGE_PAYMENTS_ROLE())), votingAddress, 'Finance Manage Payments role manager should match')
 
         // token manager
         const tokenManager = await getContract('TokenManager').at(tokenManagerAddress)

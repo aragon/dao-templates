@@ -138,7 +138,7 @@ contract('Democracy Kit', accounts => {
             // finance
             await checkRole(financeAddress, await finance.CREATE_PAYMENTS_ROLE(), votingAddress, 'Finance', 'CREATE_PAYMENTS')
             await checkRole(financeAddress, await finance.EXECUTE_PAYMENTS_ROLE(), votingAddress, 'Finance', 'EXECUTE_PAYMENTS')
-            await checkRole(financeAddress, await finance.DISABLE_PAYMENTS_ROLE(), votingAddress, 'Finance', 'DISABLE_PAYMENTS')
+            await checkRole(financeAddress, await finance.MANAGE_PAYMENTS_ROLE(), votingAddress, 'Finance', 'MANAGE_PAYMENTS')
 
             // token manager
             await checkRole(tokenManagerAddress, await tokenManager.ASSIGN_ROLE(), votingAddress, 'TokenManager', 'ASSIGN')
@@ -163,15 +163,14 @@ contract('Democracy Kit', accounts => {
                 executionTarget = await getContract('ExecutionTarget').new()
                 const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
                 script = encodeCallScript([action, action])
-                voteId = createdVoteId(await voting.newVote(script, 'metadata', true, true, { from: owner }))
+                voteId = createdVoteId(await voting.newVote(script, 'metadata', { from: owner }))
             })
 
             it('has correct state', async() => {
-                const [isOpen, isExecuted, creator, startDate, snapshotBlock, requiredSupport, minQuorum, y, n, totalVoters, execScript] = await voting.getVote(voteId)
+                const [isOpen, isExecuted, startDate, snapshotBlock, requiredSupport, minQuorum, y, n, totalVoters, execScript] = await voting.getVote(voteId)
 
                 assert.isTrue(isOpen, 'vote should be open')
                 assert.isFalse(isExecuted, 'vote should be executed')
-                assert.equal(creator, owner, 'creator should be correct')
                 assert.equal(snapshotBlock, await getBlockNumber() - 1, 'snapshot block should be correct')
                 assert.equal(requiredSupport.toString(), neededSupport.toString(), 'min quorum should be app min quorum')
                 assert.equal(minQuorum.toString(), minimumAcceptanceQuorum.toString(), 'min quorum should be app min quorum')
@@ -179,14 +178,13 @@ contract('Democracy Kit', accounts => {
                 assert.equal(n, 0, 'initial nay should be 0')
                 assert.equal(totalVoters.toString(), new web3.BigNumber(100e18).toString(), 'total voters should be 100')
                 assert.equal(execScript, script, 'script should be correct')
-                assert.equal(await voting.getVoteMetadata(voteId), 'metadata', 'should have returned correct metadata')
             })
 
             it('holder can vote', async () => {
                 await voting.vote(voteId, false, true, { from: holder29 })
                 const state = await voting.getVote(voteId)
 
-                assert.equal(state[8].toString(), new web3.BigNumber(29e18).toString(), 'nay vote should have been counted')
+                assert.equal(state[7].toString(), new web3.BigNumber(29e18).toString(), 'nay vote should have been counted')
             })
 
             it('holder can modify vote', async () => {
@@ -195,8 +193,8 @@ contract('Democracy Kit', accounts => {
                 await voting.vote(voteId, true, true, { from: holder29 })
                 const state = await voting.getVote(voteId)
 
-                assert.equal(state[7].toString(), new web3.BigNumber(29e18).toString(), 'yea vote should have been counted')
-                assert.equal(state[8], 0, 'nay vote should have been removed')
+                assert.equal(state[6].toString(), new web3.BigNumber(29e18).toString(), 'yea vote should have been counted')
+                assert.equal(state[7], 0, 'nay vote should have been removed')
             })
 
             it('throws when non-holder votes', async () => {
@@ -275,7 +273,7 @@ contract('Democracy Kit', accounts => {
             await finance.sendTransaction({ value: payment, from: owner })
             const action = { to: financeProxyAddress, calldata: finance.contract.newPayment.getData(ETH, nonHolder, payment, 0, 0, 1, "voting payment") }
             script = encodeCallScript([action])
-            voteId = createdVoteId(await voting.newVote(script, 'metadata', true, true, { from: owner }))
+            voteId = createdVoteId(await voting.newVote(script, 'metadata', { from: owner }))
         })
 
         it('finance can not be accessed directly (without a vote)', async () => {
