@@ -15,6 +15,6 @@ env:
   - TASK=lint
   - TASK=test:beta-base
   - TASK=test:democracy
-  - TASK=test:survey
+  - TASK=test:multisig
 script:
   - travis_wait 60 npm run $TASK
