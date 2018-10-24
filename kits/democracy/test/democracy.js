@@ -41,7 +41,7 @@ contract('Democracy Kit', accounts => {
 
     const neededSupport = pct16(50)
     const minimumAcceptanceQuorum = pct16(20)
-    const votingTime = 10
+    const votingTime = 600
 
     before(async () => {
         // create Democracy Kit
@@ -178,7 +178,7 @@ contract('Democracy Kit', accounts => {
 
                 assert.isTrue(isOpen, 'vote should be open')
                 assert.isFalse(isExecuted, 'vote should be executed')
-                assert.equal(snapshotBlock, await getBlockNumber() - 1, 'snapshot block should be correct')
+                assert.equal(snapshotBlock.toString(), await getBlockNumber() - 1, 'snapshot block should be correct')
                 assert.equal(requiredSupport.toString(), neededSupport.toString(), 'min quorum should be app min quorum')
                 assert.equal(minQuorum.toString(), minimumAcceptanceQuorum.toString(), 'min quorum should be app min quorum')
                 assert.equal(y, 0, 'initial yea should be 0')

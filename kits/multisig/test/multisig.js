@@ -198,7 +198,7 @@ contract('Multisig Kit', accounts => {
 
                 assert.isTrue(isOpen, 'vote should be open')
                 assert.isFalse(isExecuted, 'vote should be executed')
-                assert.equal(snapshotBlock, await getBlockNumber() - 1, 'snapshot block should be correct')
+                assert.equal(snapshotBlock.toString(), await getBlockNumber() - 1, 'snapshot block should be correct')
                 assert.equal(requiredSupport.toString(), multisigSupport.toString(), 'min quorum should be app min quorum')
                 assert.equal(minQuorum.toString(), multisigSupport.toString(), 'min quorum should be app min quorum')
                 assert.equal(y, 0, 'initial yea should be 0')
