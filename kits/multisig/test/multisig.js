@@ -38,7 +38,7 @@ contract('Multisig Kit', accounts => {
     let financeAddress, tokenManagerAddress, vaultAddress, votingAddress
     let finance, tokenManager, vault, voting
     let kit, receiptInstance
-    const owner = process.env.OWNER //'0x1f7402f55e142820ea3812106d0657103fc1709e'
+    const owner = accounts[0]
     const signer1 = accounts[1]
     const signer2 = accounts[2]
     const signer3 = accounts[3]

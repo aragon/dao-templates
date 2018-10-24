@@ -33,7 +33,7 @@ contract('Democracy Kit', accounts => {
     let finance, tokenManager, vault, voting
     let kit, receiptInstance
 
-    const owner = process.env.OWNER //'0x1f7402f55e142820ea3812106d0657103fc1709e'
+    const owner = accounts[0]
     const holder20 = accounts[1]
     const holder29 = accounts[2]
     const holder51 = accounts[3]
