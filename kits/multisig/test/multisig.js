@@ -49,10 +49,10 @@ contract('Multisig Kit', accounts => {
 
     before(async () => {
         // transfer some ETH to other accounts
-        await web3.eth.sendTransaction({ from: owner, to: signer1, value: web3.toWei(1, 'ether') })
-        await web3.eth.sendTransaction({ from: owner, to: signer2, value: web3.toWei(1, 'ether') })
-        await web3.eth.sendTransaction({ from: owner, to: signer3, value: web3.toWei(1, 'ether') })
-        await web3.eth.sendTransaction({ from: owner, to: nonHolder, value: web3.toWei(1, 'ether') })
+        await web3.eth.sendTransaction({ from: owner, to: signer1, value: web3.toWei(10, 'ether') })
+        await web3.eth.sendTransaction({ from: owner, to: signer2, value: web3.toWei(10, 'ether') })
+        await web3.eth.sendTransaction({ from: owner, to: signer3, value: web3.toWei(10, 'ether') })
+        await web3.eth.sendTransaction({ from: owner, to: nonHolder, value: web3.toWei(10, 'ether') })
 
         // create Multisig Kit
         kit = await getKit(indexObj, 'MultisigKit')
