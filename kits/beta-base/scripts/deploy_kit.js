@@ -5,6 +5,7 @@ const fs = require('fs')
 const namehash = require('eth-ens-namehash').hash
 
 const deployDAOFactory = require('@aragon/os/scripts/deploy-daofactory.js')
+const logDeploy = require('@aragon/os/scripts/helpers/deploy-logger')
 
 // ensure alphabetic order
 const apps = ['finance', 'token-manager', 'vault', 'voting']
@@ -86,6 +87,8 @@ module.exports = async (
 
   const aragonid = await ens.owner(namehash('aragonid.eth'))
   const kit = await artifacts.require(kitName).new(daoFactory.address, ens.address, minimeFac.address, aragonid, appIds)
+
+  await logDeploy(kit)
 
   if (returnKit) {
     return kit

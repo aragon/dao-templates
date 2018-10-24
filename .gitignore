@@ -22,3 +22,4 @@ lerna-debug.log
 */**/build
 */**/abis.json
 */**/.DS_Store
+*/**/flattened_contracts
