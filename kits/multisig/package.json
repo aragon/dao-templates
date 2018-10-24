@@ -14,6 +14,7 @@
     "docker:stop": "cd ./node_modules/@aragon/kits-beta-base/; docker-compose down; cd -",
     "lint": "solium --dir ./contracts",
     "test:devnet": "truffle test --network devnet test/multisig.js",
+    "test:rinkeby": "truffle test --network rinkeby test/multisig.js",
     "test": "truffle compile && npm run docker:run && npm run docker:wait-gas && npm run deploy:devnet && npm run test:devnet && npm run docker:stop",
     "coverage": "./node_modules/@aragon/test-helpers/run-coverage.sh",
     "console": "truffle dev",

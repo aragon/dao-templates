@@ -17,7 +17,7 @@ const apps = ['finance', 'token-manager', 'vault', 'voting']
 const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).environments.default.appName))
 
 const getContract = name => artifacts.require(name)
-const getKit = (indexObj, kitName) => getContract(kitName).at(indexObj.networks['devnet'].kits.filter(x => x.name == kitName)[0].address)
+const getKit = (indexObj, networkName, kitName) => getContract(kitName).at(indexObj.networks[networkName].kits.filter(x => x.name == kitName)[0].address)
 const pct16 = x => new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
 const getEventResult = (receipt, event, param) => receipt.logs.filter(l => l.event == event)[0].args[param]
 const getVoteId = (receipt) => {
@@ -28,6 +28,8 @@ const getVoteId = (receipt) => {
     return web3.toDecimal(logs[0].topics[1])
 }
 const getAppProxy = (receipt, id) => receipt.logs.filter(l => l.event == 'InstalledApp' && l.args.appId == id)[0].args.appProxy
+const networks = require("@aragon/os/truffle-config").networks
+const getNetwork = require('../../../helpers/networks.js')
 
 
 contract('Multisig Kit', accounts => {
@@ -37,25 +39,30 @@ contract('Multisig Kit', accounts => {
     let finance, tokenManager, vault, voting
     let kit, receiptInstance
     const owner = process.env.OWNER //'0x1f7402f55e142820ea3812106d0657103fc1709e'
-    const signer1 = accounts[6]
-    const signer2 = accounts[7]
-    const signer3 = accounts[8]
-    const nonHolder = accounts[9]
-    let indexObj = require('../index_local.js')
+    const signer1 = accounts[1]
+    const signer2 = accounts[2]
+    const signer3 = accounts[3]
+    const nonHolder = accounts[4]
 
     const signers = [signer1, signer2, signer3]
     const neededSignatures = 2
     const multisigSupport = new web3.BigNumber(10 ** 18).times(neededSignatures).dividedToIntegerBy(signers.length).minus(1)
 
     before(async () => {
-        // transfer some ETH to other accounts
-        await web3.eth.sendTransaction({ from: owner, to: signer1, value: web3.toWei(10, 'ether') })
-        await web3.eth.sendTransaction({ from: owner, to: signer2, value: web3.toWei(10, 'ether') })
-        await web3.eth.sendTransaction({ from: owner, to: signer3, value: web3.toWei(10, 'ether') })
-        await web3.eth.sendTransaction({ from: owner, to: nonHolder, value: web3.toWei(10, 'ether') })
-
         // create Multisig Kit
-        kit = await getKit(indexObj, 'MultisigKit')
+        const networkName = (await getNetwork(networks)).name
+        let indexObj
+        if (networkName == 'devnet' || networkName == 'rpc') {
+            // transfer some ETH to other accounts
+            await web3.eth.sendTransaction({ from: owner, to: signer1, value: web3.toWei(10, 'ether') })
+            await web3.eth.sendTransaction({ from: owner, to: signer2, value: web3.toWei(10, 'ether') })
+            await web3.eth.sendTransaction({ from: owner, to: signer3, value: web3.toWei(10, 'ether') })
+            await web3.eth.sendTransaction({ from: owner, to: nonHolder, value: web3.toWei(10, 'ether') })
+            indexObj = require('../index_local.js')
+        } else {
+            indexObj = require('../index.js')
+        }
+        kit = await getKit(indexObj, networkName, 'MultisigKit')
 
         // create Token
         const receiptToken = await kit.newToken('MultisigToken', 'MTT')
