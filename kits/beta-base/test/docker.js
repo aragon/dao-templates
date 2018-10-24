@@ -5,7 +5,7 @@ const deployDAOFactory = require('@aragon/os/scripts/deploy-daofactory.js')
 
 
 const apps = ['finance', 'token-manager', 'vault', 'voting']
-const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).appName))
+const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).environments.default.appName))
 
 const getContract = name => artifacts.require(name)
 const getEventResult = (receipt, event, param) => receipt.logs.filter(l => l.event == event)[0].args[param]
@@ -60,7 +60,7 @@ contract('Beta Base Kit', accounts => {
 
         // evm script registry
         const regConstants = await getContract('EVMScriptRegistryConstants').new()
-        const reg = await getContract('EVMScriptRegistry').at(await dao.getApp(await dao.APP_ADDR_NAMESPACE(), (await regConstants.EVMSCRIPT_REGISTRY_APP_ID())));
+        const reg = await getContract('EVMScriptRegistry').at(await acl.getEVMScriptRegistry())
         assert.equal(await acl.getPermissionManager(reg.address, (await reg.REGISTRY_ADD_EXECUTOR_ROLE())), votingAddress, 'Registry add executor role manager should match')
         assert.equal(await acl.getPermissionManager(reg.address, (await reg.REGISTRY_MANAGER_ROLE())), votingAddress, 'Registry Manager role manager should match')
 
@@ -77,7 +77,7 @@ contract('Beta Base Kit', accounts => {
         const finance = await getContract('Finance').at(financeAddress)
         assert.equal(await acl.getPermissionManager(financeAddress, (await finance.CREATE_PAYMENTS_ROLE())), votingAddress, 'Finance Create Payments role manager should match')
         assert.equal(await acl.getPermissionManager(financeAddress, (await finance.EXECUTE_PAYMENTS_ROLE())), votingAddress, 'Finance Execute Payments role manager should match')
-        assert.equal(await acl.getPermissionManager(financeAddress, (await finance.DISABLE_PAYMENTS_ROLE())), votingAddress, 'Finance Disable Payments role manager should match')
+        assert.equal(await acl.getPermissionManager(financeAddress, (await finance.MANAGE_PAYMENTS_ROLE())), votingAddress, 'Finance Manage Payments role manager should match')
 
         // token manager
         const tokenManager = await getContract('TokenManager').at(tokenManagerAddress)

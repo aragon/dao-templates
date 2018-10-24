@@ -14,7 +14,7 @@ const Vault = artifacts.require('Vault')
 const Voting = artifacts.require('Voting')
 
 const apps = ['finance', 'token-manager', 'vault', 'voting']
-const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).appName))
+const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).environments.default.appName))
 
 const getContract = name => artifacts.require(name)
 const getKit = (indexObj, kitName) => getContract(kitName).at(indexObj.networks['devnet'].kits.filter(x => x.name == kitName)[0].address)
@@ -23,7 +23,7 @@ const getEventResult = (receipt, event, param) => receipt.logs.filter(l => l.eve
 const getVoteId = (receipt) => {
     const logs = receipt.receipt.logs.filter(
         l =>
-            l.topics[0] == web3.sha3('StartVote(uint256)')
+            l.topics[0] == web3.sha3('StartVote(uint256,address,string)')
     )
     return web3.toDecimal(logs[0].topics[1])
 }
@@ -49,10 +49,10 @@ contract('Multisig Kit', accounts => {
 
     before(async () => {
         // transfer some ETH to other accounts
-        await web3.eth.sendTransaction({ from: owner, to: signer1, value: web3.toWei(1, 'ether') })
-        await web3.eth.sendTransaction({ from: owner, to: signer2, value: web3.toWei(1, 'ether') })
-        await web3.eth.sendTransaction({ from: owner, to: signer3, value: web3.toWei(1, 'ether') })
-        await web3.eth.sendTransaction({ from: owner, to: nonHolder, value: web3.toWei(1, 'ether') })
+        await web3.eth.sendTransaction({ from: owner, to: signer1, value: web3.toWei(10, 'ether') })
+        await web3.eth.sendTransaction({ from: owner, to: signer2, value: web3.toWei(10, 'ether') })
+        await web3.eth.sendTransaction({ from: owner, to: signer3, value: web3.toWei(10, 'ether') })
+        await web3.eth.sendTransaction({ from: owner, to: nonHolder, value: web3.toWei(10, 'ether') })
 
         // create Multisig Kit
         kit = await getKit(indexObj, 'MultisigKit')
@@ -112,7 +112,7 @@ contract('Multisig Kit', accounts => {
 
             // evm script registry
             const regConstants = await getContract('EVMScriptRegistryConstants').new()
-            const reg = await getContract('EVMScriptRegistry').at(await dao.getApp(await dao.APP_ADDR_NAMESPACE(), (await regConstants.EVMSCRIPT_REGISTRY_APP_ID())))
+            const reg = await getContract('EVMScriptRegistry').at(await acl.getEVMScriptRegistry())
             await checkRole(reg.address, await reg.REGISTRY_ADD_EXECUTOR_ROLE(), votingAddress, 'EVMScriptRegistry', 'ADD_EXECUTOR')
             await checkRole(reg.address, await reg.REGISTRY_MANAGER_ROLE(), votingAddress, 'EVMScriptRegistry', 'REGISTRY_MANAGER')
 
@@ -127,7 +127,7 @@ contract('Multisig Kit', accounts => {
             // finance
             await checkRole(financeAddress, await finance.CREATE_PAYMENTS_ROLE(), votingAddress, 'Finance', 'CREATE_PAYMENTS')
             await checkRole(financeAddress, await finance.EXECUTE_PAYMENTS_ROLE(), votingAddress, 'Finance', 'EXECUTE_PAYMENTS')
-            await checkRole(financeAddress, await finance.DISABLE_PAYMENTS_ROLE(), votingAddress, 'Finance', 'DISABLE_PAYMENTS')
+            await checkRole(financeAddress, await finance.MANAGE_PAYMENTS_ROLE(), votingAddress, 'Finance', 'MANAGE_PAYMENTS')
 
             // token manager
             await checkRole(tokenManagerAddress, await tokenManager.ASSIGN_ROLE(), votingAddress, 'TokenManager', 'ASSIGN')
@@ -147,7 +147,7 @@ contract('Multisig Kit', accounts => {
         it('changes support threshold thru voting', async () => {
             const action1 = { to: voting.address, calldata: voting.contract.changeSupportRequiredPct.getData(multisigSupport.add(1)) }
             const script1 = encodeCallScript([action1])
-            const action2 = { to: voting.address, calldata: voting.contract.newVote.getData(script1, 'metadata', true, true) }
+            const action2 = { to: voting.address, calldata: voting.contract.newVote.getData(script1, 'metadata') }
             const script2 = encodeCallScript([action2])
             const r1 = await tokenManager.forward(script2, { from: signer1 })
             const voteId1 = getVoteId(r1)
@@ -156,12 +156,12 @@ contract('Multisig Kit', accounts => {
             const supportThreshold1 = await voting.supportRequiredPct()
             assert.equal(supportThreshold1.toString(), multisigSupport.add(1).toString(), 'Support should have changed')
             const vote = await voting.getVote(voteId1)
-            assert.equal(vote[5].toString(), multisigSupport.toString(), 'Support for previous vote should not have changed')
+            assert.equal(vote[4].toString(), multisigSupport.toString(), 'Support for previous vote should not have changed')
 
             // back to original value
             const action3 = { to: voting.address, calldata: voting.contract.changeSupportRequiredPct.getData(multisigSupport) }
             const script3 = encodeCallScript([action3])
-            const action4 = { to: voting.address, calldata: voting.contract.newVote.getData(script3, 'metadata', true, true) }
+            const action4 = { to: voting.address, calldata: voting.contract.newVote.getData(script3, 'metadata') }
             const script4 = encodeCallScript([action4])
             const r2 = await tokenManager.forward(script4, { from: signer1 })
             const voteId2 = getVoteId(r2)
@@ -180,18 +180,17 @@ contract('Multisig Kit', accounts => {
                 executionTarget = await getContract('ExecutionTarget').new()
                 const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
                 script = encodeCallScript([action, action])
-                const action2 = { to: voting.address, calldata: voting.contract.newVote.getData(script, 'metadata', true, true) }
+                const action2 = { to: voting.address, calldata: voting.contract.newVote.getData(script, 'metadata') }
                 const script2 = encodeCallScript([action2])
                 const r = await tokenManager.forward(script2, { from: signer1 })
                 voteId = getVoteId(r)
             })
 
             it('has correct state', async() => {
-                const [isOpen, isExecuted, creator, startDate, snapshotBlock, requiredSupport, minQuorum, y, n, totalVoters, execScript] = await voting.getVote(voteId)
+                const [isOpen, isExecuted, startDate, snapshotBlock, requiredSupport, minQuorum, y, n, totalVoters, execScript] = await voting.getVote(voteId)
 
                 assert.isTrue(isOpen, 'vote should be open')
                 assert.isFalse(isExecuted, 'vote should be executed')
-                assert.equal(creator, tokenManager.address, 'creator should be correct')
                 assert.equal(snapshotBlock, await getBlockNumber() - 1, 'snapshot block should be correct')
                 assert.equal(requiredSupport.toString(), multisigSupport.toString(), 'min quorum should be app min quorum')
                 assert.equal(minQuorum.toString(), multisigSupport.toString(), 'min quorum should be app min quorum')
@@ -199,14 +198,13 @@ contract('Multisig Kit', accounts => {
                 assert.equal(n, 0, 'initial nay should be 0')
                 assert.equal(totalVoters.toString(), signers.length, 'total voters should be number of signers')
                 assert.equal(execScript, script, 'script should be correct')
-                assert.equal(await voting.getVoteMetadata(voteId), 'metadata', 'should have returned correct metadata')
             })
 
             it('holder can vote', async () => {
                 await voting.vote(voteId, false, true, { from: signer2 })
                 const state = await voting.getVote(voteId)
 
-                assert.equal(state[8].toString(), 1, 'nay vote should have been counted')
+                assert.equal(state[7].toString(), 1, 'nay vote should have been counted')
             })
 
             it('holder can modify vote', async () => {
@@ -215,8 +213,8 @@ contract('Multisig Kit', accounts => {
                 await voting.vote(voteId, true, true, { from: signer2 })
                 const state = await voting.getVote(voteId)
 
-                assert.equal(state[7].toString(), 1, 'yea vote should have been counted')
-                assert.equal(state[8], 0, 'nay vote should have been removed')
+                assert.equal(state[6].toString(), 1, 'yea vote should have been counted')
+                assert.equal(state[7], 0, 'nay vote should have been removed')
             })
 
             it('throws when non-holder votes', async () => {
@@ -265,7 +263,7 @@ contract('Multisig Kit', accounts => {
             //await logBalances(financeProxyAddress, vaultProxyAddress)
             const action = { to: financeProxyAddress, calldata: finance.contract.newPayment.getData(ETH, nonHolder, payment, 0, 0, 1, "voting payment") }
             script = encodeCallScript([action])
-            const action2 = { to: voting.address, calldata: voting.contract.newVote.getData(script, 'metadata', true, true) }
+            const action2 = { to: voting.address, calldata: voting.contract.newVote.getData(script, 'metadata') }
             const script2 = encodeCallScript([action2])
             const r = await tokenManager.forward(script2, { from: signer1 })
             voteId = getVoteId(r)
