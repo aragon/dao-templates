@@ -20,7 +20,9 @@
     "ganache-cli:dev": "./node_modules/@aragon/test-helpers/ganache-cli.sh",
     "ganache-cli:coverage": "SOLIDITY_COVERAGE=true npm run ganache-cli:dev",
     "publish:rpc": "aragon apm publish major $(npm run deploy:kit:rpc | tail -n 1) --environment default",
-    "deploy:kit:rpc": "aragon contracts compile --all && aragon contracts exec --network rpc scripts/democracy-deploy.js"
+    "deploy:kit:rpc": "aragon contracts compile --all && aragon contracts exec --network rpc scripts/democracy-deploy.js",
+    "publish:staging": "aragon apm publish major $(npm run deploy:kit:staging | tail -n 1) --environment staging",
+    "deploy:kit:staging": "aragon contracts compile --all && ENS=0xfe03625ea880a8cba336f9b5ad6e15b0a3b5a939 aragon contracts exec --network rinkeby scripts/democracy-deploy.js"
   },
   "files": [
     "abi/",
