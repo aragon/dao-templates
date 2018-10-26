@@ -58,6 +58,8 @@ contract DemocracyKit is BetaKitBase {
     )
         public
     {
+        require(voteDuration > 0); // TODO: remove it once we add it to Voting app
+
         MiniMeToken token = popTokenCache(msg.sender);
         Kernel dao;
         ACL acl;
