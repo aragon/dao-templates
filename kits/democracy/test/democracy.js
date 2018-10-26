@@ -18,13 +18,31 @@ const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).env
 
 const getContract = name => artifacts.require(name)
 
-const getKit = (indexObj, networkName, kitName) => getContract(kitName).at(indexObj.networks[networkName].kits.filter(x => x.name == kitName)[0].address)
 const pct16 = x => new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
 const getEventResult = (receipt, event, param) => receipt.logs.filter(l => l.event == event)[0].args[param]
 const createdVoteId = receipt => getEventResult(receipt, 'StartVote', 'voteId')
 const getAppProxy = (receipt, id) => receipt.logs.filter(l => l.event == 'InstalledApp' && l.args.appId == id)[0].args.appProxy
 const networks = require("@aragon/os/truffle-config").networks
 const getNetwork = require('../../../helpers/networks.js')
+const getKit = async (networkName) => {
+    let arappFilename
+    if (networkName == 'devnet' || networkName == 'rpc') {
+        arappFilename = 'arapp_local'
+    } else {
+        arappFilename = 'arapp'
+    }
+    const arappFile = require('../' + arappFilename)
+    const ensAddress = arappFile.environments[networkName].registry
+    const ens = getContract('ENS').at(ensAddress)
+    const kitEnsName = arappFile.environments[networkName].appName
+    const repoAddr = await artifacts.require('PublicResolver').at(await ens.resolver(namehash('aragonpm.eth'))).addr(namehash(kitEnsName))
+    const repo = getContract('Repo').at(repoAddr)
+    const kitAddress = (await repo.getLatest())[1]
+    const kitContractName = arappFile.path.split('/').pop().split('.sol')[0]
+    const kit = getContract(kitContractName).at(kitAddress)
+
+    return new Promise((resolve) => resolve(kit))
+}
 
 contract('Democracy Kit', accounts => {
     const ETH = '0x0'
@@ -46,18 +64,14 @@ contract('Democracy Kit', accounts => {
     before(async () => {
         // create Democracy Kit
         const networkName = (await getNetwork(networks)).name
-        let indexObj
         if (networkName == 'devnet' || networkName == 'rpc') {
             // transfer some ETH to other accounts
             await web3.eth.sendTransaction({ from: owner, to: holder20, value: web3.toWei(1, 'ether') })
             await web3.eth.sendTransaction({ from: owner, to: holder29, value: web3.toWei(1, 'ether') })
             await web3.eth.sendTransaction({ from: owner, to: holder51, value: web3.toWei(1, 'ether') })
             await web3.eth.sendTransaction({ from: owner, to: nonHolder, value: web3.toWei(1, 'ether') })
-            indexObj = require('../index_local.js')
-        } else {
-            indexObj = require('../index.js')
         }
-        kit = await getKit(indexObj, networkName, 'DemocracyKit')
+        kit = await getKit(networkName)
         const holders = [holder20, holder29, holder51]
         const stakes = [20e18, 29e18, 51e18]
 

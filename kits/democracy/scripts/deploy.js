@@ -22,5 +22,5 @@ module.exports = async (callback) => {
   // aragonID
   await deploy_id(null, { artifacts, ensAddress: ens.address })
 
-  await deploy_kit(null, { artifacts, kitName: 'DemocracyKit', network: network, ensAddress: ens.address })
+  await deploy_kit(null, { artifacts, kitName: 'democracy-kit', kitContractName: 'DemocracyKit', network: network, ensAddress: ens.address })
 }
