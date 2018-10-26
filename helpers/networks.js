@@ -8,12 +8,12 @@ const getNetworkNameFromId = (networks, id) => {
   return defaultNetwork
 }
 const getNetworkId = () =>
-        new Promise(
-          (resolve, reject) =>
-            web3.version.getNetwork(
-              (error, result) => error ? reject(error) : resolve(result)
-            )
-        )
+  new Promise(
+    (resolve, reject) =>
+      web3.version.getNetwork(
+        (error, result) => error ? reject(error) : resolve(result)
+      )
+  )
 
 module.exports = async (networks) => {
   const id = await getNetworkId()
