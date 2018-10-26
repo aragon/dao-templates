@@ -59,7 +59,7 @@ contract('Democracy Kit', accounts => {
 
     const neededSupport = pct16(50)
     const minimumAcceptanceQuorum = pct16(20)
-    const votingTime = 600
+    const votingTime = 120
 
     before(async () => {
         // create Democracy Kit
