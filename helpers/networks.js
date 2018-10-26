@@ -1,4 +1,4 @@
-const getNetworkNameFromId= (networks, id) => {
+const getNetworkNameFromId = (networks, id) => {
   const defaultNetwork = 'devnet'
   for (let n in networks) {
     if (networks[n].network_id == id) {
