@@ -24,7 +24,9 @@
     "publish:staging": "aragon apm publish major $(npm run deploy:kit:staging | tail -n 1) --environment staging",
     "deploy:kit:staging": "aragon contracts compile --all && ENS=0xfe03625ea880a8cba336f9b5ad6e15b0a3b5a939 aragon contracts exec --network rinkeby scripts/democracy-deploy.js",
     "publish:rinkeby": "aragon apm publish major $(npm run deploy:kit:rinkeby | tail -n 1) --environment rinkeby",
-    "deploy:kit:rinkeby": "aragon contracts compile --all && ENS=0x98Df287B6C145399Aaa709692c8D308357bC085D aragon contracts exec --network rinkeby scripts/democracy-deploy.js"
+    "deploy:kit:rinkeby": "aragon contracts compile --all && ENS=0x98Df287B6C145399Aaa709692c8D308357bC085D aragon contracts exec --network rinkeby scripts/democracy-deploy.js",
+    "publish:mainnet": "aragon apm publish major $(npm run deploy:kit:mainnet | tail -n 1) --environment mainnet",
+    "deploy:kit:mainnet": "aragon contracts compile --all && ENS=0x314159265dd8dbb310642f98f50c066173c1259b aragon contracts exec --network mainnet scripts/democracy-deploy.js"
   },
   "files": [
     "abi/",
