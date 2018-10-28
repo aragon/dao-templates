@@ -138,7 +138,7 @@ module.exports = async (
     arappObj.path = "contracts/" + kitContractName + ".sol"
   const arappFile = JSON.stringify(arappObj, null, 2)
   // could also use https://github.com/yeoman/stringify-object if you wanted single quotes
-  fs.writeFileSync(arappFileName, arappFile)
+  fs.writeFileSync(kitArappPath, arappFile)
   log(`Kit addresses saved to ${arappFileName}`)
 
   if (typeof truffleExecCallback === 'function') {

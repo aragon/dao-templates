@@ -35,7 +35,7 @@ module.exports = async (callback) => {
   await deploy_apm(null, {artifacts, ensAddress: ens.address })
 
   // aragonID
-  await deploy_id(null, { artifacts, ensAddress: ens.address })
+  await deploy_id(null, { artifacts, web3, ensAddress: ens.address })
 
   if (network == 'devnet') { // Useful for testing to avoid manual deploys with aragon-dev-cli
     const apmAddr = await artifacts.require('PublicResolver').at(await ens.resolver(namehash('aragonpm.eth'))).addr(namehash('aragonpm.eth'))
@@ -54,7 +54,7 @@ module.exports = async (callback) => {
   const arappFileName = 'arapp_local.json'
   let arappObj = {}
   if (fs.existsSync(__dirname + '/../' + arappFileName))
-    arappObj = require(__dirname + '../' + arappFileName)
+    arappObj = require(__dirname + '/../' + arappFileName)
   if (arappObj.environments === undefined)
     arappObj.environments = {}
   if (arappObj.environments[network] === undefined)
@@ -63,6 +63,6 @@ module.exports = async (callback) => {
 
   const arappFile = JSON.stringify(arappObj, null, 2)
   // could also use https://github.com/yeoman/stringify-object if you wanted single quotes
-  fs.writeFileSync(arappFileName, arappFile)
+  fs.writeFileSync(__dirname + '/../' + arappFileName, arappFile)
   console.log(`ENS address saved to ${arappFileName}`)
 }
