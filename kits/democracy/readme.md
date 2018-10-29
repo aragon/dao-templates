@@ -1,6 +1,6 @@
 # Aragon 0.5 Democracy template
 
-See [Beta templates description](https://github.com/aragon/dao-kits/blob/master/kits/beta/readme.md).
+See [Beta templates description](https://github.com/aragon/dao-kits/blob/master/kits/beta-base/readme.md).
 
 ## Usage
 
