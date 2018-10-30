@@ -49,7 +49,7 @@
     "truffle-extract": "^1.2.1"
   },
   "dependencies": {
-    "@aragon/os": "4.0.0-rc.1",
+    "@aragon/os": "^4.0.1",
     "@aragon/apps-shared-minime": "^1.0.0",
     "@aragon/apps-shared-migrations": "^1.0.0",
     "@aragon/apps-voting": "^2.0.0-rc.3",
