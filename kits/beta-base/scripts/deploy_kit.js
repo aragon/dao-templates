@@ -57,16 +57,16 @@ module.exports = async (
     } else {
       arappFileName = 'arapp_local.json'
     }
+    if (!ensAddress) {
+      const betaArapp = require('../' + arappFileName)
+      ensAddress = betaArapp.environments[network].registry
+    }
+  } else {
+    if (!ensAddress) {
+      errorOut('ENS environment variable not passed, aborting.')
+    }
   }
 
-  if (returnKit && !ensAddress) {
-    errorOut('ENS environment variable not passed, aborting.')
-  }
-
-  if (!ensAddress) {
-    const betaArapp = require('../' + arappFileName)
-    ensAddress = betaArapp.environments[network].registry
-  }
   log('Using ENS', ensAddress)
   const ens = ENS.at(ensAddress)
 
