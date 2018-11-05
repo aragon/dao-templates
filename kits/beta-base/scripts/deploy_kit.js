@@ -36,12 +36,9 @@ module.exports = async (
     if (verbose) { console.log(...args) }
   }
 
-  console.log('network', network)
-  console.log('name', kitName)
   log(`${kitName} in ${network} network with ENS ${ensAddress}`)
 
   const kitEnsName = kitName + '.aragonpm.eth'
-  console.log(kitEnsName)
 
   const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory')
   const DAOFactory = artifacts.require('DAOFactory')
@@ -91,7 +88,6 @@ module.exports = async (
   }
 
   const aragonid = await ens.owner(namehash('aragonid.eth'))
-  console.log('aragonid', aragonid)
   const kit = await artifacts.require(kitContractName).new(daoFactory.address, ens.address, minimeFac.address, aragonid, appIds)
 
   await logDeploy(kit)
