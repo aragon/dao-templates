@@ -61,12 +61,11 @@ module.exports = async (
       const betaArapp = require('../' + arappFileName)
       ensAddress = betaArapp.environments[network].registry
     }
-  } else {
-    if (!ensAddress) {
-      errorOut('ENS environment variable not passed, aborting.')
-    }
   }
 
+  if (!ensAddress) {
+    errorOut('ENS environment variable not passed, aborting.')
+  }
   log('Using ENS', ensAddress)
   const ens = ENS.at(ensAddress)
 
