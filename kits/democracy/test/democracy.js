@@ -17,12 +17,32 @@ const apps = ['finance', 'token-manager', 'vault', 'voting']
 const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).environments.default.appName))
 
 const getContract = name => artifacts.require(name)
-const getKit = (indexObj, kitName) => getContract(kitName).at(indexObj.networks['devnet'].kits.filter(x => x.name == kitName)[0].address)
+
 const pct16 = x => new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
 const getEventResult = (receipt, event, param) => receipt.logs.filter(l => l.event == event)[0].args[param]
 const createdVoteId = receipt => getEventResult(receipt, 'StartVote', 'voteId')
 const getAppProxy = (receipt, id) => receipt.logs.filter(l => l.event == 'InstalledApp' && l.args.appId == id)[0].args.appProxy
+const networks = require("@aragon/os/truffle-config").networks
+const getNetwork = require('../../../helpers/networks.js')
+const getKit = async (networkName) => {
+    let arappFilename
+    if (networkName == 'devnet' || networkName == 'rpc') {
+        arappFilename = 'arapp_local'
+    } else {
+        arappFilename = 'arapp'
+    }
+    const arappFile = require('../' + arappFilename)
+    const ensAddress = arappFile.environments[networkName].registry
+    const ens = getContract('ENS').at(ensAddress)
+    const kitEnsName = arappFile.environments[networkName].appName
+    const repoAddr = await artifacts.require('PublicResolver').at(await ens.resolver(namehash('aragonpm.eth'))).addr(namehash(kitEnsName))
+    const repo = getContract('Repo').at(repoAddr)
+    const kitAddress = (await repo.getLatest())[1]
+    const kitContractName = arappFile.path.split('/').pop().split('.sol')[0]
+    const kit = getContract(kitContractName).at(kitAddress)
 
+    return new Promise((resolve) => resolve(kit))
+}
 
 contract('Democracy Kit', accounts => {
     const ETH = '0x0'
@@ -31,26 +51,27 @@ contract('Democracy Kit', accounts => {
     let finance, tokenManager, vault, voting
     let kit, receiptInstance
 
-    const owner = process.env.OWNER //'0x1f7402f55e142820ea3812106d0657103fc1709e'
-    const holder20 = accounts[6]
-    const holder29 = accounts[7]
-    const holder51 = accounts[8]
-    const nonHolder = accounts[9]
-    let indexObj = require('../index_local.js')
+    const owner = accounts[0]
+    const holder20 = accounts[1]
+    const holder29 = accounts[2]
+    const holder51 = accounts[3]
+    const nonHolder = accounts[4]
 
     const neededSupport = pct16(50)
     const minimumAcceptanceQuorum = pct16(20)
-    const votingTime = 10
+    const votingTime = 120
 
     before(async () => {
-        // transfer some ETH to other accounts
-        await web3.eth.sendTransaction({ from: owner, to: holder20, value: web3.toWei(1, 'ether') })
-        await web3.eth.sendTransaction({ from: owner, to: holder29, value: web3.toWei(1, 'ether') })
-        await web3.eth.sendTransaction({ from: owner, to: holder51, value: web3.toWei(1, 'ether') })
-        await web3.eth.sendTransaction({ from: owner, to: nonHolder, value: web3.toWei(1, 'ether') })
-
         // create Democracy Kit
-        kit = await getKit(indexObj, 'DemocracyKit')
+        const networkName = (await getNetwork(networks)).name
+        if (networkName == 'devnet' || networkName == 'rpc') {
+            // transfer some ETH to other accounts
+            await web3.eth.sendTransaction({ from: owner, to: holder20, value: web3.toWei(1, 'ether') })
+            await web3.eth.sendTransaction({ from: owner, to: holder29, value: web3.toWei(1, 'ether') })
+            await web3.eth.sendTransaction({ from: owner, to: holder51, value: web3.toWei(1, 'ether') })
+            await web3.eth.sendTransaction({ from: owner, to: nonHolder, value: web3.toWei(1, 'ether') })
+        }
+        kit = await getKit(networkName)
         const holders = [holder20, holder29, holder51]
         const stakes = [20e18, 29e18, 51e18]
 
@@ -171,7 +192,7 @@ contract('Democracy Kit', accounts => {
 
                 assert.isTrue(isOpen, 'vote should be open')
                 assert.isFalse(isExecuted, 'vote should be executed')
-                assert.equal(snapshotBlock, await getBlockNumber() - 1, 'snapshot block should be correct')
+                assert.equal(snapshotBlock.toString(), await getBlockNumber() - 1, 'snapshot block should be correct')
                 assert.equal(requiredSupport.toString(), neededSupport.toString(), 'min quorum should be app min quorum')
                 assert.equal(minQuorum.toString(), minimumAcceptanceQuorum.toString(), 'min quorum should be app min quorum')
                 assert.equal(y, 0, 'initial yea should be 0')

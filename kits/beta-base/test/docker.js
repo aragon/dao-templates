@@ -15,9 +15,9 @@ contract('Beta Base Kit', accounts => {
     let beta, tokenAddress, daoAddress
     let financeAddress, tokenManagerAddress, vaultAddress, votingAddress
     const owner = process.env.OWNER //'0x1f7402f55e142820ea3812106d0657103fc1709e'
-    const indexObj = require('../index_local.js')
+    const arappObj = require('../arapp_local')
     const network = 'devnet' // TODO
-    const ensAddress = process.env.ENS || indexObj.networks[network].ens
+    const ensAddress = process.env.ENS || arappObj.environments[network].registry
 
     before(async () => {
         const minimeFac = await getContract('MiniMeTokenFactory').new()

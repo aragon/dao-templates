@@ -17,10 +17,10 @@ module.exports = async (callback) => {
   const { ens } = await deploy_ens(null, { artifacts })
 
   // APM
-  await deploy_apm(null, {artifacts, ensAddress: ens.address })
+  await deploy_apm(null, {artifacts, web3, ensAddress: ens.address })
 
   // aragonID
-  await deploy_id(null, { artifacts, ensAddress: ens.address })
+  await deploy_id(null, { artifacts, web3, ensAddress: ens.address })
 
-  await deploy_kit(null, { artifacts, kitName: 'MultisigKit', network: network, ensAddress: ens.address })
+  await deploy_kit(null, { artifacts, kitName: 'multisig-kit', kitContractName: 'MultisigKit', network: network, ensAddress: ens.address })
 }

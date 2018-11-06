@@ -32,10 +32,10 @@ module.exports = async (callback) => {
   const { ens } = await deploy_ens(null, { artifacts })
 
   // APM
-  await deploy_apm(null, {artifacts, ensAddress: ens.address })
+  await deploy_apm(null, {artifacts, web3, ensAddress: ens.address })
 
   // aragonID
-  await deploy_id(null, { artifacts, ensAddress: ens.address })
+  await deploy_id(null, { artifacts, web3, ensAddress: ens.address })
 
   if (network == 'devnet') { // Useful for testing to avoid manual deploys with aragon-dev-cli
     const apmAddr = await artifacts.require('PublicResolver').at(await ens.resolver(namehash('aragonpm.eth'))).addr(namehash('aragonpm.eth'))
@@ -51,17 +51,18 @@ module.exports = async (callback) => {
     }
   }
 
-  const indexFileName = 'index_local.js'
-  let indexObj = {}
-  if (fs.existsSync(__dirname + '/../' + indexFileName))
-    indexObj = require('../' + indexFileName)
-  if (indexObj.networks === undefined)
-    indexObj.networks = {}
-  if (indexObj.networks[network] === undefined)
-    indexObj.networks[network] = {}
-  indexObj.networks[network].ens = ens.address
+  const arappFileName = 'arapp_local.json'
+  let arappObj = {}
+  if (fs.existsSync(__dirname + '/../' + arappFileName))
+    arappObj = require(__dirname + '/../' + arappFileName)
+  if (arappObj.environments === undefined)
+    arappObj.environments = {}
+  if (arappObj.environments[network] === undefined)
+    arappObj.environments[network] = {}
+  arappObj.environments[network].registry = ens.address
 
-  const indexFile = 'module.exports = ' + JSON.stringify(indexObj, null, 2)
+  const arappFile = JSON.stringify(arappObj, null, 2)
   // could also use https://github.com/yeoman/stringify-object if you wanted single quotes
-  fs.writeFileSync(indexFileName, indexFile)
+  fs.writeFileSync(__dirname + '/../' + arappFileName, arappFile)
+  console.log(`ENS address saved to ${arappFileName}`)
 }

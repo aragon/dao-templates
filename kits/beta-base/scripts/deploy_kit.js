@@ -26,6 +26,7 @@ module.exports = async (
     daoFactoryAddress = defaultDAOFactoryAddress,
     minimeTokenFactoryAddress = defaultMinimeTokenFactoryAddress,
     kitName,
+    kitContractName = kitName,
     network,
     verbose = true,
     returnKit = false
@@ -35,7 +36,9 @@ module.exports = async (
     if (verbose) { console.log(...args) }
   }
 
-  log(`${kitName} in ${network} network`)
+  log(`${kitName} in ${network} network with ENS ${ensAddress}`)
+
+  const kitEnsName = kitName + '.aragonpm.eth'
 
   const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory')
   const DAOFactory = artifacts.require('DAOFactory')
@@ -47,22 +50,21 @@ module.exports = async (
     return await apm.newRepoWithVersion(name, acc, [1, 0, 0], c.address, '0x1245')
   }
 
-  let indexFileName
+  let arappFileName
   if (!returnKit) {
     if (network != 'rpc' && network != 'devnet') {
-      indexFileName = 'index.js'
+      arappFileName = 'arapp.json'
     } else {
-      indexFileName = 'index_local.js'
+      arappFileName = 'arapp_local.json'
+    }
+    if (!ensAddress) {
+      const betaArapp = require('../' + arappFileName)
+      ensAddress = betaArapp.environments[network].registry
     }
   }
 
-  if (returnKit && !ensAddress) {
-    errorOut('ENS environment variable not passed, aborting.')
-  }
-
   if (!ensAddress) {
-    const betaIndex = require('../' + indexFileName)
-    ensAddress = betaIndex.networks[network].ens
+    errorOut('ENS environment variable not passed, aborting.')
   }
   log('Using ENS', ensAddress)
   const ens = ENS.at(ensAddress)
@@ -73,7 +75,6 @@ module.exports = async (
     daoFactory = DAOFactory.at(daoFactoryAddress)
   } else {
     daoFactory = (await deployDAOFactory(null, { artifacts, verbose: false })).daoFactory
-    log('Deployed DAOFactory:', daoFactory.address)
   }
 
   let minimeFac
@@ -86,16 +87,13 @@ module.exports = async (
   }
 
   const aragonid = await ens.owner(namehash('aragonid.eth'))
-  const kit = await artifacts.require(kitName).new(daoFactory.address, ens.address, minimeFac.address, aragonid, appIds)
+  const kit = await artifacts.require(kitContractName).new(daoFactory.address, ens.address, minimeFac.address, aragonid, appIds)
 
   await logDeploy(kit)
 
   if (returnKit) {
     return kit
   }
-
-  const ts = [ { name: kitName, address: kit.address } ]
-  log(ts)
 
   if (network == 'devnet') { // Useful for testing to avoid manual deploys with aragon-dev-cli
     log('Creating APM package with owner', owner)
@@ -111,7 +109,7 @@ module.exports = async (
       await newRepo(apm, 'vault', owner, 'Vault')
     }
 
-    if (await ens.owner(namehash(kitName + '.aragonpm.eth')) == '0x0000000000000000000000000000000000000000') {
+    if (await ens.owner(namehash(kitEnsName)) == '0x0000000000000000000000000000000000000000') {
       log(`creating APM package for ${kitName} at ${kit.address}`)
       await apm.newRepoWithVersion(kitName, owner, [1, 0, 0], kit.address, 'ipfs:')
     } else {
@@ -119,25 +117,29 @@ module.exports = async (
     }
   }
 
-  const kitIndexPath = path.resolve(".") + "/" + indexFileName
-  let indexObj = {}
-  if (fs.existsSync(kitIndexPath))
-    indexObj = require(kitIndexPath)
-  if (indexObj.networks === undefined)
-    indexObj.networks = {}
-  if (indexObj.networks[network] === undefined)
-    indexObj.networks[network] = {}
-  indexObj.networks[network].ens = ens.address
-  indexObj.networks[network].kits = ts
-  const indexFile = 'module.exports = ' + JSON.stringify(indexObj, null, 2)
+  const kitArappPath = path.resolve(".") + "/" + arappFileName
+  let arappObj = {}
+  if (fs.existsSync(kitArappPath))
+    arappObj = require(kitArappPath)
+  if (arappObj.environments === undefined)
+    arappObj.environments = {}
+  if (arappObj.environments[network] === undefined)
+    arappObj.environments[network] = {}
+  arappObj.environments[network].registry = ens.address
+  arappObj.environments[network].appName = kitEnsName
+  arappObj.environments[network].address = kit.address
+  arappObj.environments[network].network = network
+  if (arappObj.path === undefined)
+    arappObj.path = "contracts/" + kitContractName + ".sol"
+  const arappFile = JSON.stringify(arappObj, null, 2)
   // could also use https://github.com/yeoman/stringify-object if you wanted single quotes
-  fs.writeFileSync(indexFileName, indexFile)
-  log(`Kit addresses saved to ${indexFileName}`)
+  fs.writeFileSync(kitArappPath, arappFile)
+  log(`Kit addresses saved to ${arappFileName}`)
 
   if (typeof truffleExecCallback === 'function') {
     // Called directly via `truffle exec`
     truffleExecCallback()
   } else {
-    return indexObj
+    return arappObj
   }
 }
