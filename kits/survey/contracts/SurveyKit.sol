@@ -11,7 +11,7 @@ import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
 
 import "@aragon/apps-survey/contracts/Survey.sol";
 
-import "@aragon/kits-bare/contracts/KitBase.sol";
+import "@aragon/kits-base/contracts/KitBase.sol";
 
 
 contract SurveyKit is APMNamehash, KitBase {
