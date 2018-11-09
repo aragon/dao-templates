@@ -61,7 +61,7 @@
     "@aragon/apps-vault": "^4.0.0",
     "@aragon/apps-finance": "^2.1.0",
     "@aragon/apps-token-manager": "^2.0.0",
-    "@aragon/kits-bare": "^1.0.0",
+    "@aragon/kits-base": "^1.0.0",
     "@aragon/kits-beta-base": "^1.0.0"
   }
 }

@@ -3,7 +3,8 @@ pragma solidity 0.4.24;
 import "@aragon/os/contracts/kernel/Kernel.sol";
 import "@aragon/os/contracts/acl/ACL.sol";
 
-import "./KitBase.sol";
+import "@aragon/kits-base/contracts/KitBase.sol";
+
 
 contract BareKit is KitBase {
     constructor (DAOFactory _fac, ENS _ens) KitBase(_fac, _ens) {}

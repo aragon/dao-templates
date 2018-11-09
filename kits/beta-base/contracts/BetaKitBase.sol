@@ -14,7 +14,7 @@ import "@aragon/apps-finance/contracts/Finance.sol";
 
 import "@aragon/os/contracts/common/IsContract.sol";
 
-import "@aragon/kits-bare/contracts/KitBase.sol";
+import "@aragon/kits-base/contracts/KitBase.sol";
 
 
 contract BetaKitBase is KitBase, IsContract {
