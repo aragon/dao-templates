@@ -1,0 +1,32 @@
+{
+  "name": "@aragon/kits-agp1",
+  "version": "1.0.0",
+  "description": "Kit for deploying AGP1",
+  "author": "Aragon One AG <contact@aragon.one>",
+  "license": "GPL-3.0",
+  "scripts": {
+    "lint": "solium --dir ./contracts",
+    "deploy:deps:devnet": "truffle exec --network devnet scripts/deploy_deps.js",
+    "test:devnet": "truffle compile && ENS=$(npm run deploy:deps:devnet | tail -1) truffle test --network devnet test/agp1.js",
+    "deploy:devnet": "ENS=$(npm run deploy:deps:devnet | tail -1) truffle exec --network devnet scripts/deploy_agp1.js",
+    "deploy:deps:rpc": "truffle exec --network rpc scripts/deploy_deps.js",
+    "test:rpc": "truffle compile && ENS=$(npm run deploy:deps:rpc | tail -1) truffle test --network rpc test/agp1.js",
+    "deploy:rpc": "ENS=$(npm run deploy:deps:rpc | tail -1) truffle exec --network rpc scripts/deploy_agp1.js",
+    "deploy:rinkeby": "ENS=0x98Df287B6C145399Aaa709692c8D308357bC085D DAO_FACTORY=0x2298d27a9b847c681d2b2c2828ab9d79013f5f1d MINIME_TOKEN= truffle exec --network rinkeby scripts/deploy_agp1.js",
+    "deploy:mainnet": "ENS=0x314159265dd8dbb310642f98f50c066173c1259b DAO_FACTORY=0x595b34c93aa2c2ba0a38daeede629a0dfbdcc559 MINIME_TOKEN=0x960b236A07cf122663c4303350609A66A7B288C0 truffle exec --network mainnet scripts/deploy_agp1.js"
+  },
+  "dependencies": {
+    "@aragon/apps-shared-minime": "^1.0.0",
+    "@aragon/apps-shared-migrations": "^1.0.0",
+    "@aragon/apps-finance": "^2.1.0",
+    "@aragon/apps-vault": "^4.0.0",
+    "@aragon/apps-voting": "^2.0.0",
+    "@aragon/kits-base": "^1.0.0",
+    "@aragon/os": "^4.0.1",
+    "eth-ens-namehash": "^2.0.8"
+  },
+  "devDependencies": {
+    "@aragon/test-helpers": "^1.0.0",
+    "solium": "^1.0.4"
+  }
+}
