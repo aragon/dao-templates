@@ -2,6 +2,7 @@ const namehash = require('eth-ens-namehash').hash
 
 const getAccounts = require('@aragon/os/scripts/helpers/get-accounts')
 const deployDAOFactory = require('@aragon/os/scripts/deploy-daofactory.js')
+const logDeploy = require('@aragon/os/scripts/helpers/deploy-logger')
 
 const getEventResult = (receipt, event, param) => receipt.logs.filter(l => l.event == event)[0].args[param]
 const getAppProxy = (receipt, id, index=0) => receipt.logs.filter(l => l.event == 'InstalledApp' && l.args.appId == id)[index].args.appProxy
@@ -86,6 +87,7 @@ module.exports = async (
 
   const agp1Kit = await artifacts.require(kitName).new(daoFactoryAddress, ensAddress)
   log('Kit address:', agp1Kit.address)
+  await logDeploy(agp1Kit)
 
   const agp1Receipt = await agp1Kit.newInstance(minimeTokenAddress, owner)
   log('Gas used:', agp1Receipt.receipt.cumulativeGasUsed)

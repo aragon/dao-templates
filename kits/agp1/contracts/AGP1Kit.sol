@@ -17,11 +17,11 @@ contract AGP1Kit is KitBase, APMNamehash, IsContract {
     uint64 constant public MAIN_VOTING_QUORUM = 0; // Just 1 vote is enough
     uint64 constant public MAIN_VOTING_VOTE_TIME = 48 hours;
 
-    uint64 constant public META_TRACK_VOTING_SUPPORT = 666666666666666667; // > two thirds
+    uint64 constant public META_TRACK_VOTING_SUPPORT = 666666666666666666; // > two thirds
     uint64 constant public META_TRACK_VOTING_QUORUM = 0; // Just 1 vote is enough
     uint64 constant public META_TRACK_VOTING_VOTE_TIME = 48 hours;
 
-    uint64 constant public FINANCE_PERIOD_DURATION = 90 days;
+    uint64 constant public FINANCE_PERIOD_DURATION = 7889400; // 365.25 days / 4
 
     bytes32 constant public financeAppId = apmNamehash("finance");
     bytes32 constant public vaultAppId = apmNamehash("vault");

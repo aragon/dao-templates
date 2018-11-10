@@ -59,8 +59,8 @@ contract('AGP-1 Kit', accounts => {
         daoAddress = agp1Address
         tokenAddress = minimeTokenAddress
 
-        finance = await Finance.at(financeAddress)
-        vault = await Vault.at(vaultAddress)
+        finance = Finance.at(financeAddress)
+        vault = Vault.at(vaultAddress)
         voting = Voting.at(votingAddress)
         metaTrackVoting = Voting.at(metaTrackVotingAddress)
 
@@ -84,8 +84,8 @@ contract('AGP-1 Kit', accounts => {
         })
 
         it('has correct permissions', async () =>{
-            const dao = await getContract('Kernel').at(daoAddress)
-            const acl = await getContract('ACL').at(await dao.acl())
+            const dao = getContract('Kernel').at(daoAddress)
+            const acl = getContract('ACL').at(await dao.acl())
 
             const checkRole = async (appAddress, permission, managerAddress, appName='', roleName='', granteeAddress=managerAddress) => {
                 assert.equal(await acl.getPermissionManager(appAddress, permission), managerAddress, `${appName} ${roleName} Manager should match`)
@@ -100,7 +100,7 @@ contract('AGP-1 Kit', accounts => {
 
             // evm script registry
             const regConstants = await getContract('EVMScriptRegistryConstants').new()
-            const reg = await getContract('EVMScriptRegistry').at(await acl.getEVMScriptRegistry())
+            const reg = getContract('EVMScriptRegistry').at(await acl.getEVMScriptRegistry())
             assert.equal(await acl.getPermissionManager(reg.address, await reg.REGISTRY_ADD_EXECUTOR_ROLE()), NO_ADDRESS, 'EVMScriptRegistry ADD_EXECUTOR Manager should match')
             assert.equal(await acl.getPermissionManager(reg.address, await reg.REGISTRY_MANAGER_ROLE()), NO_ADDRESS, 'EVMScriptRegistry REGISTRY_MANAGER Manager should match')
 
