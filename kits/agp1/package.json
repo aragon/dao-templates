@@ -7,7 +7,7 @@
   "scripts": {
     "lint": "solium --dir ./contracts",
     "deploy:deps:devnet": "truffle exec --network devnet scripts/deploy_deps.js",
-    "test:devnet": "truffle compile && ENS=$(npm run deploy:deps:devnet | tail -1) truffle test --network devnet test/agp1.js",
+    "test:devnet": "truffle compile && ENS=$(npm run deploy:deps:devnet | tail -1) truffle test --network devnet test/agp1_devnet.js",
     "deploy:devnet": "ENS=$(npm run deploy:deps:devnet | tail -1) truffle exec --network devnet scripts/deploy_agp1.js",
     "deploy:deps:rpc": "truffle exec --network rpc scripts/deploy_deps.js",
     "test:rpc": "truffle compile && ENS=$(npm run deploy:deps:rpc | tail -1) truffle test --network rpc test/agp1.js",
