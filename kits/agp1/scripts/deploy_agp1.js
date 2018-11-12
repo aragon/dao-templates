@@ -43,7 +43,6 @@ module.exports = async (
 
   log(`${kitName} with ENS ${ensAddress}, owner ${owner}`)
 
-  const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory')
   const TokenFactoryWrapper = artifacts.require('TokenFactoryWrapper')
   const DAOFactory = artifacts.require('DAOFactory')
   const ENS = artifacts.require('ENS')
@@ -105,12 +104,17 @@ module.exports = async (
   log('Voting: ', votingAddress)
   log('Meta Track Voting: ', metaTrackVotingAddress)
 
-  return {
-    agp1Address,
-    minimeTokenAddress,
-    financeAddress,
-    vaultAddress,
-    votingAddress,
-    metaTrackVotingAddress
+  if (typeof truffleExecCallback === 'function') {
+    // Called directly via `truffle exec`
+    truffleExecCallback()
+  } else {
+    return {
+      agp1Address,
+      minimeTokenAddress,
+      financeAddress,
+      vaultAddress,
+      votingAddress,
+      metaTrackVotingAddress
+    }
   }
 }
