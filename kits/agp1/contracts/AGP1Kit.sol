@@ -23,15 +23,15 @@ contract AGP1Kit is KitBase, APMNamehash, IsContract {
 
     uint64 constant public FINANCE_PERIOD_DURATION = 7889400; // 365.25 days / 4
 
-    bytes32 constant public financeAppId = apmNamehash("finance");
-    bytes32 constant public vaultAppId = apmNamehash("vault");
-    bytes32 constant public votingAppId = apmNamehash("voting");
+    bytes32 constant private financeAppId = apmNamehash("finance");
+    bytes32 constant private vaultAppId = apmNamehash("vault");
+    bytes32 constant private votingAppId = apmNamehash("voting");
 
     constructor(DAOFactory _fac, ENS _ens) KitBase(_fac, _ens) public {
         require(isContract(address(_fac.regFactory())));
     }
 
-    function newInstance(MiniMeToken ant, address multisig) external returns (Kernel) {
+    function newInstance(MiniMeToken _ant, address _multisig) external returns (Kernel) {
         Kernel dao = fac.newDAO(this);
         ACL acl = ACL(dao.acl());
 
@@ -57,11 +57,11 @@ contract AGP1Kit is KitBase, APMNamehash, IsContract {
         emit InstalledApp(metaTrackVoting, votingAppId);
 
         // permissions
-        acl.createPermission(multisig, voting, voting.CREATE_VOTES_ROLE(), multisig);
+        acl.createPermission(_multisig, voting, voting.CREATE_VOTES_ROLE(), _multisig);
         acl.createPermission(metaTrackVoting, voting, voting.MODIFY_QUORUM_ROLE(), metaTrackVoting);
         acl.createPermission(metaTrackVoting, voting, voting.MODIFY_SUPPORT_ROLE(), metaTrackVoting);
 
-        acl.createPermission(multisig, metaTrackVoting, metaTrackVoting.CREATE_VOTES_ROLE(), multisig);
+        acl.createPermission(_multisig, metaTrackVoting, metaTrackVoting.CREATE_VOTES_ROLE(), _multisig);
         acl.createPermission(metaTrackVoting, metaTrackVoting, metaTrackVoting.MODIFY_QUORUM_ROLE(), metaTrackVoting);
         acl.createPermission(metaTrackVoting, metaTrackVoting, metaTrackVoting.MODIFY_SUPPORT_ROLE(), metaTrackVoting);
 
@@ -73,8 +73,8 @@ contract AGP1Kit is KitBase, APMNamehash, IsContract {
         // App inits
         vault.initialize();
         finance.initialize(vault, FINANCE_PERIOD_DURATION);
-        voting.initialize(ant, MAIN_VOTING_SUPPORT, MAIN_VOTING_QUORUM, MAIN_VOTING_VOTE_TIME);
-        metaTrackVoting.initialize(ant, META_TRACK_VOTING_SUPPORT, META_TRACK_VOTING_QUORUM, META_TRACK_VOTING_VOTE_TIME);
+        voting.initialize(_ant, MAIN_VOTING_SUPPORT, MAIN_VOTING_QUORUM, MAIN_VOTING_VOTE_TIME);
+        metaTrackVoting.initialize(_ant, META_TRACK_VOTING_SUPPORT, META_TRACK_VOTING_QUORUM, META_TRACK_VOTING_VOTE_TIME);
 
         // cleanup
         cleanupDAOPermissions(dao, acl, metaTrackVoting);

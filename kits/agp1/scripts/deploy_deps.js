@@ -15,6 +15,11 @@ const newRepo = async (apm, name, acc, contract) => {
 }
 
 module.exports = async (callback) => {
+  const errorOut = (msg) => {
+    console.error(msg)
+    throw new Error(msg)
+  }
+
   let owner = process.env.OWNER
   const accounts = await getAccounts(web3)
   if (!owner) {

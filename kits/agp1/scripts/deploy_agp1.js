@@ -35,6 +35,11 @@ module.exports = async (
     if (verbose) { console.log(...args) }
   }
 
+  const errorOut = (msg) => {
+    console.error(msg)
+    throw new Error(msg)
+  }
+
   if (!owner) {
     const accounts = await getAccounts(web3)
     owner = accounts[0]
@@ -75,7 +80,6 @@ module.exports = async (
     errorOut('No APM found for ENS, aborting.')
   }
   log('APM', apmAddress);
-  console.log(await ens.owner(appIds[0]))
   const apm = artifacts.require('APMRegistry').at(apmAddress)
 
   for (let i = 0; i < apps.length; i++) {
