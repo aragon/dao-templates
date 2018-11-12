@@ -15,6 +15,9 @@ In order to use this kit, it must be run on a chain that has the following depen
 For local chains you can use `deploy:deps` scripts to deploy everything needed.
 
 ### Deploying the kit
+
+You can use `scripts/deploy_ant.js` to deploy a copy of ANT token to be used with the Kit for testing purposes.
+
 Local development network:
 ```
 npm run deploy:rpc
