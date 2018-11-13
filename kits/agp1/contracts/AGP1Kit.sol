@@ -23,9 +23,9 @@ contract AGP1Kit is KitBase, APMNamehash, IsContract {
 
     uint64 constant public FINANCE_PERIOD_DURATION = 7889400; // 365.25 days / 4
 
-    bytes32 constant private financeAppId = apmNamehash("finance");
-    bytes32 constant private vaultAppId = apmNamehash("vault");
-    bytes32 constant private votingAppId = apmNamehash("voting");
+    bytes32 constant public financeAppId = apmNamehash("finance");
+    bytes32 constant public vaultAppId = apmNamehash("vault");
+    bytes32 constant public votingAppId = apmNamehash("voting");
 
     constructor(DAOFactory _fac, ENS _ens) KitBase(_fac, _ens) public {
         require(isContract(address(_fac.regFactory())));
