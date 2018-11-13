@@ -14,7 +14,7 @@ contract KitBase is EVMScriptRegistryConstants {
     event DeployInstance(address dao);
     event InstalledApp(address appProxy, bytes32 appId);
 
-    constructor (DAOFactory _fac, ENS _ens) {
+    constructor (DAOFactory _fac, ENS _ens) public {
         fac = _fac;
         ens = _ens;
     }
