@@ -31,6 +31,8 @@
   },
   "devDependencies": {
     "@aragon/test-helpers": "^1.0.0",
-    "solium": "^1.0.4"
+    "@aragon/kits-beta-base": "^1.0.0",
+    "solium": "^1.0.4",
+    "truffle": "^4.1.14"
   }
 }
