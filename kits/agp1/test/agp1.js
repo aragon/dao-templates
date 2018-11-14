@@ -264,7 +264,7 @@ contract('AGP-1 Kit', accounts => {
             })
 
             it('Meta track Voting can change quorum', async() => {
-                const support = pct16(40)
+                const support = pct16(20)
                 const action = { to: votingApp.address, calldata: votingApp.contract.changeMinAcceptQuorumPct.getData(support) }
                 const script = encodeCallScript([action])
                 const voteId = createdVoteId(await metaTrackVoting.newVote(script, 'metadata', { from: owner }))
@@ -276,7 +276,7 @@ contract('AGP-1 Kit', accounts => {
             })
 
             it('Main Voting can not change support', async() => {
-                const support = pct16(20)
+                const support = pct16(30)
                 const action = { to: votingApp.address, calldata: votingApp.contract.changeSupportRequiredPct.getData(support) }
                 const script = encodeCallScript([action])
                 const voteId = createdVoteId(await voting.newVote(script, 'metadata', { from: owner }))
@@ -289,7 +289,7 @@ contract('AGP-1 Kit', accounts => {
             })
 
             it('Main Voting can not change quorum', async() => {
-                const support = pct16(20)
+                const support = pct16(10)
                 const action = { to: votingApp.address, calldata: votingApp.contract.changeMinAcceptQuorumPct.getData(support) }
                 const script = encodeCallScript([action])
                 const voteId = createdVoteId(await voting.newVote(script, 'metadata', { from: owner }))
