@@ -238,6 +238,32 @@ contract('Multisig Kit', accounts => {
                 assert.equal(state[7], 0, 'nay vote should have been removed')
             })
 
+            it('throws when non-holder tries to create a vote directly', async () => {
+                const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
+                script = encodeCallScript([action])
+                try {
+                    await voting.newVote(script, 'metadata', { from: nonHolder })
+                } catch (err) {
+                    assert.equal(err.receipt.status, 0, "It should have thrown")
+                    return
+                }
+                assert.isFalse(true, "It should have thrown")
+            })
+
+            it('throws when non-holder tries to create a vote thru token manager', async () => {
+                const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
+                script = encodeCallScript([action])
+                const action2 = { to: voting.address, calldata: voting.contract.newVote.getData(script, 'metadata') }
+                const script2 = encodeCallScript([action2])
+                try {
+                    await tokenManager.forward(script2, { from: nonHolder })
+                } catch (err) {
+                    assert.equal(err.receipt.status, 0, "It should have thrown")
+                    return
+                }
+                assert.isFalse(true, "It should have thrown")
+            })
+
             it('throws when non-holder votes', async () => {
                 try {
                     await voting.vote(voteId, true, true, { from: nonHolder })
