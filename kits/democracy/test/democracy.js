@@ -20,7 +20,13 @@ const getContract = name => artifacts.require(name)
 
 const pct16 = x => new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
 const getEventResult = (receipt, event, param) => receipt.logs.filter(l => l.event == event)[0].args[param]
-const createdVoteId = receipt => getEventResult(receipt, 'StartVote', 'voteId')
+const getVoteId = (receipt) => {
+    const logs = receipt.receipt.logs.filter(
+        l =>
+            l.topics[0] == web3.sha3('StartVote(uint256,address,string)')
+    )
+    return web3.toDecimal(logs[0].topics[1])
+}
 const getAppProxy = (receipt, id) => receipt.logs.filter(l => l.event == 'InstalledApp' && l.args.appId == id)[0].args.appProxy
 const networks = require("@aragon/os/truffle-config").networks
 const getNetwork = require('../../../helpers/networks.js')
@@ -149,7 +155,7 @@ contract('Democracy Kit', accounts => {
             await checkRole(reg.address, await reg.REGISTRY_MANAGER_ROLE(), votingAddress, 'EVMScriptRegistry', 'REGISTRY_MANAGER')
 
             // voting
-            await checkRole(votingAddress, await voting.CREATE_VOTES_ROLE(), votingAddress, 'Voting', 'CREATE_VOTES', await acl.ANY_ENTITY())
+            await checkRole(votingAddress, await voting.CREATE_VOTES_ROLE(), votingAddress, 'Voting', 'CREATE_VOTES', tokenManagerAddress)
             await checkRole(votingAddress, await voting.MODIFY_QUORUM_ROLE(), votingAddress, 'Voting', 'MODIFY_QUORUM')
             assert.equal(await acl.getPermissionManager(votingAddress, await voting.MODIFY_SUPPORT_ROLE()), await acl.BURN_ENTITY(), 'Voting MODIFY_SUPPORT Manager should be burned')
 
@@ -183,8 +189,11 @@ contract('Democracy Kit', accounts => {
             beforeEach(async () => {
                 executionTarget = await getContract('ExecutionTarget').new()
                 const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
-                script = encodeCallScript([action, action])
-                voteId = createdVoteId(await voting.newVote(script, 'metadata', { from: owner }))
+                script = encodeCallScript([action])
+                const action2 = { to: voting.address, calldata: voting.contract.newVote.getData(script, 'metadata') }
+                const script2 = encodeCallScript([action2])
+                const r = await tokenManager.forward(script2, { from: holder20 })
+                voteId = getVoteId(r)
             })
 
             it('has correct state', async() => {
@@ -248,7 +257,7 @@ contract('Democracy Kit', accounts => {
                 await sleep(votingTime+1)
                 //console.log("Time: + " + (await getBlock(await getBlockNumber())).timestamp)
                 await voting.executeVote(voteId, {from: owner})
-                assert.equal((await executionTarget.counter()).toString(), 2, 'should have executed result')
+                assert.equal((await executionTarget.counter()).toString(), 1, 'should have executed result')
             })
 
             it('cannot execute vote if not enough quorum met', async () => {
@@ -294,7 +303,10 @@ contract('Democracy Kit', accounts => {
             await finance.sendTransaction({ value: payment, from: owner })
             const action = { to: financeProxyAddress, calldata: finance.contract.newPayment.getData(ETH, nonHolder, payment, 0, 0, 1, "voting payment") }
             script = encodeCallScript([action])
-            voteId = createdVoteId(await voting.newVote(script, 'metadata', { from: owner }))
+            const action2 = { to: voting.address, calldata: voting.contract.newVote.getData(script, 'metadata') }
+            const script2 = encodeCallScript([action2])
+            const r = await tokenManager.forward(script2, { from: holder20 })
+            voteId = getVoteId(r)
         })
 
         it('finance can not be accessed directly (without a vote)', async () => {
