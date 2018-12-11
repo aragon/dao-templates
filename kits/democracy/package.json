@@ -15,7 +15,7 @@
     "lint": "solium --dir ./contracts",
     "test:devnet": "truffle test --network devnet test/democracy.js",
     "test:rinkeby": "truffle test --network rinkeby test/democracy.js",
-    "test": "truffle compile && npm run docker:run && npm run docker:wait-gas && npm run deploy:devnet && npm run test:devnet && npm run docker:stop",
+    "test": "grep \"_from\\|_id\" node_modules/ganache-core/package.json; npm list ganache-core; truffle compile && npm run docker:run && npm run docker:wait-gas && npm run deploy:devnet && npm run test:devnet && npm run docker:stop",
     "coverage": "./node_modules/@aragon/test-helpers/run-coverage.sh",
     "console": "truffle dev",
     "ganache-cli:dev": "./node_modules/@aragon/test-helpers/ganache-cli.sh",

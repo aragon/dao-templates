@@ -3,7 +3,6 @@ services:
 language: node_js
 cache:
   directories:
-    - node_modules
     - apps/beta-base/node_modules
     - apps/multisig/node_modules
 notifications:
