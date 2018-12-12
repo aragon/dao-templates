@@ -47,7 +47,7 @@ const getKit = async (networkName) => {
     const kitContractName = arappFile.path.split('/').pop().split('.sol')[0]
     const kit = getContract(kitContractName).at(kitAddress)
 
-    return new Promise((resolve) => resolve(kit))
+    return kit
 }
 
 contract('Democracy Kit', accounts => {
