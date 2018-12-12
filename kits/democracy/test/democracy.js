@@ -72,10 +72,10 @@ contract('Democracy Kit', accounts => {
         const networkName = (await getNetwork(networks)).name
         if (networkName == 'devnet' || networkName == 'rpc') {
             // transfer some ETH to other accounts
-            await web3.eth.sendTransaction({ from: owner, to: holder20, value: web3.toWei(1, 'ether') })
-            await web3.eth.sendTransaction({ from: owner, to: holder29, value: web3.toWei(1, 'ether') })
-            await web3.eth.sendTransaction({ from: owner, to: holder51, value: web3.toWei(1, 'ether') })
-            await web3.eth.sendTransaction({ from: owner, to: nonHolder, value: web3.toWei(1, 'ether') })
+            await web3.eth.sendTransaction({ from: owner, to: holder20, value: web3.toWei(10, 'ether') })
+            await web3.eth.sendTransaction({ from: owner, to: holder29, value: web3.toWei(10, 'ether') })
+            await web3.eth.sendTransaction({ from: owner, to: holder51, value: web3.toWei(10, 'ether') })
+            await web3.eth.sendTransaction({ from: owner, to: nonHolder, value: web3.toWei(10, 'ether') })
         }
         kit = await getKit(networkName)
         const holders = [holder20, holder29, holder51]
