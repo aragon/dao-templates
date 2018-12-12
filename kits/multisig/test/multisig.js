@@ -92,9 +92,9 @@ contract('Multisig Kit', accounts => {
 
                 if (creationStyle === 'single') {
                     // create token and instance
-                    const receipt = await kit.newTokenAndInstance(tokenName, tokenSymbol, aragonId, signers, neededSignatures)
-                    tokenAddress = getEventResult(receipt, 'DeployToken', 'token')
-                    daoAddress = getEventResult(receipt, 'DeployInstance', 'dao')
+                    receiptInstance = await kit.newTokenAndInstance(tokenName, tokenSymbol, aragonId, signers, neededSignatures)
+                    tokenAddress = getEventResult(receiptInstance, 'DeployToken', 'token')
+                    daoAddress = getEventResult(receiptInstance, 'DeployInstance', 'dao')
                 } else if (creationStyle === 'separate') {
                     // create token
                     const receiptToken = await kit.newToken(tokenName, tokenSymbol)
