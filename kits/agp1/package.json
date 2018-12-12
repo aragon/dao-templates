@@ -2,8 +2,8 @@
   "name": "@aragon/kits-agp1",
   "version": "1.0.0",
   "description": "Kit for deploying AGP1",
-  "author": "Aragon One AG <contact@aragon.one>",
-  "license": "GPL-3.0",
+  "author": "Aragon Association <legal@aragon.org>",
+  "license": "GPL-3.0-or-later",
   "scripts": {
     "lint": "solium --dir ./contracts",
     "deploy:deps:devnet": "truffle exec --network devnet scripts/deploy_deps.js",

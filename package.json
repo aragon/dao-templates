@@ -18,6 +18,6 @@
     "lint": "lerna run --scope=@aragon/kits-* lint",
     "link:os": "lerna exec --scope '@aragon/kits-*' 'npm link @aragon/os'"
   },
-  "author": "Aragon Institution MTU <contact@aragon.one>",
-  "license": "(GPL-3.0-or-later OR AGPL-3.0-or-later)"
+  "author": "Aragon Association <legal@aragon.org>",
+  "license": "GPL-3.0-or-later"
 }

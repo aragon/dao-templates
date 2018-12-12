@@ -2,8 +2,8 @@
   "name": "@aragon/kits-base",
   "version": "1.0.0",
   "description": "Base contract with common functions to help building Kits on top of it",
-  "author": "Aragon One AG <contact@aragon.one>",
-  "license": "GPL-3.0",
+  "author": "Aragon Association <legal@aragon.org>",
+  "license": "GPL-3.0-or-later",
   "dependencies": {
     "@aragon/os": "^4.0.0"
   }

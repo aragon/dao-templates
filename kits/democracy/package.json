@@ -1,7 +1,7 @@
 {
   "name": "@aragon/kits-democracy",
   "version": "1.0.0",
-  "description": "Democracy Kit for v0.5 Aragon orgs",
+  "description": "Democracy Kit for Aragon orgs",
   "main": "index.js",
   "scripts": {
     "prepublishOnly": "truffle compile && npm run abi:extract -- --no-compile",
@@ -37,8 +37,8 @@
     "truffle.js",
     "test/"
   ],
-  "author": "Aragon Institution MTU <contact@aragon.one>",
-  "license": "GPL-3.0",
+  "author": "Aragon Association <legal@aragon.org>",
+  "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@aragon/cli": "^5.2.0",
     "@aragon/id": "^2.0.3",

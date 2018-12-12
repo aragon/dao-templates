@@ -1,7 +1,7 @@
 {
   "name": "@aragon/templates-tokens",
   "version": "1.1.0",
-  "description": "Dev template for aragon orgs",
+  "description": "Test token deployer for Aragon apps",
   "main": "index.js",
   "directories": {
     "test": "test"
@@ -9,8 +9,8 @@
   "scripts": {
     "migrate:local": "truffle migrate --network rpc --reset"
   },
-  "author": "Aragon Institution MTU <contact@aragon.one>",
-  "license": "GPL-3.0",
+  "author": "Aragon Association <legal@aragon.org>",
+  "license": "GPL-3.0-or-later",
   "devDependencies": {
     "truffle": "4.0.5",
     "truffle-hdwallet-provider": "0.0.3"
