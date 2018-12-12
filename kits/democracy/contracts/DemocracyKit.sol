@@ -79,9 +79,6 @@ contract DemocracyKit is BetaKitBase {
             voteDuration
         );
 
-        // create vote permission
-        acl.createPermission(acl.ANY_ENTITY(), voting, voting.CREATE_VOTES_ROLE(), voting);
-
         // burn support modification permission
         acl.createBurnedPermission(voting, voting.MODIFY_SUPPORT_ROLE());
 

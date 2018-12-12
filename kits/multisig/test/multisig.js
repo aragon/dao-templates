@@ -200,7 +200,7 @@ contract('Multisig Kit', accounts => {
             beforeEach(async () => {
                 executionTarget = await getContract('ExecutionTarget').new()
                 const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
-                script = encodeCallScript([action, action])
+                script = encodeCallScript([action])
                 const action2 = { to: voting.address, calldata: voting.contract.newVote.getData(script, 'metadata') }
                 const script2 = encodeCallScript([action2])
                 const r = await tokenManager.forward(script2, { from: signer1 })
@@ -238,6 +238,32 @@ contract('Multisig Kit', accounts => {
                 assert.equal(state[7], 0, 'nay vote should have been removed')
             })
 
+            it('throws when non-holder tries to create a vote directly', async () => {
+                const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
+                script = encodeCallScript([action])
+                try {
+                    await voting.newVote(script, 'metadata', { from: nonHolder })
+                } catch (err) {
+                    assert.equal(err.receipt.status, 0, "It should have thrown")
+                    return
+                }
+                assert.isFalse(true, "It should have thrown")
+            })
+
+            it('throws when non-holder tries to create a vote thru token manager', async () => {
+                const action = { to: executionTarget.address, calldata: executionTarget.contract.execute.getData() }
+                script = encodeCallScript([action])
+                const action2 = { to: voting.address, calldata: voting.contract.newVote.getData(script, 'metadata') }
+                const script2 = encodeCallScript([action2])
+                try {
+                    await tokenManager.forward(script2, { from: nonHolder })
+                } catch (err) {
+                    assert.equal(err.receipt.status, 0, "It should have thrown")
+                    return
+                }
+                assert.isFalse(true, "It should have thrown")
+            })
+
             it('throws when non-holder votes', async () => {
                 try {
                     await voting.vote(voteId, true, true, { from: nonHolder })
@@ -251,7 +277,7 @@ contract('Multisig Kit', accounts => {
             it('automatically executes if vote is approved by enough signers', async () => {
                 await voting.vote(voteId, true, true, { from: signer2 })
                 await voting.vote(voteId, true, true, { from: signer1 })
-                assert.equal((await executionTarget.counter()).toString(), 2, 'should have executed result')
+                assert.equal((await executionTarget.counter()).toString(), 1, 'should have executed result')
             })
 
             it('cannot execute vote if not enough signatures', async () => {

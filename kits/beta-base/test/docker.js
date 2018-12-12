@@ -55,6 +55,11 @@ contract('Beta Base Kit', accounts => {
         const dao = await getContract('Kernel').at(daoAddress)
         const acl = await getContract('ACL').at(await dao.acl())
 
+        const checkRole = async (appAddress, permission, managerAddress, appName='', roleName='', granteeAddress=managerAddress) => {
+            assert.equal(await acl.getPermissionManager(appAddress, permission), managerAddress, `${appName} ${roleName} Manager should match`)
+            assert.isTrue(await acl.hasPermission(granteeAddress, appAddress, permission), `Grantee should have ${appName} role ${roleName}`)
+        }
+
         // app manager role
         assert.equal(await acl.getPermissionManager(daoAddress, (await dao.APP_MANAGER_ROLE())), votingAddress, 'App manager role manager should match')
 
@@ -66,12 +71,12 @@ contract('Beta Base Kit', accounts => {
 
         // voting
         const voting = await getContract('Voting').at(votingAddress)
+        await checkRole(votingAddress, await voting.CREATE_VOTES_ROLE(), votingAddress, 'Voting', 'CREATE_VOTES', tokenManagerAddress)
         assert.equal(await acl.getPermissionManager(votingAddress, (await voting.MODIFY_QUORUM_ROLE())), votingAddress, 'Voting Modify quorum role manager should match')
 
         // vault
         const vault = await getContract('Vault').at(vaultAddress)
-        assert.equal(await acl.getPermissionManager(vaultAddress, (await vault.TRANSFER_ROLE())), votingAddress, 'Vault Transfer role role manager should match')
-        assert.isTrue(await acl.hasPermission(financeAddress, vaultAddress, (await vault.TRANSFER_ROLE())), 'Finance should have Vault Transfer role')
+        await checkRole(vaultAddress, await vault.TRANSFER_ROLE(), votingAddress, 'Vault', 'TRANSFER', financeAddress)
 
         // finance
         const finance = await getContract('Finance').at(financeAddress)

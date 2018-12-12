@@ -77,9 +77,6 @@ contract MultisigKit is BetaKitBase {
             1825 days // ~5 years
         );
 
-        // Create vote permission
-        acl.createPermission(tokenManager, voting, voting.CREATE_VOTES_ROLE(), voting);
-
         // Include support modification permission to handle changes to the multisig's size
         acl.createPermission(voting, voting, voting.MODIFY_SUPPORT_ROLE(), voting);
 

@@ -110,8 +110,8 @@ contract BetaKitBase is KitBase, IsContract {
         token.changeController(tokenManager);
 
         // permissions
+        acl.createPermission(tokenManager, voting, voting.CREATE_VOTES_ROLE(), voting);
         acl.createPermission(voting, voting, voting.MODIFY_QUORUM_ROLE(), voting);
-
         acl.createPermission(finance, vault, vault.TRANSFER_ROLE(), voting);
         acl.createPermission(voting, finance, finance.CREATE_PAYMENTS_ROLE(), voting);
         acl.createPermission(voting, finance, finance.EXECUTE_PAYMENTS_ROLE(), voting);
