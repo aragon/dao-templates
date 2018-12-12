@@ -16,5 +16,10 @@ env:
   - TASK=test:beta-base
   - TASK=test:democracy
   - TASK=test:multisig
+  - TASK=test:agp1
+matrix:
+  allow_failures:
+    - env: TASK=test:agp1
+  fast_finish: true
 script:
   - travis_wait 60 npm run $TASK
