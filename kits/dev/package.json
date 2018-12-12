@@ -9,14 +9,14 @@
   "scripts": {
     "migrate": "truffle migrate --network rpc --reset"
   },
-  "author": "Aragon Institution MTU <contact@aragon.one>",
+  "author": "Aragon Association <legal@aragon.org>",
+  "license": "GPL-3.0-or-later",
   "files": [
     "ipfs.js",
     "build/",
     "contracts/",
     "migrations/"
   ],
-  "license": "GPL-3.0",
   "devDependencies": {
     "truffle": "4.0.5",
     "truffle-hdwallet-provider": "0.0.3"

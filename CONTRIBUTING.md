@@ -6,7 +6,7 @@ The following is a set of guidelines and helpful pointers for contributing to Ar
 
 ## Code of Conduct
 
-Everyone participating in this project is governed by the [Aragon Code of Conduct](http://wiki.aragon.one/documentation/Code_of_Conduct/). By participating, you are expected to uphold this code as well.
+Everyone participating in this project is governed by the [Aragon Code of Conduct](http://wiki.aragon.org/documentation/Code_of_Conduct/). By participating, you are expected to uphold this code as well.
 
 Please report unacceptable behavior to a maintainer through either Twitter or by shooting us an e-mail at contact [at] aragon.one.
 
