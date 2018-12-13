@@ -1,4 +1,5 @@
 require('dotenv').config({ path: './node_modules/@aragon/kits-beta-base/.env'})
+
 const getBlockNumber = require('@aragon/test-helpers/blockNumber')(web3)
 const getBlock = require('@aragon/test-helpers/block')(web3)
 //const timeTravel = require('@aragon/test-helpers/timeTravel')(web3)
@@ -7,6 +8,11 @@ const namehash = require('eth-ens-namehash').hash
 const keccak256 = require('js-sha3').keccak_256
 
 const { encodeCallScript, EMPTY_SCRIPT } = require('@aragon/test-helpers/evmScript')
+
+const ENS = artifacts.require('ENS')
+const PublicResolver = artifacts.require('PublicResolver')
+
+const MiniMeToken = artifacts.require('MiniMeToken')
 
 const Finance = artifacts.require('Finance')
 const TokenManager = artifacts.require('TokenManager')
@@ -29,7 +35,7 @@ const getVoteId = (receipt) => {
 const getAppProxy = (receipt, id) => receipt.logs.filter(l => l.event == 'InstalledApp' && l.args.appId == id)[0].args.appProxy
 const networks = require("@aragon/os/truffle-config").networks
 const getNetwork = require('../../../helpers/networks.js')
-const getKit = async (networkName) => {
+const getKitConfiguration = async (networkName) => {
     let arappFilename
     if (networkName == 'devnet' || networkName == 'rpc') {
         arappFilename = 'arapp_local'
@@ -46,12 +52,13 @@ const getKit = async (networkName) => {
     const kitContractName = arappFile.path.split('/').pop().split('.sol')[0]
     const kit = getContract(kitContractName).at(kitAddress)
 
-    return kit
+    return { ens, kit }
 }
 
 
 contract('Multisig Kit', accounts => {
     const ETH = '0x0'
+    let ens
     let daoAddress, tokenAddress
     let financeAddress, tokenManagerAddress, vaultAddress, votingAddress
     let finance, tokenManager, vault, voting
@@ -65,6 +72,7 @@ contract('Multisig Kit', accounts => {
     const signers = [signer1, signer2, signer3]
     const neededSignatures = 2
     const multisigSupport = new web3.BigNumber(10 ** 18).times(neededSignatures).dividedToIntegerBy(signers.length).minus(1)
+    const multisigVotingTime = 1825 * 24 * 60 * 60 // 1825 days; ~5 years
 
     before(async () => {
         // create Multisig Kit
@@ -76,17 +84,20 @@ contract('Multisig Kit', accounts => {
             await web3.eth.sendTransaction({ from: owner, to: signer3, value: web3.toWei(10, 'ether') })
             await web3.eth.sendTransaction({ from: owner, to: nonHolder, value: web3.toWei(10, 'ether') })
         }
-        kit = await getKit(networkName)
+        const configuration = await getKitConfiguration(networkName)
+        ens = configuration.ens
+        kit = configuration.kit
     })
 
     // Test when organization is created in one call with `newTokenAndInstance()` and in
     // two calls with `newToken()` and `newInstance()`
     const creationStyles = ['single', 'separate']
     for (const creationStyle of creationStyles) {
-        context(`Creation through ${creationStyle} transaction`, () => {
+        context(`> Creation through ${creationStyle} transaction`, () => {
             let aragonId, tokenName, tokenSymbol
+
             before(async () => {
-                aragonId = 'MultisigDao-' + Math.random() * 1000
+                aragonId = 'multisigdao-' + Math.floor(Math.random() * 1000)
                 tokenName = 'MultisigToken'
                 tokenSymbol = 'MTT'
 
@@ -116,64 +127,46 @@ contract('Multisig Kit', accounts => {
                 voting = Voting.at(votingAddress)
             })
 
-            context('Creating a DAO and signing', () => {
+            it('has correct permissions', async () => {
+                const dao = await getContract('Kernel').at(daoAddress)
+                const acl = await getContract('ACL').at(await dao.acl())
 
-                it('creates and initializes a DAO with its Token', async() => {
-                    assert.notEqual(tokenAddress, '0x0', 'Token not generated')
-                    assert.notEqual(daoAddress, '0x0', 'Instance not generated')
-                    assert.equal((await voting.supportRequiredPct()).toString(), multisigSupport.toString())
-                    assert.equal((await voting.minAcceptQuorumPct()).toString(), multisigSupport.toString())
-                    const maxUint64 = new web3.BigNumber(2).pow(64).minus(1)
-                    // TODO assert.equal((await voting.voteTime()).toString(), maxUint64.toString())
-                    // check that it's initialized and can not be initialized again
-                    try {
-                        await voting.initialize(tokenAddress, 1e18, 1e18, 1000)
-                    } catch (err) {
-                        assert.equal(err.receipt.status, 0, "It should have thrown")
-                        return
-                    }
-                    assert.isFalse(true, "It should have thrown")
-                })
+                const checkRole = async (appAddress, permission, managerAddress, appName='', roleName='', granteeAddress=managerAddress) => {
+                    assert.equal(await acl.getPermissionManager(appAddress, permission), managerAddress, `${appName} ${roleName} Manager should match`)
+                    assert.isTrue(await acl.hasPermission(granteeAddress, appAddress, permission), `Grantee should have ${appName} role ${roleName}`)
+                }
 
-                it('has correct permissions', async () =>{
-                    const dao = await getContract('Kernel').at(daoAddress)
-                    const acl = await getContract('ACL').at(await dao.acl())
+                // app manager role
+                await checkRole(daoAddress, await dao.APP_MANAGER_ROLE(), votingAddress, 'Kernel', 'APP_MANAGER')
 
-                    const checkRole = async (appAddress, permission, managerAddress, appName='', roleName='', granteeAddress=managerAddress) => {
-                        assert.equal(await acl.getPermissionManager(appAddress, permission), managerAddress, `${appName} ${roleName} Manager should match`)
-                        assert.isTrue(await acl.hasPermission(granteeAddress, appAddress, permission), `Grantee should have ${appName} role ${roleName}`)
-                    }
+                // create permissions role
+                await checkRole(acl.address, await acl.CREATE_PERMISSIONS_ROLE(), votingAddress, 'ACL', 'CREATE_PERMISSION')
 
-                    // app manager role
-                    await checkRole(daoAddress, await dao.APP_MANAGER_ROLE(), votingAddress, 'Kernel', 'APP_MANAGER')
+                // evm script registry
+                const regConstants = await getContract('EVMScriptRegistryConstants').new()
+                const reg = await getContract('EVMScriptRegistry').at(await acl.getEVMScriptRegistry())
+                await checkRole(reg.address, await reg.REGISTRY_ADD_EXECUTOR_ROLE(), votingAddress, 'EVMScriptRegistry', 'ADD_EXECUTOR')
+                await checkRole(reg.address, await reg.REGISTRY_MANAGER_ROLE(), votingAddress, 'EVMScriptRegistry', 'REGISTRY_MANAGER')
 
-                    // create permissions role
-                    await checkRole(acl.address, await acl.CREATE_PERMISSIONS_ROLE(), votingAddress, 'ACL', 'CREATE_PERMISSION')
+                // voting
+                await checkRole(votingAddress, await voting.CREATE_VOTES_ROLE(), votingAddress, 'Voting', 'CREATE_VOTES', tokenManagerAddress)
+                await checkRole(votingAddress, await voting.MODIFY_QUORUM_ROLE(), votingAddress, 'Voting', 'MODIFY_QUORUM')
+                await checkRole(votingAddress, await voting.MODIFY_SUPPORT_ROLE(), votingAddress, 'Voting', 'MODIFY_SUPPORT')
 
-                    // evm script registry
-                    const regConstants = await getContract('EVMScriptRegistryConstants').new()
-                    const reg = await getContract('EVMScriptRegistry').at(await acl.getEVMScriptRegistry())
-                    await checkRole(reg.address, await reg.REGISTRY_ADD_EXECUTOR_ROLE(), votingAddress, 'EVMScriptRegistry', 'ADD_EXECUTOR')
-                    await checkRole(reg.address, await reg.REGISTRY_MANAGER_ROLE(), votingAddress, 'EVMScriptRegistry', 'REGISTRY_MANAGER')
+                // vault
+                await checkRole(vaultAddress, await vault.TRANSFER_ROLE(), votingAddress, 'Vault', 'TRANSFER', financeAddress)
 
-                    // voting
-                    await checkRole(votingAddress, await voting.CREATE_VOTES_ROLE(), votingAddress, 'Voting', 'CREATE_VOTES', tokenManagerAddress)
-                    await checkRole(votingAddress, await voting.MODIFY_QUORUM_ROLE(), votingAddress, 'Voting', 'MODIFY_QUORUM')
-                    await checkRole(votingAddress, await voting.MODIFY_SUPPORT_ROLE(), votingAddress, 'Voting', 'MODIFY_SUPPORT')
+                // finance
+                await checkRole(financeAddress, await finance.CREATE_PAYMENTS_ROLE(), votingAddress, 'Finance', 'CREATE_PAYMENTS')
+                await checkRole(financeAddress, await finance.EXECUTE_PAYMENTS_ROLE(), votingAddress, 'Finance', 'EXECUTE_PAYMENTS')
+                await checkRole(financeAddress, await finance.MANAGE_PAYMENTS_ROLE(), votingAddress, 'Finance', 'MANAGE_PAYMENTS')
 
-                    // vault
-                    await checkRole(vaultAddress, await vault.TRANSFER_ROLE(), votingAddress, 'Vault', 'TRANSFER', financeAddress)
+                // token manager
+                await checkRole(tokenManagerAddress, await tokenManager.ASSIGN_ROLE(), votingAddress, 'TokenManager', 'ASSIGN')
+                await checkRole(tokenManagerAddress, await tokenManager.REVOKE_VESTINGS_ROLE(), votingAddress, 'TokenManager', 'REVOKE_VESTINGS')
+            })
 
-                    // finance
-                    await checkRole(financeAddress, await finance.CREATE_PAYMENTS_ROLE(), votingAddress, 'Finance', 'CREATE_PAYMENTS')
-                    await checkRole(financeAddress, await finance.EXECUTE_PAYMENTS_ROLE(), votingAddress, 'Finance', 'EXECUTE_PAYMENTS')
-                    await checkRole(financeAddress, await finance.MANAGE_PAYMENTS_ROLE(), votingAddress, 'Finance', 'MANAGE_PAYMENTS')
-
-                    // token manager
-                    await checkRole(tokenManagerAddress, await tokenManager.ASSIGN_ROLE(), votingAddress, 'TokenManager', 'ASSIGN')
-                    await checkRole(tokenManagerAddress, await tokenManager.REVOKE_VESTINGS_ROLE(), votingAddress, 'TokenManager', 'REVOKE_VESTINGS')
-                })
-
+            context('> Voting access', () => {
                 it('fails trying to modify support threshold directly', async () => {
                     try {
                         await voting.changeSupportRequiredPct(multisigSupport.add(1), { from: owner })
@@ -212,9 +205,9 @@ contract('Multisig Kit', accounts => {
                     assert.equal(supportThreshold2.toString(), multisigSupport.toString(), 'Support should have changed again')
                 })
 
-                context('creating vote', () => {
-                    let voteId = {}
-                    let executionTarget = {}, script
+                context('> Creating vote', () => {
+                    let voteId
+                    let executionTarget
 
                     beforeEach(async () => {
                         executionTarget = await getContract('ExecutionTarget').new()
@@ -311,56 +304,51 @@ contract('Multisig Kit', accounts => {
                         assert.isFalse(true, "It should have thrown")
                     })
                 })
-            })
 
-            context('finance access', () => {
-                let financeProxyAddress, finance, vaultProxyAddress, vault, voteId = {}, script
-                const payment = new web3.BigNumber(2e16)
-                beforeEach(async () => {
-                    // generated Finance app
-                    financeProxyAddress = getAppProxy(receiptInstance, appIds[0])
-                    finance = getContract('Finance').at(financeProxyAddress)
-                    // generated Vault app
-                    vaultProxyAddress = getAppProxy(receiptInstance, appIds[2])
-                    vault = getContract('Vault').at(vaultProxyAddress)
-                    // Fund Finance
-                    //await logBalances(financeProxyAddress, vaultProxyAddress)
-                    await finance.sendTransaction({ value: payment, from: owner })
-                    //await logBalances(financeProxyAddress, vaultProxyAddress)
-                    const action = { to: financeProxyAddress, calldata: finance.contract.newPayment.getData(ETH, nonHolder, payment, 0, 0, 1, "voting payment") }
-                    script = encodeCallScript([action])
-                    const action2 = { to: voting.address, calldata: voting.contract.newVote.getData(script, 'metadata') }
-                    const script2 = encodeCallScript([action2])
-                    const r = await tokenManager.forward(script2, { from: signer1 })
-                    voteId = getVoteId(r)
-                })
+                context('> Finance access', () => {
+                    let voteId, script
+                    const payment = new web3.BigNumber(2e16)
 
-                it('finance can not be accessed directly (without a vote)', async () => {
-                    try {
-                        await finance.newPayment(ETH, nonHolder, 2e16, 0, 0, 1, "voting payment")
-                    } catch (err) {
-                        assert.equal(err.receipt.status, 0, "It should have thrown")
-                        return
-                    }
-                    assert.isFalse(true, "It should have thrown")
-                })
+                    beforeEach(async () => {
+                        // Fund Finance
+                        //await logBalances(financeAddress, vaultAddress)
+                        await finance.sendTransaction({ value: payment, from: owner })
+                        //await logBalances(financeAddress, vaultAddress)
+                        const action = { to: financeAddress, calldata: finance.contract.newPayment.getData(ETH, nonHolder, payment, 0, 0, 1, "voting payment") }
+                        script = encodeCallScript([action])
+                        const action2 = { to: voting.address, calldata: voting.contract.newVote.getData(script, 'metadata') }
+                        const script2 = encodeCallScript([action2])
+                        const r = await tokenManager.forward(script2, { from: signer1 })
+                        voteId = getVoteId(r)
+                    })
 
-                it('transfers funds if vote is approved', async () => {
-                    const receiverInitialBalance = await getBalance(nonHolder)
-                    //await logBalances(financeProxyAddress, vaultProxyAddress)
-                    await voting.vote(voteId, true, true, { from: signer2 })
-                    await voting.vote(voteId, true, true, { from: signer1 })
-                    //await logBalances(financeProxyAddress, vaultProxyAddress)
-                    assert.equal((await getBalance(nonHolder)).toString(), receiverInitialBalance.plus(payment).toString(), 'Receiver didn\'t get the payment')
+                    it('finance can not be accessed directly (without a vote)', async () => {
+                        try {
+                            await finance.newPayment(ETH, nonHolder, 2e16, 0, 0, 1, "voting payment")
+                        } catch (err) {
+                            assert.equal(err.receipt.status, 0, "It should have thrown")
+                            return
+                        }
+                        assert.isFalse(true, "It should have thrown")
+                    })
+
+                    it('transfers funds if vote is approved', async () => {
+                        const receiverInitialBalance = await getBalance(nonHolder)
+                        //await logBalances(financeAddress, vaultAddress)
+                        await voting.vote(voteId, true, true, { from: signer2 })
+                        await voting.vote(voteId, true, true, { from: signer1 })
+                        //await logBalances(financeAddress, vaultAddress)
+                        assert.equal((await getBalance(nonHolder)).toString(), receiverInitialBalance.plus(payment).toString(), 'Receiver didn\'t get the payment')
+                    })
                 })
             })
         })
     }
 
-    const logBalances = async(financeProxyAddress, vaultProxyAddress) => {
+    const logBalances = async(financeAddress, vaultAddress) => {
         console.log('Owner ETH: ' + await getBalance(owner))
-        console.log('Finance ETH: ' + await getBalance(financeProxyAddress))
-        console.log('Vault ETH: ' + await getBalance(vaultProxyAddress))
+        console.log('Finance ETH: ' + await getBalance(financeAddress))
+        console.log('Vault ETH: ' + await getBalance(vaultAddress))
         console.log('Receiver ETH: ' + await getBalance(nonHolder))
         console.log('-----------------')
     }
