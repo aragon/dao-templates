@@ -130,6 +130,28 @@ contract('Democracy Kit', accounts => {
                 voting = Voting.at(votingAddress)
             })
 
+            it('creates and initializes a DAO with its Token', async() => {
+                assert.notEqual(tokenAddress, '0x0', 'Token not generated')
+                assert.notEqual(daoAddress, '0x0', 'Instance not generated')
+
+                // Check ENS assignment
+                const aragonIdNamehash = namehash(`${aragonId}.aragonid.eth`)
+                const resolvedAddr = await PublicResolver.at(await ens.resolver(aragonIdNamehash)).addr(aragonIdNamehash)
+                assert.equal(resolvedAddr, daoAddress, "aragonId ENS name doesn't match")
+
+                // Check token values
+                const token = MiniMeToken.at(tokenAddress)
+                assert.equal(await token.name(), tokenName, "token name doesn't match")
+                assert.equal(await token.symbol(), tokenSymbol, "token symbol doesn't match")
+            })
+
+            it('has initialized all apps', async () => {
+                assert.isTrue(await finance.hasInitialized(), 'finance not initialized')
+                assert.isTrue(await tokenManager.hasInitialized(), 'tokenManager not initialized')
+                assert.isTrue(await vault.hasInitialized(), 'vault not initialized')
+                assert.isTrue(await voting.hasInitialized(), 'voting not initialized')
+            })
+
             it('has correct permissions', async () =>{
                 const dao = await getContract('Kernel').at(daoAddress)
                 const acl = await getContract('ACL').at(await dao.acl())
@@ -198,6 +220,23 @@ contract('Democracy Kit', accounts => {
             })
 
             context('> Vote access', () => {
+                it('set up voting correctly', async () => {
+                    assert.equal((await voting.supportRequiredPct()).toString(), neededSupport.toString(), 'support required not correct')
+                    assert.equal((await voting.minAcceptQuorumPct()).toString(), minimumAcceptanceQuorum.toString(), 'accept quorum not correct')
+                    assert.equal((await voting.voteTime()).toString(), votingTime.toString(), 'voting time not correct')
+                })
+
+                it('cannot reinitialize voting', async () => {
+                    // check that it's initialized and can not be initialized again
+                    try {
+                        await voting.initialize(tokenAddress, neededSupport, minimumAcceptanceQuorum, votingTime)
+                    } catch (err) {
+                        assert.equal(err.receipt.status, 0, "It should have thrown")
+                        return
+                    }
+                    assert.isFalse(true, "It should have thrown")
+                })
+
                 it('fails trying to modify support threshold', async () => {
                     try {
                         await voting.changeSupportRequiredPct(neededSupport.add(1))
