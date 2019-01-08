@@ -48,7 +48,7 @@ contract BetaKitBase is KitBase, IsContract {
     }
 
     function createDAO(
-        string name,
+        string aragonId,
         MiniMeToken token,
         address[] holders,
         uint256[] stakes,
@@ -140,7 +140,7 @@ contract BetaKitBase is KitBase, IsContract {
         cleanupPermission(acl, voting, dao, dao.APP_MANAGER_ROLE());
         cleanupPermission(acl, voting, tokenManager, tokenManager.MINT_ROLE());
 
-        registerAragonID(name, dao);
+        registerAragonID(aragonId, dao);
         emit DeployInstance(dao, token);
 
         return (dao, acl, finance, tokenManager, vault, voting);
