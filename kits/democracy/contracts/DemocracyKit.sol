@@ -16,8 +16,9 @@ contract DemocracyKit is BetaKitBase {
     {}
 
     function newTokenAndInstance(
-        string name,
-        string symbol,
+        string tokenName,
+        string tokenSymbol,
+        string aragonId,
         address[] holders,
         uint256[] tokens,
         uint64 supportNeeded,
@@ -25,9 +26,9 @@ contract DemocracyKit is BetaKitBase {
         uint64 voteDuration
     ) public
     {
-        newToken(name, symbol);
+        newToken(tokenName, tokenSymbol);
         newInstance(
-            name,
+            aragonId,
             holders,
             tokens,
             supportNeeded,
@@ -36,20 +37,20 @@ contract DemocracyKit is BetaKitBase {
         );
     }
 
-    function newToken(string name, string symbol) public returns (MiniMeToken token) {
+    function newToken(string tokenName, string tokenSymbol) public returns (MiniMeToken token) {
         token = minimeFac.createCloneToken(
             MiniMeToken(address(0)),
             0,
-            name,
+            tokenName,
             18,
-            symbol,
+            tokenSymbol,
             true
         );
         cacheToken(token, msg.sender);
     }
 
     function newInstance(
-        string name,
+        string aragonId,
         address[] holders,
         uint256[] tokens,
         uint64 supportNeeded,
@@ -65,7 +66,7 @@ contract DemocracyKit is BetaKitBase {
         ACL acl;
         Voting voting;
         (dao, acl, , , , voting) = createDAO(
-            name,
+            aragonId,
             token,
             holders,
             tokens,

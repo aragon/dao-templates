@@ -18,29 +18,30 @@ contract MultisigKit is BetaKitBase {
     {}
 
     function newTokenAndInstance(
-        string name,
-        string symbol,
+        string tokenName,
+        string tokenSymbol,
+        string aragonId,
         address[] signers,
         uint256 neededSignatures
     ) public
     {
-        newToken(name, symbol);
-        newInstance(name, signers, neededSignatures);
+        newToken(tokenName, tokenSymbol);
+        newInstance(aragonId, signers, neededSignatures);
     }
 
-    function newToken(string name, string symbol) public returns (MiniMeToken token) {
+    function newToken(string tokenName, string tokenSymbol) public returns (MiniMeToken token) {
         token = minimeFac.createCloneToken(
             MiniMeToken(address(0)),
             0,
-            name,
+            tokenName,
             0,
-            symbol,
+            tokenSymbol,
             true
         );
         cacheToken(token, msg.sender);
     }
 
-    function newInstance(string name, address[] signers, uint256 neededSignatures) public {
+    function newInstance(string aragonId, address[] signers, uint256 neededSignatures) public {
         require(signers.length > 0 && neededSignatures > 0);
         require(neededSignatures <= signers.length);
 
@@ -56,7 +57,7 @@ contract MultisigKit is BetaKitBase {
         TokenManager tokenManager;
         Voting voting;
         (dao, acl, , tokenManager, , voting) = createDAO(
-            name,
+            aragonId,
             token,
             signers,
             stakes,
