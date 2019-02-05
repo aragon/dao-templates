@@ -1,6 +1,5 @@
 {
   "name": "@aragon/kits-beta-base",
-  "private": true,
   "version": "1.0.0",
   "description": "Beta Base contract for Kits for Aragon orgs",
   "main": "index.js",
