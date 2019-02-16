@@ -11,6 +11,7 @@ import "@aragon/os/contracts/lib/ens/ENS.sol";
 import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
 
 import "@aragon/apps-survey/contracts/Survey.sol";
+import "@aragon/apps-vault/contracts/Vault.sol";
 
 import "@aragon/kits-base/contracts/KitBase.sol";
 
@@ -43,10 +44,15 @@ contract SurveyKit is /* APMNamehash, */ KernelAppIds, KitBase {
         Survey survey = Survey(dao.newAppInstance(SURVEY_APP_ID, latestVersionAppBase(SURVEY_APP_ID)));
         survey.initialize(signalingToken, participation, duration);
 
+        // Install a vault to let it be the escape hatch
+        Vault vault = Vault(dao.newAppInstance(KERNEL_DEFAULT_VAULT_APP_ID, latestVersionAppBase(KERNEL_DEFAULT_VAULT_APP_ID)));
+        vault.initialize();
+
         // Set survey manager as the entity that can create votes and change participation
         // surveyManager can then give this permission to other entities
         acl.createPermission(surveyManager, survey, survey.CREATE_SURVEYS_ROLE(), surveyManager);
         acl.createPermission(surveyManager, survey, survey.MODIFY_PARTICIPATION_ROLE(), surveyManager);
+        acl.createPermission(surveyManager, vault, vault.TRANSFER_ROLE(), surveyManager);
         acl.grantPermission(surveyManager, dao, dao.APP_MANAGER_ROLE());
         acl.setPermissionManager(surveyManager, dao, dao.APP_MANAGER_ROLE());
 
