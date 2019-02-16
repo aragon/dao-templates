@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@aragon/apps-shared-minime": "^1.0.0",
-    "@aragon/apps-survey": "^1.0.0-rc.2",
+    "@aragon/apps-survey": "^1.0.0-rc.3",
     "@aragon/apps-vault": "^4.0.0",
     "@aragon/os": "^4.1.0-rc.1",
     "@aragon/kits-base": "^1.0.0"
