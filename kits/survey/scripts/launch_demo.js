@@ -20,13 +20,21 @@ const createdSurveyDao = receipt => receipt.logs.filter(x => x.event == 'DeployI
 const createdSurveyId = receipt => receipt.logs.filter(x => x.event == 'StartSurvey')[0].args.surveyId
 const installedApp = (receipt, appId) => receipt.logs.filter(x => x.event == 'InstalledApp' && x.args.appId === appId)[0].args.appProxy
 
+// Accounts (not held by root)
+const accounts = [
+  '0x8401Eb5ff34cc943f096A32EF3d5113FEbE8D4Eb',
+  '0x306469457266CBBe7c0505e8Aad358622235e768',
+  '0xd873F6DC68e3057e4B7da74c6b304d0eF0B484C7',
+  '0xDcC5dD922fb1D0fd0c450a0636a8cE827521f0eD',
+]
+
 // Survey params
 const SURVEY_DURATION = 60 * 60 * 16 // 24 hours
 const SURVEY_PARTICIPATION = pct16(10) // 10%
 const SURVEY_CHART_BLOCKS = 16 // front-end chart blocks
 const TOKEN_BASE_DECIMAL = 1e18
 
-module.exports = async (callback, accounts) => {
+module.exports = async (callback) => {
   console.log('Launching Survey demo')
 
   if (process.argv.length < 5 || process.argv[3] != '--network') {
@@ -51,7 +59,7 @@ module.exports = async (callback, accounts) => {
   )
   // Contract address is second return of Repo.getLatest()
   const surveyKit = SurveyKit.at((await surveyKitRepo.getLatest())[1])
-  console.log('SurveyKit:', kit.address)
+  console.log('SurveyKit:', surveyKit.address)
 
   // Create minime token and assign to accounts
   const minimeFac = await MiniMeTokenFactory.new()
@@ -65,24 +73,31 @@ module.exports = async (callback, accounts) => {
     true
   )
 
-  // Total of 30 tokens being assigned
+  // Total of 40 tokens being assigned (10 to owner)
   const tokenAssignments = [
     TOKEN_BASE_DECIMAL * 16,
     TOKEN_BASE_DECIMAL * 8,
     TOKEN_BASE_DECIMAL * 4,
-    TOKEN_BASE_DECIMAL * 2
+    TOKEN_BASE_DECIMAL * 2,
+    TOKEN_BASE_DECIMAL * 10, // owner
   ]
   await Promise.all(
-    tokenAssignments.map((amount, i) => {
-      const account = accounts[i]
+    tokenAssignments.map(async (amount, i) => {
+      let account
+      if (i < accounts.length) {
+        account = accounts[i]
+      } else {
+        account = owner
+      }
+
+      await surveyToken.generateTokens(account, amount)
       console.log(`Assigned ${account} ${amount} tokens`)
-      return surveyToken.generateTokens(accounts[i], amount)
     })
   )
 
   // Create DAO with just Survey installed
   console.log('Creating Survey DAO...')
-  const surveyDaoReceipt = await surveyKit.newInstance(surveyToken.address, root, '0x00', SURVEY_DURATION, SURVEY_PARTICIPATION)
+  const surveyDaoReceipt = await surveyKit.newInstance(surveyToken.address, owner, SURVEY_DURATION, SURVEY_PARTICIPATION)
   const surveyDaoAddr = createdSurveyDao(surveyDaoReceipt)
   const surveyAppAddr = installedApp(surveyDaoReceipt, surveyAppId)
 

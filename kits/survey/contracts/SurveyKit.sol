@@ -16,9 +16,6 @@ import "@aragon/kits-base/contracts/KitBase.sol";
 
 
 contract SurveyKit is /* APMNamehash, */ KernelAppIds, KitBase {
-    ENS public ens;
-    DAOFactory public fac;
-
     // bytes32 constant public SURVEY_APP_ID = apmNamehash("survey"); // survey.aragonpm.eth
     bytes32 constant public SURVEY_APP_ID = 0x030b2ab880b88e228f2da5a3d19a2a31bc10dbf91fb1143776a6de489389471e; // survey.aragonpm.eth
 
@@ -32,7 +29,6 @@ contract SurveyKit is /* APMNamehash, */ KernelAppIds, KitBase {
     function newInstance(
         MiniMeToken signalingToken,
         address surveyManager,
-        address escapeHatch,
         uint64 duration,
         uint64 participation
     )
@@ -45,10 +41,6 @@ contract SurveyKit is /* APMNamehash, */ KernelAppIds, KitBase {
         acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
 
         Survey survey = Survey(dao.newAppInstance(SURVEY_APP_ID, latestVersionAppBase(SURVEY_APP_ID)));
-
-        // Set escapeHatch address as the default vault, in case a token rescue is required
-        dao.setApp(dao.APP_BASES_NAMESPACE(), KERNEL_DEFAULT_VAULT_APP_ID, escapeHatch);
-
         survey.initialize(signalingToken, participation, duration);
 
         // Set survey manager as the entity that can create votes and change participation
