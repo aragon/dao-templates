@@ -26,8 +26,11 @@ module.exports = async (callback) => {
 
   console.log('Deploying Survey Kit')
 
-  const ens = ENS.at(process.env.ENS || '0x644f11d76d4b192df168c49a06db4928ea410bbc')
   const owner = process.env.OWNER
+  const ens = ENS.at(
+    process.env.ENS ||
+    '0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1' // aragen's default ENS
+  )
 
   console.log('ENS', ens.address)
   console.log('Owner', owner)
