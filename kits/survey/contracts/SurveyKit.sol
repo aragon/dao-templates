@@ -54,7 +54,6 @@ contract SurveyKit is /* APMNamehash, */ KernelAppIds, KitBase {
         acl.createPermission(surveyManager, survey, survey.MODIFY_PARTICIPATION_ROLE(), surveyManager);
         acl.createPermission(surveyManager, vault, vault.TRANSFER_ROLE(), surveyManager);
         acl.grantPermission(surveyManager, dao, dao.APP_MANAGER_ROLE());
-        acl.setPermissionManager(surveyManager, dao, dao.APP_MANAGER_ROLE());
 
         cleanupDAOPermissions(dao, acl, surveyManager);
 
