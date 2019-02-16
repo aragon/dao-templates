@@ -29,10 +29,10 @@ const accounts = [
 ]
 
 // Survey params
-const SURVEY_DURATION = 60 * 60 * 16 // 24 hours
-const SURVEY_PARTICIPATION = pct16(10) // 10%
-const SURVEY_CHART_BLOCKS = 16 // front-end chart blocks
 const TOKEN_BASE_DECIMAL = 1e18
+const SURVEY_CHART_BLOCKS = 16 // front-end chart blocks
+const SURVEY_DURATION = 60 * 60 * SURVEY_CHART_BLOCKS // one hour for each block
+const SURVEY_PARTICIPATION = pct16(10) // 10%
 
 module.exports = async (callback) => {
   console.log('Launching Survey demo')
