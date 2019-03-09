@@ -13,7 +13,9 @@ contract DemocracyKit is BetaKitBase {
     )
         BetaKitBase(_fac, _ens, _minimeFac, _aragonID, _appIds)
         public
-    {}
+    {
+        // solium-disable-previous-line no-empty-blocks
+    }
 
     function newTokenAndInstance(
         string tokenName,

@@ -16,7 +16,9 @@ contract BetaKitBaseMock is BetaKitBase {
     )
         BetaKitBase(_fac, _ens, _minimeFac, _aragonID, _appIds)
         public
-    {}
+    {
+        // solium-disable-previous-line no-empty-blocks
+    }
 
     function newToken(string name, string symbol) external returns (MiniMeToken token) {
         token = minimeFac.createCloneToken(
