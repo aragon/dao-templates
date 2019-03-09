@@ -33,6 +33,6 @@
     "@aragon/kits-beta-base": "^1.0.0",
     "eth-ens-namehash": "^2.0.8",
     "solium": "^1.0.4",
-    "truffle": "^4.1.14"
+    "truffle": "4.1.14"
   }
 }
