@@ -97,7 +97,7 @@ module.exports = async (callback) => {
 
   // Create DAO with just Survey installed
   console.log('Creating Survey DAO...')
-  const surveyDaoReceipt = await surveyKit.newInstance(surveyToken.address, owner, SURVEY_DURATION, SURVEY_PARTICIPATION)
+  const surveyDaoReceipt = await surveyKit.newInstance(surveyToken.address, owner, owner, SURVEY_DURATION, SURVEY_PARTICIPATION)
   const surveyDaoAddr = createdSurveyDao(surveyDaoReceipt)
   const surveyAppAddr = installedApp(surveyDaoReceipt, surveyAppId)
 

@@ -30,6 +30,7 @@ contract SurveyKit is /* APMNamehash, */ KernelAppIds, KitBase {
     function newInstance(
         MiniMeToken signalingToken,
         address surveyManager,
+        address escapeHatchOwner,
         uint64 duration,
         uint64 participation
     )
@@ -52,7 +53,7 @@ contract SurveyKit is /* APMNamehash, */ KernelAppIds, KitBase {
         // surveyManager can then give this permission to other entities
         acl.createPermission(surveyManager, survey, survey.CREATE_SURVEYS_ROLE(), surveyManager);
         acl.createPermission(surveyManager, survey, survey.MODIFY_PARTICIPATION_ROLE(), surveyManager);
-        acl.createPermission(surveyManager, vault, vault.TRANSFER_ROLE(), surveyManager);
+        acl.createPermission(escapeHatchOwner, vault, vault.TRANSFER_ROLE(), escapeHatchOwner);
 
         cleanupDAOPermissions(dao, acl, surveyManager);
 
