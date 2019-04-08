@@ -112,7 +112,10 @@ contract('AGP-1 Kit', accounts => {
             await checkRole(finance.address, await finance.MANAGE_PAYMENTS_ROLE(), metaTrackVoting.address, 'Finance', 'MANAGE_PAYMENTS', voting.address)
         })
 
-        for (const votingType of ['Main', 'Meta Track']) {
+        for (const testVotingType of ['Main', 'Meta Track']) {
+          // Bind the parameterized variables locally
+            const votingType = testVotingType
+
             context(`creating ${votingType} vote`, () => {
                 let votingApp, voteId = {}
                 let executionTarget = {}, script
@@ -243,7 +246,10 @@ contract('AGP-1 Kit', accounts => {
     })
 
     // changing parameters, this needs to be at the end
-    for (const votingType of ['Main', 'Meta Track']) {
+    for (const testVotingType of ['Main', 'Meta Track']) {
+        // Bind the parameterized variables locally
+        const votingType = testVotingType
+
         context(`changing parameters for ${votingType} voting app`, () => {
             let votingApp
 

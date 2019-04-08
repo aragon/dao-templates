@@ -92,7 +92,10 @@ contract('Multisig Kit', accounts => {
     // Test when organization is created in one call with `newTokenAndInstance()` and in
     // two calls with `newToken()` and `newInstance()`
     const creationStyles = ['single', 'separate']
-    for (const creationStyle of creationStyles) {
+    for (const testCreationStyle of creationStyles) {
+        // Bind the parameterized variables locally
+        const creationStyle = testCreationStyle
+
         context(`> Creation through ${creationStyle} transaction`, () => {
             let aragonId, tokenName, tokenSymbol
 
