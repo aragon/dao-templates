@@ -352,7 +352,7 @@ contract('Multisig Kit', accounts => {
                         //await logBalances(financeAddress, vaultAddress)
                         await finance.sendTransaction({ value: payment, from: owner })
                         //await logBalances(financeAddress, vaultAddress)
-                        const action = { to: financeAddress, calldata: finance.contract.newPayment.getData(ETH, nonHolder, payment, 0, 0, 1, "voting payment") }
+                        const action = { to: financeAddress, calldata: finance.contract.newImmediatePayment.getData(ETH, nonHolder, payment, 0, 0, 1, "voting payment") }
                         script = encodeCallScript([action])
                         const action2 = { to: voting.address, calldata: voting.contract.newVote.getData(script, 'metadata') }
                         const script2 = encodeCallScript([action2])
@@ -362,7 +362,7 @@ contract('Multisig Kit', accounts => {
 
                     it('finance can not be accessed directly (without a vote)', async () => {
                         try {
-                            await finance.newPayment(ETH, nonHolder, 2e16, 0, 0, 1, "voting payment")
+                            await finance.newImmediatePayment(ETH, nonHolder, 2e16, 0, 0, 1, "voting payment")
                         } catch (err) {
                             assert.equal(err.receipt.status, 0, "It should have thrown")
                             return
