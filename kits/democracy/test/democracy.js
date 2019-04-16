@@ -386,7 +386,7 @@ contract('Democracy Kit', accounts => {
                     beforeEach(async () => {
                         // Fund Finance
                         await finance.sendTransaction({ value: payment, from: owner })
-                        const action = { to: financeAddress, calldata: finance.contract.newPayment.getData(ETH, nonHolder, payment, 0, 0, 1, "voting payment") }
+                        const action = { to: financeAddress, calldata: finance.contract.newImmediatePayment.getData(ETH, nonHolder, payment, "voting payment") }
                         script = encodeCallScript([action])
                         const action2 = { to: voting.address, calldata: voting.contract.newVote.getData(script, 'metadata') }
                         const script2 = encodeCallScript([action2])
@@ -396,7 +396,7 @@ contract('Democracy Kit', accounts => {
 
                     it('finance can not be accessed directly (without a vote)', async () => {
                         try {
-                            await finance.newPayment(ETH, nonHolder, 2e16, 0, 0, 1, "voting payment")
+                            await finance.newImmediatePayment(ETH, nonHolder, 2e16, "voting payment")
                         } catch (err) {
                             assert.equal(err.receipt.status, 0, "It should have thrown")
                             return
