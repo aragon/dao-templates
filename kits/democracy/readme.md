@@ -1,4 +1,4 @@
-# Aragon 0.5 Democracy template
+# Aragon 0.7 Democracy template
 
 See [Beta templates description](https://github.com/aragon/dao-kits/blob/master/kits/beta-base/readme.md).
 
@@ -15,32 +15,31 @@ democracy.newInstance(name, holders, stakes, supportNeeded, minAcceptanceQuorum,
 
 ## Deploying templates
 
-After deploying ENS, APM and AragonID. Change `index.js` ENS address for the
-deployment network.
-
-Then just:
+After deploying ENS, APM and AragonID, just run:
 
 ```
 npm run deploy:rinkeby
 ```
 
+The network details will be automatically selected by the `arapp.json`'s environments.
+
 ## Permissions
 
-| App               | Permission            | Grantee | Manager |
-|-------------------|-----------------------|---------|---------|
-| Voting            | CREATE_VOTES          | Any     | Voting  |
-| Voting            | MODIFY_QUORUM         | Voting  | Voting  |
-| Voting            | MODIFY_SUPPORT        | None    | Burned  |
-| Vault             | TRANSFER              | Finance | Voting  |
-| Finance           | CREATE_PAYMENTS       | Voting  | Voting  |
-| Finance           | EXECUTE_PAYMENTS      | Voting  | Voting  |
-| Finance           | DISABLE_PAYMENTS      | Voting  | Voting  |
-| Token Manager     | ASSIGN                | Voting  | Voting  |
-| Token Manager     | REVOKE_VESTINGS       | Voting  | Voting  |
-| Kernel            | APP_MANAGER           | Voting  | Voting  |
-| ACL               | CREATE_PERMISSIONS    | Voting  | Voting  |
-| EVMScriptRegistry | REGISTRY_ADD_EXECUTOR | Voting  | Voting  |
-| EVMScriptRegistry | REGISTRY_MANAGER      | Voting  | Voting  |
+| App               | Permission            | Grantee       | Manager |
+|-------------------|-----------------------|---------------|---------|
+| Voting            | CREATE_VOTES          | Token Manager | Voting  |
+| Voting            | MODIFY_QUORUM         | Voting        | Voting  |
+| Voting            | MODIFY_SUPPORT        | None          | Burned  |
+| Vault             | TRANSFER              | Finance       | Voting  |
+| Finance           | CREATE_PAYMENTS       | Voting        | Voting  |
+| Finance           | EXECUTE_PAYMENTS      | Voting        | Voting  |
+| Finance           | DISABLE_PAYMENTS      | Voting        | Voting  |
+| Token Manager     | ASSIGN                | Voting        | Voting  |
+| Token Manager     | REVOKE_VESTINGS       | Voting        | Voting  |
+| Kernel            | APP_MANAGER           | Voting        | Voting  |
+| ACL               | CREATE_PERMISSIONS    | Voting        | Voting  |
+| EVMScriptRegistry | REGISTRY_ADD_EXECUTOR | Voting        | Voting  |
+| EVMScriptRegistry | REGISTRY_MANAGER      | Voting        | Voting  |
 
 ## Gas usage
 

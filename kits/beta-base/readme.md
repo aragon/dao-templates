@@ -1,4 +1,4 @@
-# Aragon 0.5 beta templates
+# Aragon 0.7 beta templates
 
 ## Description
 
@@ -18,9 +18,9 @@ distribution.
 
 ## Usage
 
-Both templates require 2 transactions to completely set up an organization.
-One to create the token (which is cached in the template) and one to create the
-organization and finish the setup.
+Both templates may require 2 transactions to completely set up an organization, due
+to gas costs: one to create the token (which is cached in the template) and one to
+create the organization and finish the setup.
 
 - Both transactions have to be done by the same sender (cache reasons).
 - Thanks to account nonces, we can prompt the user to sign and broadcast both
@@ -29,7 +29,8 @@ and we can be sure that they will be mined in order.
 Metamask will probably tell the user the second transaction will fail, but that's
 because they don't know better (they don't calculate the state as if the first
 transaction was already mined).
-- Addresses for deployed templates can be found in `index.js`.
+- Addresses for deployed templates on individual networks can be found in
+  [`aragon/deployments`](https://github.com/aragon/deployments).
 
 ### 1. Token creation
 
@@ -48,7 +49,7 @@ Then see each template's documentation for their own specific transactions.
 ## ENS, APM and aragonID
 
 Our fake ENS instance that we use across the entire system can also be found in
-`index.js`.
+[`aragon/deployments`](https://github.com/aragon/deployments).
 
 Using it as the ENS registry, we can find everything else by using ENS.
 
@@ -74,14 +75,6 @@ are managed by different team members.
 Templates will deploy the last version of the apps according to their APM repos,
 this will allow us to update the apps without the need to update templates.
 
-For our Rinkeby deployment we are using a custom ENS deployment. This is fairly
-trustful as an account we control is the ENS root.
-
-```
-ENS: 0xaa0ccb537289d226941745c4dd7a819a750897d0
-APM: 0x8da0fe11ece85f48723d45c3d6767db9bd4f0b29
-```
-
 Repos can be found by resolving the repo appId in ENS (e.g. `ens.resolve('voting.aragonpm.eth')`).
 New versions have to be submitted directly to the repo address. If you don't
 have permission to do so, please ask the permission manager (aka Jorge).
@@ -91,16 +84,6 @@ have permission to do so, please ask the permission manager (aka Jorge).
 - Because of aragonID registration, trying to create an organization with the
 name of an existing one will fail. For the client, an easy way to check is
 whether `[name].aragonid.eth` owner's is `0x00...00`
-
-## Gas costs
-
-As of Feb 14th (❤️) the costs of deploying a fully working organization are:
-
-- `template.newToken(...)`: ~2.4m gas
-- `template.newInstance(...)`: ~6.08m gas
-
-Which total in 106% of a mainnet block worth of gas, making deploying an Aragon org
-cheaper than $100 at given current gas and ETH prices.
 
 ## Deploying templates
 

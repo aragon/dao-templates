@@ -1,4 +1,4 @@
-# Aragon 0.5 beta templates
+# Aragon 0.7 Multisig template
 
 See [Beta templates description](https://github.com/aragon/dao-kits/blob/master/kits/beta-base/readme.md).
 
@@ -16,14 +16,13 @@ multisig.newInstance(name, signers, neededSignatures)
 
 ## Deploying templates
 
-After deploying ENS, APM and AragonID. Change `index.js` ENS address for the
-deployment network.
-
-Then just:
+After deploying ENS, APM and AragonID, just run:
 
 ```
 npm run deploy:rinkeby
 ```
+
+The network details will be automatically selected by the `arapp.json`'s environments.
 
 ## Permissions
 
