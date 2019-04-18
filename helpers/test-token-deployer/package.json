@@ -1,6 +1,6 @@
 {
   "name": "@aragon/templates-tokens",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Test token deployer for Aragon apps",
   "main": "index.js",
   "directories": {
