@@ -1,4 +1,5 @@
 module.exports = {
+  depositerABI: [{"constant":false,"inputs":[{"name":"finance","type":"address"},{"name":"token","type":"address"},{"name":"many","type":"uint256"},{"name":"why","type":"string"}],"name":"pleaseAirdrop","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"_factory","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"}],
   rinkeby: {
     factory: '0xff4E0FE747f999a07AB03eBf3c8B3B5232Ef2350',
     depositer: '0x39a4d265db942361d92e2b0039cae73ea72a2ff9',
