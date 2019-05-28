@@ -1,7 +1,7 @@
 pragma solidity 0.4.18;
 
+import "./IFinance.sol";
 import "./TokenFactory.sol";
-import "@aragon/apps-finance/contracts/Finance.sol";
 
 
 contract Depositer {
@@ -11,7 +11,7 @@ contract Depositer {
         factory = _factory;
     }
 
-    function pleaseAirdrop(Finance finance, Token token, uint256 many, string why) {
+    function pleaseAirdrop(IFinance finance, Token token, uint256 many, string why) {
         factory.mint(token, this, many);
         token.approve(finance, many);
         finance.deposit(token, many, why);

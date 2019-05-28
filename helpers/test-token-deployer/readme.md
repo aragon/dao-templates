@@ -1,6 +1,8 @@
 # Tokens template
 
-Used for creating test tokens in test networks.
+**Note**: the contracts in this package are unmaintained and should not be used for real token deployments!
+
+Used for creating test tokens in test networks (testnet Aragon organizations are still using these fake tokens).
 
 A Factory can mint unlimited tokens of any of its created tokens.
 

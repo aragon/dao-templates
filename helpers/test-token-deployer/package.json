@@ -14,9 +14,5 @@
   "devDependencies": {
     "truffle": "4.0.5",
     "truffle-hdwallet-provider": "0.0.3"
-  },
-  "dependencies": {
-    "@aragon/apps-finance": "^1.0.1",
-    "@aragon/apps-vault": "^2.0.1"
   }
 }
