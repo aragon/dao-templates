@@ -4,7 +4,7 @@ const namehash = require('eth-ens-namehash').hash
 const deployDAOFactory = require('@aragon/os/scripts/deploy-daofactory.js')
 
 
-const apps = ['finance', 'token-manager', 'vault', 'voting']
+const apps = ['agent', 'finance', 'token-manager', 'vault', 'voting']
 const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).environments.default.appName))
 
 const getContract = name => artifacts.require(name)

@@ -9,7 +9,7 @@ contract DemocracyKit is BetaKitBase {
         ENS _ens,
         MiniMeTokenFactory _minimeFac,
         IFIFSResolvingRegistrar _aragonID,
-        bytes32[4] _appIds
+        bytes32[5] _appIds
     )
         BetaKitBase(_fac, _ens, _minimeFac, _aragonID, _appIds)
         public

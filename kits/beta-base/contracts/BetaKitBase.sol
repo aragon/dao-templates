@@ -18,14 +18,16 @@ import "@aragon/kits-base/contracts/KitBase.sol";
 
 
 contract BetaKitBase is KitBase, IsContract {
+    string constant private ERROR_BAD_APP_IDS_LENGTH = "KIT_BAD_APP_IDS_LENGTH";
+
     MiniMeTokenFactory public minimeFac;
     IFIFSResolvingRegistrar public aragonID;
-    bytes32[4] public appIds;
+    bytes32[5] public appIds;
 
     mapping (address => address) tokenCache;
 
     // ensure alphabetic order
-    enum Apps { Finance, TokenManager, Vault, Voting }
+    enum Apps { Agent, Finance, TokenManager, Vault, Voting }
 
     event DeployToken(address token, address indexed cacheOwner);
     event DeployInstance(address dao, address indexed token);
@@ -35,12 +37,13 @@ contract BetaKitBase is KitBase, IsContract {
         ENS _ens,
         MiniMeTokenFactory _minimeFac,
         IFIFSResolvingRegistrar _aragonID,
-        bytes32[4] _appIds
+        bytes32[5] _appIds
     )
         KitBase(_fac, _ens)
         public
     {
         require(isContract(address(_fac.regFactory())));
+        require(_appIds.length == 5, ERROR_BAD_APP_IDS_LENGTH);
 
         minimeFac = _minimeFac;
         aragonID = _aragonID;

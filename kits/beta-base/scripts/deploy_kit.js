@@ -8,7 +8,7 @@ const deployDAOFactory = require('@aragon/os/scripts/deploy-daofactory.js')
 const logDeploy = require('@aragon/os/scripts/helpers/deploy-logger')
 
 // ensure alphabetic order
-const apps = ['finance', 'token-manager', 'vault', 'voting']
+const apps = ['agent', 'finance', 'token-manager', 'vault', 'voting']
 const appIds = apps.map(app => namehash(`${app}.aragonpm.eth`))
 
 const globalArtifacts = this.artifacts // Not injected unless called directly via truffle
@@ -108,6 +108,7 @@ module.exports = async (
 
     if (await ens.owner(appIds[0]) == '0x0000000000000000000000000000000000000000') {
       log('Deploying apps in local network')
+      await newRepo(apm, 'agent', owner, 'Agent')
       await newRepo(apm, 'voting', owner, 'Voting')
       await newRepo(apm, 'finance', owner, 'Finance')
       await newRepo(apm, 'token-manager', owner, 'TokenManager')
