@@ -15,6 +15,7 @@
     "test:beta-base": "lerna run --scope=@aragon/kits-beta-base --stream test",
     "test:democracy": "lerna run --scope=@aragon/kits-democracy --stream test",
     "test:multisig": "lerna run --scope=@aragon/kits-multisig --stream test",
+    "test:trust": "lerna run --scope=@aragon/kits-trust --stream test",
     "test:agp1": "lerna run --scope=@aragon/kits-agp1 --stream test",
     "lint": "lerna run --scope=@aragon/kits-* lint",
     "link:os": "lerna exec --scope '@aragon/kits-*' 'npm link @aragon/os'"

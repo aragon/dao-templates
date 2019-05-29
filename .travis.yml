@@ -16,6 +16,7 @@ env:
   - TASK=test:beta-base
   - TASK=test:democracy
   - TASK=test:multisig
+  - TASK=test:trust
   - TASK=test:agp1
 matrix:
   allow_failures:
