@@ -50,7 +50,9 @@ contract TrustKit is KitBase, IsContract {
     // ensure alphabetic order
     enum Apps { Agent, Finance, TokenManager, Vault, Voting }
 
-    struct TokenCache {
+    struct Cache {
+        address dao;
+        address multiSig;
         address holdToken;
         address heirsToken;
     }
@@ -59,7 +61,7 @@ contract TrustKit is KitBase, IsContract {
     bytes32[5] public appIds;
     MiniMeTokenFactory public miniMeFactory;
     IFIFSResolvingRegistrar public aragonID;
-    mapping (address => TokenCache) internal tokensCache;
+    mapping (address => Cache) internal cache;
 
     event DeployTrustEntity(address dao, address multiSig);
 
@@ -81,46 +83,19 @@ contract TrustKit is KitBase, IsContract {
         appIds = _appIds;
     }
 
-    function newTokens() public {
+    function prepareDAO(address[] multiSigKeys) public {
+        require(multiSigKeys.length == MULTI_SIG_EXTERNAL_KEYS_AMOUNT, ERROR_BAD_MULTI_SIG_KEYS_LENGTH);
+        Kernel dao = fac.newDAO(address(this));
+        MultiSigWallet multiSig = _createMultiSig(dao, multiSigKeys);
         (MiniMeToken holdToken, MiniMeToken heirsToken) = _createTokens();
-        _cacheTokens(holdToken, heirsToken, msg.sender);
+        _storeCache(msg.sender, dao, multiSig, holdToken, heirsToken);
     }
 
-    function newInstance(
-        string id,
-        address[] beneficiaryKeys,
-        address[] multiSigKeys,
-        address[] heirs,
-        uint256[] heirsStake
-    )
-        public
-        returns (Kernel, MultiSigWallet)
-    {
-        (Kernel dao, MultiSigWallet multiSigWallet) = _createDAO(beneficiaryKeys, multiSigKeys, heirs, heirsStake);
+    function setupDAO(string id, address[] beneficiaryKeys, address[] heirs, uint256[] heirsStake) public returns (Kernel, MultiSigWallet) {
+        (Kernel dao, MultiSigWallet multiSigWallet) = _installAndSetupApps(beneficiaryKeys, heirs, heirsStake);
         _registerAragonID(id, address(dao));
         emit DeployTrustEntity(address(dao), address(multiSigWallet));
         return (dao, multiSigWallet);
-    }
-
-    function _createDAO(address[] beneficiaryKeys, address[] multiSigKeys, address[] heirs, uint256[] heirsStake)
-        internal
-        returns (Kernel, MultiSigWallet)
-    {
-        require(heirs.length == heirsStake.length, ERROR_BAD_HEIRS_LENGTH);
-        require(beneficiaryKeys.length == BENEFICIARY_KEYS_AMOUNT, ERROR_BAD_BENEFICIARY_KEYS_LENGTH);
-        uint256 blockedHeirsSupply = _calculateBlockedHeirsSupply(heirsStake);
-
-        Kernel dao = fac.newDAO(address(this));
-        MultiSigWallet multiSig = _createMultiSig(dao, multiSigKeys);
-        ACL acl = ACL(dao.acl());
-
-        acl.createPermission(address(this), dao, dao.APP_MANAGER_ROLE(), address(this));
-        (Voting holdVoting, Voting heirsVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager) = _setupApps(dao, acl, multiSig);
-        _mintHoldTokens(holdTokenManager, beneficiaryKeys);
-        _mintHeirsTokens(heirsTokenManager, heirs, heirsStake, blockedHeirsSupply);
-        _cleanupPermissions(dao, acl, multiSig, holdVoting, heirsVoting, holdTokenManager, heirsTokenManager);
-
-        return (dao, multiSig);
     }
 
     function _createMultiSig(Kernel dao, address[] multiSigKeys) internal returns (MultiSigWallet) {
@@ -131,20 +106,39 @@ contract TrustKit is KitBase, IsContract {
         return new MultiSigWallet(multiSigOwners, MULTI_SIG_REQUIRED_CONFIRMATIONS);
     }
 
+    function _installAndSetupApps(address[] beneficiaryKeys, address[] heirs, uint256[] heirsStake) internal returns (Kernel, MultiSigWallet) {
+        require(_hasCache(msg.sender), ERROR_MISSING_CACHE_TOKENS_FOR_SENDER);
+        require(heirs.length == heirsStake.length, ERROR_BAD_HEIRS_LENGTH);
+        require(beneficiaryKeys.length == BENEFICIARY_KEYS_AMOUNT, ERROR_BAD_BENEFICIARY_KEYS_LENGTH);
+        uint256 blockedHeirsSupply = _calculateBlockedHeirsSupply(heirsStake);
+
+        (Kernel dao, MultiSigWallet multiSig) = _getDaoAndMultiSigCache(msg.sender);
+        ACL acl = ACL(dao.acl());
+
+        acl.createPermission(address(this), dao, dao.APP_MANAGER_ROLE(), address(this));
+        (Voting holdVoting, Voting heirsVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager) = _setupApps(dao, acl, multiSig);
+        _mintHoldTokens(holdTokenManager, beneficiaryKeys);
+        _mintHeirsTokens(heirsTokenManager, heirs, heirsStake, blockedHeirsSupply);
+        _cleanupPermissions(dao, acl, multiSig, holdVoting, heirsVoting, holdTokenManager, heirsTokenManager);
+        _cleanCache(msg.sender);
+
+        return (dao, multiSig);
+    }
+
     function _setupApps(Kernel dao, ACL acl, MultiSigWallet multiSig)
         internal
         returns (Voting holdVoting, Voting heirsVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager)
     {
         (holdVoting, heirsVoting, holdTokenManager, heirsTokenManager) = _setupTokenApps(dao, acl, multiSig);
         _setupFinanceApps(dao, acl, holdVoting);
-        _setupAgentApp(dao, acl, holdVoting, heirsVoting);
+        _setupAgentApp(dao, acl, holdVoting);
     }
 
     function _setupTokenApps(Kernel dao, ACL acl, MultiSigWallet multiSig)
         internal
         returns (Voting holdVoting, Voting heirsVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager)
     {
-        (MiniMeToken holdToken, MiniMeToken heirsToken) = _popTokensCache(msg.sender);
+        (MiniMeToken holdToken, MiniMeToken heirsToken) = _getTokensCache(msg.sender);
         (holdVoting, heirsVoting) = _createVotingApps(dao);
         (holdTokenManager, heirsTokenManager) = _createTokenManagerApps(dao);
 
@@ -171,10 +165,10 @@ contract TrustKit is KitBase, IsContract {
         finance.initialize(vault, 30 days);
     }
 
-    function _setupAgentApp(Kernel dao, ACL acl, Voting holdVoting, Voting heirsVoting) internal {
+    function _setupAgentApp(Kernel dao, ACL acl, Voting holdVoting) internal {
         Agent agent = _createAgentApp(dao);
-        _createAgentPermission(acl, holdVoting, heirsVoting, agent, agent.EXECUTE_ROLE());
-        _createAgentPermission(acl, holdVoting, heirsVoting, agent, agent.RUN_SCRIPT_ROLE());
+        acl.createPermission(holdVoting, agent, agent.EXECUTE_ROLE(), holdVoting);
+        acl.createPermission(holdVoting, agent, agent.RUN_SCRIPT_ROLE(), holdVoting);
         agent.initialize();
     }
 
@@ -244,13 +238,6 @@ contract TrustKit is KitBase, IsContract {
         acl.createPermission(holdVoting, finance, finance.MANAGE_PAYMENTS_ROLE(), holdVoting);
     }
 
-    function _createAgentPermission(ACL acl, Voting holdVoting, Voting heirsVoting, Agent agent, bytes32 permission) internal {
-        acl.createPermission(holdVoting, agent, permission, address(this));
-        acl.grantPermission(heirsVoting, agent, permission);
-        acl.revokePermission(address(this), agent, permission);
-        acl.setPermissionManager(holdVoting, agent, permission);
-    }
-
     function _mintHoldTokens(TokenManager holdTokenManager, address[] beneficiaryKeys) internal {
         holdTokenManager.mint(beneficiaryKeys[0], 1e18);
         holdTokenManager.mint(beneficiaryKeys[1], 1e18);
@@ -280,20 +267,34 @@ contract TrustKit is KitBase, IsContract {
         cleanupPermission(acl, multiSig, heirsTokenManager, heirsTokenManager.MINT_ROLE());
     }
 
-    function _cacheTokens(MiniMeToken holdToken, MiniMeToken heirsToken, address owner) internal {
-        tokensCache[owner] = TokenCache({ holdToken: holdToken, heirsToken: heirsToken });
+    function _hasCache(address owner) internal returns (bool) {
+        Cache storage c = cache[owner];
+        return c.dao != address(0) && c.multiSig != address(0) && c.holdToken != address(0) && c.heirsToken != address(0);
     }
 
-    function _popTokensCache(address owner) internal returns (MiniMeToken holdToken, MiniMeToken heirsToken) {
-        TokenCache storage cache = tokensCache[owner];
-        require(cache.holdToken != address(0) && cache.heirsToken != address(0), ERROR_MISSING_CACHE_TOKENS_FOR_SENDER);
-
-        holdToken = MiniMeToken(cache.holdToken);
-        heirsToken = MiniMeToken(cache.heirsToken);
-        delete tokensCache[owner];
+    function _storeCache(address owner, Kernel dao, MultiSigWallet multiSig, MiniMeToken holdToken, MiniMeToken heirsToken) internal {
+        cache[owner] = Cache({ dao: dao, multiSig: multiSig, holdToken: holdToken, heirsToken: heirsToken });
     }
 
+    function _getDaoAndMultiSigCache(address owner) internal returns (Kernel dao, MultiSigWallet multiSig) {
+        Cache storage c = cache[owner];
+        dao = Kernel(c.dao);
+        multiSig = MultiSigWallet(c.multiSig);
+    }
+
+    function _getTokensCache(address owner) internal returns (MiniMeToken holdToken, MiniMeToken heirsToken) {
+        Cache storage c = cache[owner];
+        holdToken = MiniMeToken(c.holdToken);
+        heirsToken = MiniMeToken(c.heirsToken);
+    }
+
+    function _cleanCache(address owner) internal {
+        delete cache[owner];
+    }
+
+    event Log(string name);
     function _registerAragonID(string name, address owner) internal {
+        emit Log(name);
         aragonID.register(keccak256(abi.encodePacked(name)), owner);
     }
 
