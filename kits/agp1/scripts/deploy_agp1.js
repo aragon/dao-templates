@@ -98,10 +98,10 @@ module.exports = async (
   log('AGP1 DAO address: ', agp1Address)
 
   // generated apps
-  const financeAddress = getAppProxy(agp1Receipt, appIds[0])
-  const vaultAddress = getAppProxy(agp1Receipt, appIds[1])
-  const votingAddress = getAppProxy(agp1Receipt, appIds[2])
-  const metaTrackVotingAddress = getAppProxy(agp1Receipt, appIds[2], 1)
+  const financeAddress = getAppProxy(agp1Receipt, appIds[1])
+  const vaultAddress = getAppProxy(agp1Receipt, appIds[2])
+  const votingAddress = getAppProxy(agp1Receipt, appIds[3])
+  const metaTrackVotingAddress = getAppProxy(agp1Receipt, appIds[3], 1)
 
   log('Finance: ', financeAddress)
   log('Vault: ', vaultAddress)

@@ -49,6 +49,7 @@ module.exports = async (callback) => {
 
     if (await ens.owner(appIds[0]) == '0x0000000000000000000000000000000000000000') {
       console.log('Deploying apps in local network')
+      await newRepo(apm, 'agent', owner, 'Agent')
       await newRepo(apm, 'voting', owner, 'Voting')
       await newRepo(apm, 'finance', owner, 'Finance')
       await newRepo(apm, 'token-manager', owner, 'TokenManager')

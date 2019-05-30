@@ -120,13 +120,13 @@ contract('Democracy Kit', accounts => {
                 }
 
                 // generated apps
-                financeAddress = getAppProxy(receiptInstance, appIds[0])
+                financeAddress = getAppProxy(receiptInstance, appIds[1])
                 finance = await Finance.at(financeAddress)
-                tokenManagerAddress = getAppProxy(receiptInstance, appIds[1])
+                tokenManagerAddress = getAppProxy(receiptInstance, appIds[2])
                 tokenManager = TokenManager.at(tokenManagerAddress)
-                vaultAddress = getAppProxy(receiptInstance, appIds[2])
+                vaultAddress = getAppProxy(receiptInstance, appIds[3])
                 vault = await Vault.at(vaultAddress)
-                votingAddress = getAppProxy(receiptInstance, appIds[3])
+                votingAddress = getAppProxy(receiptInstance, appIds[4])
                 voting = Voting.at(votingAddress)
             })
 
