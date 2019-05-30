@@ -13,7 +13,7 @@ import "@aragon/apps-finance/contracts/Finance.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 import "@aragon/id/contracts/IFIFSResolvingRegistrar.sol";
-import "multisig-wallet-gnosis/contracts/MultiSigWallet.sol";
+import "./MultiSigWallet.sol";
 
 
 contract TrustKit is KitBase, IsContract {

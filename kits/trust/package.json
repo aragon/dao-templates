@@ -64,7 +64,6 @@
     "@aragon/id": "^2.0.3",
     "@aragon/kits-base": "^1.0.0",
     "@aragon/kits-beta-base": "^1.0.0",
-    "@aragon/os": "^4.2.0",
-    "multisig-wallet-gnosis": "gnosis/MultiSigWallet#v1.6.0"
+    "@aragon/os": "^4.2.0"
   }
 }
