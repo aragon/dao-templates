@@ -22,7 +22,7 @@ const EVMScriptRegistry = artifacts.require('EVMScriptRegistry')
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, multiSigKey1, multiSigKey2]) => {
-  let daoID, trustKit, dao, multiSig, acl, prepareReceipt, setupReceipt
+  let daoID, trustKit, dao, multiSig, acl, prepareReceipt, daoSetupReceipt, multiSigSetupReceipt
   let holdVoting, heirsVoting, holdTokenManager, heirsTokenManager, holdToken, heirsToken, vault, finance, agent
 
   const HEIRS = [heir1, heir2]
@@ -34,16 +34,9 @@ contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
     trustKit = TrustKit.at((await getDeployedAddresses()).address)
   })
 
-  context('when the preparation fails', () => {
-    it('reverts when given multi sig keys are not 2', async () => {
-      await assertRevert(trustKit.prepareDAO.request([multiSigKey1], { from: deployer }), 'TRUST_BAD_MULTI_SIG_KEYS_LENGTH')
-      await assertRevert(trustKit.prepareDAO.request([multiSigKey1, multiSigKey2, heir1], { from: deployer }), 'TRUST_BAD_MULTI_SIG_KEYS_LENGTH')
-    })
-  })
-
-  context('when the setup fails', () => {
+  context('when the setup dao fails', () => {
     before('prepare entity', async () => {
-      await trustKit.prepareDAO([multiSigKey1, multiSigKey2], { from: deployer })
+      await trustKit.prepareDAO({ from: deployer })
     })
 
     it('reverts when the given beneficiary keys are not 2', async () => {
@@ -60,19 +53,32 @@ contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
     })
   })
 
-  context.only('when the creation succeeds', () => {
+  context('when the setup multi sig fails', () => {
+    before('prepare entity', async () => {
+      await trustKit.prepareDAO({ from: deployer })
+      await trustKit.setupDAO('id', BENEFICIARY_KEYS, HEIRS, HEIRS_STAKE, { from: deployer })
+    })
+
+    it('reverts when given multi sig keys are not 2', async () => {
+      await assertRevert(trustKit.setupMultiSig.request([multiSigKey1], { from: deployer }), 'TRUST_BAD_MULTI_SIG_KEYS_LENGTH')
+      await assertRevert(trustKit.setupMultiSig.request([multiSigKey1, multiSigKey2, heir1], { from: deployer }), 'TRUST_BAD_MULTI_SIG_KEYS_LENGTH')
+    })
+  })
+
+  context('when the creation succeeds', () => {
     before('create trust entity', async () => {
       daoID = `id-${Math.floor(Math.random() * 1000)}`
-      prepareReceipt = await trustKit.prepareDAO(MULTI_SIG_KEYS, { from: deployer })
-      setupReceipt = await trustKit.setupDAO(daoID, BENEFICIARY_KEYS, HEIRS, HEIRS_STAKE, { from: deployer })
+      prepareReceipt = await trustKit.prepareDAO({ from: deployer })
+      daoSetupReceipt = await trustKit.setupDAO(daoID, BENEFICIARY_KEYS, HEIRS, HEIRS_STAKE, { from: deployer })
+      multiSigSetupReceipt = await trustKit.setupMultiSig(MULTI_SIG_KEYS, { from: deployer })
 
-      dao = Kernel.at(getEventArgument(setupReceipt, 'DeployTrustEntity', 'dao'))
-      multiSig = MultiSigWallet.at(getEventArgument(setupReceipt, 'DeployTrustEntity', 'multiSig'))
+      dao = Kernel.at(getEventArgument(multiSigSetupReceipt, 'DeployTrustEntity', 'dao'))
+      multiSig = MultiSigWallet.at(getEventArgument(multiSigSetupReceipt, 'DeployTrustEntity', 'multiSig'))
       acl = ACL.at(await dao.acl())
     })
 
     before('load apps', async () => {
-      const events = decodeEvents(setupReceipt.receipt, Kernel.abi, 'NewAppProxy')
+      const events = decodeEvents(daoSetupReceipt.receipt, Kernel.abi, 'NewAppProxy')
       const votingEvents = events.filter(e => e.args.appId === APP_IDS.voting)
       const tokenManagerEvents = events.filter(e => e.args.appId === APP_IDS['token-manager'])
       const agentEvents = events.filter(e => e.args.appId === APP_IDS.agent)
@@ -97,8 +103,9 @@ contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
     })
 
     it('costs ~6e6 each tx', async () => {
-      assert.isAtMost(prepareReceipt.receipt.gasUsed, 6.4e6, 'prepare script should cost almost 6.4e6 gas')
-      assert.isAtMost(setupReceipt.receipt.gasUsed, 6e6, 'prepare script should cost almost 6e6 gas')
+      assert.isAtMost(prepareReceipt.receipt.gasUsed, 5e6, 'prepare script should cost almost 5e6 gas')
+      assert.isAtMost(daoSetupReceipt.receipt.gasUsed, 6e6, 'prepare script should cost almost 6e6 gas')
+      assert.isAtMost(multiSigSetupReceipt.receipt.gasUsed, 2e6, 'prepare script should cost almost 2e6 gas')
     })
 
     it('registers a new DAO on ENS', async () => {
@@ -111,11 +118,11 @@ contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
     it('should have setup a multi sig wallet correctly', async () => {
       assert.equal((await multiSig.required()).toString(), 2, 'multi sig should have 2 required confirmations')
 
-      const owners = await multiSig.getOwners()
+      const owners = (await multiSig.getOwners())
       assert.equal(owners.length, 3, 'multi sig should have 3 owners')
-      assert(owners.includes(multiSigKey1), 'multi sig does not include multiSigKey1 as one of their owners')
-      assert(owners.includes(multiSigKey2), 'multi sig does not include multiSigKey2 as one of their owners')
-      assert(owners.includes(dao.address), 'multi sig does not include the dao as one of their owners')
+      assert.equal(owners[0], multiSigKey1, 'multi sig does not include multiSigKey1 as one of their owners')
+      assert.equal(owners[1], multiSigKey2, 'multi sig does not include multiSigKey2 as one of their owners')
+      assert.equal(web3.toChecksumAddress(owners[2]), agent.address, 'multi sig does not include the agent as one of their owners')
     })
 
     it('should have hold voting app correctly setup', async () => {
