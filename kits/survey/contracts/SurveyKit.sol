@@ -32,7 +32,7 @@ contract SurveyKit is APMNamehash, KitBase {
         address surveyManager,
         address escapeHatch,
         uint64 duration,
-        uint256 participation
+        uint64 participation
     )
         public
         returns (Kernel, Survey)
@@ -45,7 +45,7 @@ contract SurveyKit is APMNamehash, KitBase {
         Survey survey = Survey(dao.newAppInstance(SURVEY_APP_ID, latestVersionAppBase(SURVEY_APP_ID)));
 
         // Set escapeHatch address as the default vault, in case a token rescue is required
-        dao.setApp(dao.APP_BASES_NAMESPACE(), dao.DEFAULT_VAULT_APP_ID(), escapeHatch);
+        dao.setApp(dao.APP_BASES_NAMESPACE(), dao.recoveryVaultAppId(), escapeHatch);
 
         survey.initialize(signalingToken, participation, duration);
 
