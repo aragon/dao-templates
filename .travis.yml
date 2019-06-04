@@ -4,9 +4,9 @@ language: node_js
 cache:
   directories:
     - node_modules
-    - apps/beta-base/node_modules
-    - apps/democracy/node_modules
-    - apps/multisig/node_modules
+    - kits/beta-base/node_modules
+    - kits/democracy/node_modules
+    - kits/multisig/node_modules
 notifications:
   email: false
 node_js:
