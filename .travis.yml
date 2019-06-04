@@ -22,6 +22,6 @@ matrix:
     - env: TASK=test:agp1
   fast_finish: true
 install:
-  - travis_wait 20 npm install 
+  - travis_wait 20 npm install
 script:
   - travis_wait 60 npm run $TASK
