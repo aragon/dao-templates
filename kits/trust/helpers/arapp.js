@@ -7,13 +7,19 @@ const APP_IDS = ['agent', 'finance', 'token-manager', 'vault', 'voting'].reduce(
     return ids
 }, {})
 
-const getDeployedAddresses = async () => {
-    const { name: networkName } = await getNetwork(networks)
-    const arappFilename = ['devnet', 'rpc'].includes(networkName) ? 'arapp_local' : 'arapp'
+const getAddressesFileName = async (network = undefined) => {
+    const networkName = network || (await getNetwork(networks)).name
+    return ['devnet', 'rpc'].includes(networkName) ? 'arapp_local.json' : 'arapp.json'
+}
+
+const getDeployedAddresses = async (network = undefined) => {
+    const networkName = network || (await getNetwork(networks)).name
+    const arappFilename = ['devnet', 'rpc'].includes(networkName) ? 'arapp_local.json' : 'arapp.json'
     return require(`../${arappFilename}`).environments[networkName]
 }
 
 module.exports = {
     APP_IDS,
-    getDeployedAddresses
+    getAddressesFileName,
+    getDeployedAddresses,
 }

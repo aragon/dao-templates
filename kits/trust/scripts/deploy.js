@@ -8,8 +8,11 @@ module.exports = async (callback) => {
   console.log(`Deploying Trust kit, Owner ${process.env.OWNER}`)
 
   if (process.argv.length < 5) {
-    errorOut('Usage: truffle exec --network <network> scripts/deploy.js')
+    const message = 'Usage: truffle exec --network <network> ./scripts/deploy.js'
+    console.error(message)
+    throw new Error(message)
   }
+
   // get network
   const network = process.argv[4]
 
