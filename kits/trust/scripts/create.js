@@ -6,7 +6,6 @@ const { getAddressesFileName, getDeployedAddresses } = require('../helpers/arapp
 
 const isArray = (e, l = 0) => Array.isArray(e) && (l === 0 || e.length === l)
 const isArrayOfAddresses = (e, l = 0) => isArray(e, l) && e.every(isAddress)
-const validHeirsStake = stakes => stakes.reduce((t, i) => t.plus(new web3.BigNumber(i)), new web3.BigNumber(0)).mul(100).mod(66).eq(0)
 
 const existsJson = path => {
   if (path.split('.').pop() !== 'json' || !fs.existsSync(path)) return false;
@@ -36,17 +35,17 @@ const errorOut = msg => {
 
 const parseInput = () => {
   const inputFilePath = process.argv[6]
-  if (!existsJson(inputFilePath)) errorOut(`You must provide a valid input JSON file with structure: \n{\n  "id": <id>,\n  "beneficiaries": [<address1>, <address2>],\n  "multiSigKeys": [<address1>, <address2>],\n  "heirs": [<address1>, ..., <addressN>],\n  "heirsStake": [<stake1>, ..., <stakeN>]\n}`)
+  if (!existsJson(inputFilePath)) errorOut(`You must provide a valid input JSON file with structure: \n{\n  "id": <id>,\n  "beneficiaries": [<address1>, <address2>],\n  "multiSigKeys": [<address1>, <address2>],\n  "heirs": [<address1>, ..., <addressN>]\n}`)
   const input = JSON.parse(fs.readFileSync(inputFilePath))
 
   if (!validId(input.id)) errorOut(`You must provide a valid id for your DAO as "id" in ${inputFilePath}`)
   if (!isArrayOfAddresses(input.multiSigKeys, 2)) errorOut(`You must provide two valid multisig addresses as "multiSigKeys" in ${inputFilePath}`)
   if (!isArrayOfAddresses(input.beneficiaries, 2)) errorOut(`You must provide two valid beneficiary addresses as "beneficiaries" in ${inputFilePath}`)
   if (!isArrayOfAddresses(input.heirs)) errorOut(`You must provide a list of valid heir addresses as "heirs" in ${inputFilePath}`)
-  if (!isArray(input.heirsStake, input.heirs.length)) errorOut(`You must provide a valid list of heirs stake as "heirsStake" in ${inputFilePath}`)
-  if (!validHeirsStake(input.heirsStake)) errorOut('Total heirs stake must be a integer number representing 66% of total heirs supply (e.g. [33e18, 33e18])')
 
-  return input
+  const heirsStake = input.heirs.length * 66 * 1e18
+  const heirsStakes = input.heirs.map(() => heirsStake)
+  return { ...input, heirsStakes }
 }
 
 async function create() {
@@ -60,12 +59,12 @@ async function create() {
 
   const TrustKit = artifacts.require('TrustKit')
   const trustKit = TrustKit.at(trustKitAddress)
-  const { id, multiSigKeys, beneficiaries, heirs, heirsStake } = parseInput()
+  const { id, multiSigKeys, beneficiaries, heirs, heirsStakes } = parseInput()
 
   console.log('Preparing DAO...')
   await trustKit.prepareDAO()
   console.log('Setting up DAO...')
-  await trustKit.setupDAO(id, beneficiaries, heirs, heirsStake)
+  await trustKit.setupDAO(id, beneficiaries, heirs, heirsStakes)
   console.log('Setting up multi signature wallet...')
   const receipt = await trustKit.setupMultiSig(multiSigKeys)
   console.log('Trust entity deployed successfully!')
