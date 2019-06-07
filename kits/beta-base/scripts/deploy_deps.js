@@ -17,6 +17,11 @@ const newRepo = async (apm, name, acc, contract) => {
   return await apm.newRepoWithVersion(name, acc, [1, 0, 0], c.address, '0x1245')
 }
 
+const errorOut = (msg) => {
+  console.error(msg)
+  throw new Error(msg)
+}
+
 const owner = process.env.OWNER
 
 module.exports = async (callback) => {

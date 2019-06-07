@@ -17,6 +17,11 @@ const defaultENSAddress = process.env.ENS
 const defaultDAOFactoryAddress = process.env.DAO_FACTORY
 const defaultMinimeTokenFactoryAddress = process.env.MINIME_TOKEN_FACTORY
 
+const errorOut = (msg) => {
+  console.error(msg)
+  throw new Error(msg)
+}
+
 module.exports = async (
   truffleExecCallback,
   {
