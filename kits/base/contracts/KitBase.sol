@@ -9,13 +9,13 @@ import "@aragon/os/contracts/evmscript/IEVMScriptRegistry.sol"; // needed for EV
 
 contract KitBase is EVMScriptRegistryConstants {
     ENS public ens;
-    DAOFactory public fac;
+    DAOFactory public daoFactory;
 
     event DeployInstance(address dao);
     event InstalledApp(address appProxy, bytes32 appId);
 
-    constructor (DAOFactory _fac, ENS _ens) public {
-        fac = _fac;
+    constructor (DAOFactory _daoFactory, ENS _ens) public {
+        daoFactory = _daoFactory;
         ens = _ens;
     }
 

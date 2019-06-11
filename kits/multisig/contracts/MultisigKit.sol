@@ -8,13 +8,13 @@ contract MultisigKit is BetaKitBase {
     using Uint256Helpers for uint256;
 
     constructor(
-        DAOFactory _fac,
+        DAOFactory _daoFactory,
         ENS _ens,
         MiniMeTokenFactory _minimeFac,
         IFIFSResolvingRegistrar _aragonID,
         bytes32[5] _appIds
     )
-        BetaKitBase(_fac, _ens, _minimeFac, _aragonID, _appIds) public
+        BetaKitBase(_daoFactory, _ens, _minimeFac, _aragonID, _appIds) public
     {
         // solium-disable-previous-line no-empty-blocks
     }

@@ -90,7 +90,7 @@ contract TrustKit is KitBase, IsContract {
     }
 
     function prepareDAO() public returns (Kernel) {
-        Kernel dao = fac.newDAO(address(this));
+        Kernel dao = daoFactory.newDAO(address(this));
         (MiniMeToken holdToken, MiniMeToken heirsToken) = _createTokens();
         _storeDaoCache(msg.sender, dao, holdToken, heirsToken);
         return dao;

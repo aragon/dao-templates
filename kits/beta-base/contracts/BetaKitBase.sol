@@ -34,16 +34,16 @@ contract BetaKitBase is KitBase, IsContract {
     event DeployInstance(address dao, address indexed token);
 
     constructor(
-        DAOFactory _fac,
+        DAOFactory _daoFactory,
         ENS _ens,
         MiniMeTokenFactory _minimeFac,
         IFIFSResolvingRegistrar _aragonID,
         bytes32[5] _appIds
     )
-        KitBase(_fac, _ens)
+        KitBase(_daoFactory, _ens)
         public
     {
-        require(isContract(address(_fac.regFactory())));
+        require(isContract(address(_daoFactory.regFactory())));
         require(_appIds.length == 5, ERROR_BAD_APP_IDS_LENGTH);
 
         minimeFac = _minimeFac;
@@ -70,7 +70,7 @@ contract BetaKitBase is KitBase, IsContract {
     {
         require(holders.length == stakes.length);
 
-        dao = fac.newDAO(this);
+        dao = daoFactory.newDAO(this);
 
         acl = ACL(dao.acl());
 
