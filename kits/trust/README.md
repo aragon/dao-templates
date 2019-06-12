@@ -54,7 +54,7 @@ Aragon Trusts are composed of two sub-groups:
   - Duration: One week
   
 - **Token (HEIRS)**: Arbitrary number of tokens
-  - 33% of HEIRS tokens are burnt. This is so HEIRS votes always take their full duration, and are not immediately executed. If the beneficiary has passed away, then you need 66% of all remaining HEIRS holders to vote yes to transfer the funds
+  - 34% of HEIRS tokens are blocked. This is so HEIRS votes always take their full duration, and are not immediately executed. If the beneficiary has passed away, then you need 66% of all remaining HEIRS holders to vote yes to transfer the funds
   
 - **Voting (HEIRS)**: All transfers have 1 year delay and the beneficiary can revoke the permission for the HEIRS holders to transfer funds
   - Support: 66%
@@ -66,12 +66,14 @@ Aragon Trusts are composed of two sub-groups:
 
 ### DAO permissions
 
-| App           | Permission     | Grantee        | Permission manager |
-| ------------- | -------------- | -------------- | ------------------ |
-| Agent         | Execute action | Voting (HOLD)  | Voting (HOLD)      |
-| Agent         | Execute action | Voting (HEIRS) | Voting (HOLD)      |
-| Token Manager | Mint tokens    | Multisig       | Multisig           |
-| Token Manager | Burn tokens    | Multisig       | Multisig           |
+| App                   | Permission     | Grantee        | Permission manager |
+| --------------------- | -------------- | -------------- | ------------------ |
+| Agent                 | Execute action | Voting (HOLD)  | Voting (HOLD)      |
+| Agent                 | Run script     | Voting (HOLD)  | Voting (HOLD)      |
+| Token Manager (HOLD)  | Mint tokens    | Multisig       | Multisig           |
+| Token Manager (HEIRS) | Mint tokens    | Multisig       | Multisig           |
+| Token Manager (HOLD)  | Burn tokens    | Multisig       | Multisig           |
+| Token Manager (HEIRS) | Burn tokens    | Multisig       | Multisig           |
 
 
 
@@ -82,7 +84,6 @@ Aragon Trusts are composed of two sub-groups:
 - Always initiate transactions to the multisig with key #2 and confirm with the DAO. Otherwise, attackers can predict that the vote will take one week and go to you the exact moment that you would need to sign the confirmation with key #4
 - One of the hot keys in the DAO needs to be stored in a way so it takes you some effort to sign with it, in order to [prevent wrench attacks](https://xkcd.com/538/)
 - If one of the keys in the DAO gets stolen, you should immediately burn its token by using the multisig
-- The beneficiary needs to revoke the *Execute action* permission from the HEIRS Token Manager if HEIRS holders create a vote when the beneficiary is still alive
 - Key #2 needs to be transmitted to the heirs in some way. You can even pre-sign a transaction that moves the funds to another address (e.g. a DAO composed of the people of your choice) and send your heirs a [Shamir Secret](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing) that they can put together to execute that transfer
 
 

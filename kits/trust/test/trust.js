@@ -132,8 +132,8 @@ contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
       assert.equal((await holdVoting.voteTime()).toString(), 60 * 60 * 24 * 7)
 
       await assertRole(acl, holdVoting, holdVoting, 'Hold Voting', 'CREATE_VOTES_ROLE', holdTokenManager)
-      await assertRole(acl, holdVoting, holdVoting, 'Voting', 'MODIFY_QUORUM_ROLE')
-      await assertRole(acl, holdVoting, holdVoting, 'Voting', 'MODIFY_SUPPORT_ROLE')
+      await assertRole(acl, holdVoting, holdVoting, 'Hold Voting', 'MODIFY_QUORUM_ROLE')
+      await assertRole(acl, holdVoting, holdVoting, 'Hold Voting', 'MODIFY_SUPPORT_ROLE')
     })
 
     it('should have heirs voting app correctly setup', async () => {

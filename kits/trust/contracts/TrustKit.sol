@@ -63,7 +63,6 @@ contract TrustKit is KitBase, IsContract {
         address heirsTokenManager;
     }
 
-    // storage state
     bytes32[5] public appIds;
     MiniMeTokenFactory public miniMeFactory;
     IFIFSResolvingRegistrar public aragonID;
@@ -93,7 +92,7 @@ contract TrustKit is KitBase, IsContract {
     function prepareDAO() public returns (Kernel) {
         Kernel dao = fac.newDAO(address(this));
         (MiniMeToken holdToken, MiniMeToken heirsToken) = _createTokens();
-        _storeCache(msg.sender, dao, holdToken, heirsToken);
+        _storeDaoCache(msg.sender, dao, holdToken, heirsToken);
         return dao;
     }
 
@@ -128,7 +127,7 @@ contract TrustKit is KitBase, IsContract {
         _setupFinanceApps(dao, acl, holdVoting);
         _mintHoldTokens(holdTokenManager, beneficiaryKeys);
         _mintHeirsTokens(heirsTokenManager, heirs, heirsStake, blockedHeirsSupply);
-        _storeCache(msg.sender, agent, holdVoting, holdTokenManager, heirsTokenManager);
+        _storeAppsCache(msg.sender, agent, holdVoting, holdTokenManager, heirsTokenManager);
     }
 
     function _setupMultiSig(Kernel dao, address[] multiSigKeys) internal returns (MultiSigWallet) {
@@ -136,7 +135,8 @@ contract TrustKit is KitBase, IsContract {
 
         (Agent agent, Voting holdVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager) = _getAppsCache(msg.sender);
         MultiSigWallet multiSig = _createMultiSig(multiSigKeys, agent);
-        _createMultiSigPermissions(dao, acl, multiSig, holdVoting, holdTokenManager, heirsTokenManager);
+        _createMultiSigPermissions(dao, acl, multiSig, holdTokenManager, heirsTokenManager);
+        _cleanupVotingPermissions(dao, acl, holdVoting);
         _cleanCache(msg.sender);
         return multiSig;
     }
@@ -269,13 +269,16 @@ contract TrustKit is KitBase, IsContract {
         }
     }
 
-    function _createMultiSigPermissions(Kernel dao, ACL acl, MultiSigWallet multiSig, Voting holdVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager)
+    function _createMultiSigPermissions(Kernel dao, ACL acl, MultiSigWallet multiSig, TokenManager holdTokenManager, TokenManager heirsTokenManager)
         internal
     {
         acl.createPermission(multiSig, holdTokenManager, holdTokenManager.BURN_ROLE(), multiSig);
         acl.createPermission(multiSig, heirsTokenManager, heirsTokenManager.BURN_ROLE(), multiSig);
         cleanupPermission(acl, multiSig, holdTokenManager, holdTokenManager.MINT_ROLE());
         cleanupPermission(acl, multiSig, heirsTokenManager, heirsTokenManager.MINT_ROLE());
+    }
+
+    function _cleanupVotingPermissions(Kernel dao, ACL acl, Voting holdVoting) internal {
         cleanupPermission(acl, holdVoting, dao, dao.APP_MANAGER_ROLE());
         cleanupPermission(acl, holdVoting, acl, acl.CREATE_PERMISSIONS_ROLE());
     }
@@ -294,11 +297,11 @@ contract TrustKit is KitBase, IsContract {
         return c.agent != address(0) && c.holdVoting != address(0) && c.holdTokenManager != address(0) && c.heirsTokenManager != address(0);
     }
 
-    function _storeCache(address owner, Kernel dao, MiniMeToken holdToken, MiniMeToken heirsToken) internal {
+    function _storeDaoCache(address owner, Kernel dao, MiniMeToken holdToken, MiniMeToken heirsToken) internal {
         daoCache[owner] = DaoCache({ dao: dao, holdToken: holdToken, heirsToken: heirsToken });
     }
 
-    function _storeCache(address owner, Agent agent, Voting holdVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager) internal {
+    function _storeAppsCache(address owner, Agent agent, Voting holdVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager) internal {
         appsCache[owner] = AppsCache({ agent: agent, holdVoting: holdVoting, holdTokenManager: holdTokenManager, heirsTokenManager: heirsTokenManager });
     }
 
