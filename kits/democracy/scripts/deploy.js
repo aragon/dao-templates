@@ -27,7 +27,7 @@ async function deploy() {
   // aragonID
   await deploy_id(null, { artifacts, web3, ensAddress: ens.address })
 
-  await deploy_kit(null, { artifacts, kitName: 'democracy-akropolis', kitContractName: 'DemocracyKit', network: network, ensAddress: ens.address })
+  await deploy_kit(null, { artifacts, kitName: 'democracy-kit', kitContractName: 'DemocracyKit', network: network, ensAddress: ens.address })
 }
 
 module.exports = callback => {
