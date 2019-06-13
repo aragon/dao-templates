@@ -70,39 +70,10 @@ contract BetaKitBase is KitBase, IsContract {
 
         acl.createPermission(this, dao, dao.APP_MANAGER_ROLE(), this);
 
-        voting = Voting(
-            dao.newAppInstance(
-                VOTING_APP_ID,
-                latestVersionAppBase(VOTING_APP_ID)
-            )
-        );
-        emit InstalledApp(voting, VOTING_APP_ID);
-
-        vault = Vault(
-            dao.newAppInstance(
-                VAULT_APP_ID,
-                latestVersionAppBase(VAULT_APP_ID),
-                new bytes(0),
-                true
-            )
-        );
-        emit InstalledApp(vault, VAULT_APP_ID);
-
-        finance = Finance(
-            dao.newAppInstance(
-                FINANCE_APP_ID,
-                latestVersionAppBase(FINANCE_APP_ID)
-            )
-        );
-        emit InstalledApp(finance, FINANCE_APP_ID);
-
-        tokenManager = TokenManager(
-            dao.newAppInstance(
-                TOKEN_MANAGER_APP_ID,
-                latestVersionAppBase(TOKEN_MANAGER_APP_ID)
-            )
-        );
-        emit InstalledApp(tokenManager, TOKEN_MANAGER_APP_ID);
+        voting = installVotingApp(dao);
+        vault = installDefaultVaultApp(dao);
+        finance = installFinanceApp(dao);
+        tokenManager = installTokenManagerApp(dao);
 
         // Required for initializing the Token Manager
         token.changeController(tokenManager);

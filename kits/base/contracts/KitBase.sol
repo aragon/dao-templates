@@ -1,5 +1,12 @@
 pragma solidity 0.4.24;
 
+import "@aragon/apps-agent/contracts/Agent.sol";
+import "@aragon/apps-vault/contracts/Vault.sol";
+import "@aragon/apps-voting/contracts/Voting.sol";
+//import "@aragon/apps-survey/contracts/Survey.sol";
+import "@aragon/apps-finance/contracts/Finance.sol";
+import "@aragon/apps-token-manager/contracts/TokenManager.sol";
+
 import "@aragon/os/contracts/apm/Repo.sol";
 import "@aragon/os/contracts/apm/APMNamehash.sol";
 import "@aragon/os/contracts/lib/ens/ENS.sol";
@@ -46,5 +53,82 @@ contract KitBase is APMNamehash {
         acl.grantPermission(root, app, permission);
         acl.revokePermission(this, app, permission);
         acl.setPermissionManager(root, app, permission);
+    }
+
+    /* AGENT */
+
+    function installAgentApp(Kernel dao) internal returns (Agent) {
+        return Agent(installApp(dao, AGENT_APP_ID));
+    }
+
+    function installDefaultAgentApp(Kernel dao) internal returns (Agent) {
+        return Agent(installDefaultApp(dao, AGENT_APP_ID));
+    }
+
+    /* FINANCE */
+
+    function installFinanceApp(Kernel dao) internal returns (Finance) {
+        return Finance(installApp(dao, FINANCE_APP_ID));
+    }
+
+    function installDefaultFinanceApp(Kernel dao) internal returns (Finance) {
+        return Finance(installDefaultApp(dao, FINANCE_APP_ID));
+    }
+
+    /* SURVEY */
+
+//    function installSurveyApp(Kernel dao) internal returns (Survey) {
+//        return Survey(installApp(dao, SURVEY_APP_ID));
+//    }
+//
+//    function installDefaultSurveyApp(Kernel dao) internal returns (Survey) {
+//        return Survey(installDefaultApp(dao, SURVEY_APP_ID));
+//    }
+
+    /* TOKEN MANAGER */
+
+    function installTokenManagerApp(Kernel dao) internal returns (TokenManager) {
+        return TokenManager(installApp(dao, TOKEN_MANAGER_APP_ID));
+    }
+
+    function installDefaultTokenManagerApp(Kernel dao) internal returns (TokenManager) {
+        return TokenManager(installDefaultApp(dao, TOKEN_MANAGER_APP_ID));
+    }
+
+    /* VAULT */
+
+    function installVaultApp(Kernel dao) internal returns (Vault) {
+        return Vault(installApp(dao, VAULT_APP_ID));
+    }
+
+    function installDefaultVaultApp(Kernel dao) internal returns (Vault) {
+        return Vault(installDefaultApp(dao, VAULT_APP_ID));
+    }
+
+    /* VOTING */
+
+    function installVotingApp(Kernel dao) internal returns (Voting) {
+        return Voting(installApp(dao, VOTING_APP_ID));
+    }
+
+    function installDefaultVotingApp(Kernel dao) internal returns (Voting) {
+        return Voting(installDefaultApp(dao, VOTING_APP_ID));
+    }
+
+    /* APPS */
+
+    function installApp(Kernel dao, bytes32 appId) internal returns (address) {
+        return installApp(dao, appId, new bytes(0), false);
+    }
+
+    function installDefaultApp(Kernel dao, bytes32 appId) internal returns (address) {
+        return installApp(dao, appId, new bytes(0), true);
+    }
+
+    function installApp(Kernel dao, bytes32 appId, bytes data, bool setDefault) internal returns (address) {
+        address latestBaseAppAddress = latestVersionAppBase(appId);
+        address instance = address(dao.newAppInstance(appId, latestBaseAppAddress, data, setDefault));
+        emit InstalledApp(instance, appId);
+        return instance;
     }
 }

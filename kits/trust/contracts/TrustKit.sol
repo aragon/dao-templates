@@ -142,8 +142,11 @@ contract TrustKit is KitBase, IsContract {
         returns (Voting holdVoting, Voting heirsVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager)
     {
         (MiniMeToken holdToken, MiniMeToken heirsToken) = _getTokensCache(msg.sender);
-        (holdVoting, heirsVoting) = _createVotingApps(dao);
-        (holdTokenManager, heirsTokenManager) = _createTokenManagerApps(dao);
+
+        holdVoting = installVotingApp(dao);
+        heirsVoting = installVotingApp(dao);
+        holdTokenManager = installTokenManagerApp(dao);
+        heirsTokenManager = installTokenManagerApp(dao);
 
         holdToken.changeController(holdTokenManager);
         heirsToken.changeController(heirsTokenManager);
@@ -161,7 +164,7 @@ contract TrustKit is KitBase, IsContract {
     }
 
     function _setupAgentApp(Kernel dao, ACL acl, Voting holdVoting, Voting heirsVoting) internal returns (Agent) {
-        Agent agent = _createAgentApp(dao);
+        Agent agent = installAgentApp(dao);
         _createAgentPermission(acl, agent, agent.EXECUTE_ROLE(), holdVoting, heirsVoting);
         _createAgentPermission(acl, agent, agent.RUN_SCRIPT_ROLE(), holdVoting, heirsVoting);
         agent.initialize();
@@ -169,8 +172,8 @@ contract TrustKit is KitBase, IsContract {
     }
 
     function _setupFinanceApps(Kernel dao, ACL acl, Voting holdVoting) internal {
-        Vault vault = _createVaultApp(dao);
-        Finance finance = _createFinanceApp(dao);
+        Vault vault = installDefaultVaultApp(dao);
+        Finance finance = installFinanceApp(dao);
         _createFinancePermissions(acl, holdVoting, finance, vault);
         vault.initialize();
         finance.initialize(vault, 30 days);
@@ -188,38 +191,6 @@ contract TrustKit is KitBase, IsContract {
         MiniMeToken parentToken = MiniMeToken(address(0));
         holdToken = miniMeFactory.createCloneToken(parentToken, 0, HOLD_TOKEN_NAME, HOLD_TOKEN_DECIMALS, HOLD_TOKEN_SYMBOL, true);
         heirsToken = miniMeFactory.createCloneToken(parentToken, 0, HEIRS_TOKEN_NAME, HEIRS_TOKEN_DECIMALS, HEIRS_TOKEN_SYMBOL, true);
-    }
-
-    function _createVotingApps(Kernel dao) internal returns (Voting holdVoting, Voting heirsVoting) {
-        bytes32 votingAppId = VOTING_APP_ID;
-        address latestVotingAddress = latestVersionAppBase(votingAppId);
-        holdVoting = Voting(dao.newAppInstance(votingAppId, latestVotingAddress));
-        heirsVoting = Voting(dao.newAppInstance(votingAppId, latestVotingAddress));
-    }
-
-    function _createTokenManagerApps(Kernel dao) internal returns (TokenManager holdTokenManager, TokenManager heirsTokenManager) {
-        bytes32 tokenManagerAppId = TOKEN_MANAGER_APP_ID;
-        address latestTokenManagerAddress = latestVersionAppBase(tokenManagerAppId);
-        holdTokenManager = TokenManager(dao.newAppInstance(tokenManagerAppId, latestTokenManagerAddress));
-        heirsTokenManager = TokenManager(dao.newAppInstance(tokenManagerAppId, latestTokenManagerAddress));
-    }
-
-    function _createVaultApp(Kernel dao) internal returns (Vault) {
-        bytes32 vaultAppId = VAULT_APP_ID;
-        address latestVaultAddress = latestVersionAppBase(vaultAppId);
-        return Vault(dao.newAppInstance(vaultAppId, latestVaultAddress, new bytes(0), true));
-    }
-
-    function _createFinanceApp(Kernel dao) internal returns (Finance) {
-        bytes32 financeAppId = FINANCE_APP_ID;
-        address latestFinanceAddress = latestVersionAppBase(financeAppId);
-        return Finance(dao.newAppInstance(financeAppId, latestFinanceAddress));
-    }
-
-    function _createAgentApp(Kernel dao) internal returns (Agent) {
-        bytes32 agentAppId = AGENT_APP_ID;
-        address latestAgentAddress = latestVersionAppBase(agentAppId);
-        return Agent(dao.newAppInstance(agentAppId, latestAgentAddress));
     }
 
     function _createAgentPermission(ACL acl, Agent agent, bytes32 role, Voting holdVoting, Voting heirsVoting) internal {

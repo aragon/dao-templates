@@ -23,7 +23,7 @@ contract BareKit is KitBase {
 
         // If there is no appId, an empty DAO will be created
         if (appId != bytes32(0)) {
-            proxy = dao.newAppInstance(appId, latestVersionAppBase(appId), initializeCalldata, false);
+            proxy = installApp(dao, appId, initializeCalldata, false);
 
             for (uint256 i = 0; i < roles.length; i++) {
                 acl.createPermission(authorizedAddress, proxy, roles[i], root);
