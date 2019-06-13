@@ -1,13 +1,21 @@
 pragma solidity 0.4.24;
 
-import "@aragon/os/contracts/factory/DAOFactory.sol";
 import "@aragon/os/contracts/apm/Repo.sol";
+import "@aragon/os/contracts/apm/APMNamehash.sol";
 import "@aragon/os/contracts/lib/ens/ENS.sol";
+import "@aragon/os/contracts/factory/DAOFactory.sol";
 import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
-import "@aragon/os/contracts/evmscript/IEVMScriptRegistry.sol"; // needed for EVMSCRIPT_REGISTRY_APP_ID
 
 
-contract KitBase is EVMScriptRegistryConstants {
+contract KitBase is APMNamehash {
+    bytes32 constant internal AGENT_APP_ID = apmNamehash("agent");                    // agent.aragonpm.eth
+    bytes32 constant internal FINANCE_APP_ID = apmNamehash("finance");                // finance.aragonpm.eth
+    bytes32 constant internal PAYROLL_APP_ID = apmNamehash("payroll");                // payroll.aragonpm.eth
+    bytes32 constant internal SURVEY_APP_ID = apmNamehash("survey");                  // survey.aragonpm.eth
+    bytes32 constant internal TOKEN_MANAGER_APP_ID = apmNamehash("token-manager");    // token-manager.aragonpm.eth
+    bytes32 constant internal VOTING_APP_ID = apmNamehash("voting");                  // voting.aragonpm.eth
+    bytes32 constant internal VAULT_APP_ID = apmNamehash("vault");                    // vault.aragonpm.eth
+
     ENS public ens;
     DAOFactory public daoFactory;
 

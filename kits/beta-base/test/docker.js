@@ -26,7 +26,7 @@ contract('Beta Base Kit', accounts => {
         const { daoFactory } = await deployDAOFactory(null, { artifacts, verbose: false })
 
         // Beta base kit
-        beta = await getContract('BetaKitBaseMock').new(daoFactory.address, ensAddress, minimeFac.address, aragonId, appIds)
+        beta = await getContract('BetaKitBaseMock').new(daoFactory.address, ensAddress, minimeFac.address, aragonId)
 
         // Token
         const tokenReceipt = await beta.newToken('test', 'TST')

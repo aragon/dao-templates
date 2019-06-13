@@ -92,7 +92,7 @@ module.exports = async (
   }
 
   const aragonid = await ens.owner(namehash('aragonid.eth'))
-  const kit = await artifacts.require(kitContractName).new(daoFactory.address, ens.address, minimeFac.address, aragonid, appIds)
+  const kit = await artifacts.require(kitContractName).new(daoFactory.address, ens.address, minimeFac.address, aragonid)
 
   await logDeploy(kit)
 

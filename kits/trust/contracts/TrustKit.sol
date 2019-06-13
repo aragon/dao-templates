@@ -63,7 +63,6 @@ contract TrustKit is KitBase, IsContract {
         address heirsTokenManager;
     }
 
-    bytes32[5] public appIds;
     MiniMeTokenFactory public miniMeFactory;
     IFIFSResolvingRegistrar public aragonID;
     mapping (address => DaoCache) internal daoCache;
@@ -75,18 +74,15 @@ contract TrustKit is KitBase, IsContract {
         DAOFactory _daoFactory,
         ENS _ens,
         MiniMeTokenFactory _miniMeFactory,
-        IFIFSResolvingRegistrar _aragonID,
-        bytes32[5] _appIds
+        IFIFSResolvingRegistrar _aragonID
     )
         KitBase(_daoFactory, _ens)
         public
     {
-        require(_appIds.length == 5, ERROR_BAD_APP_IDS_LENGTH);
         require(isContract(address(_daoFactory.regFactory())), ERROR_REGISTRY_FACTORY_IS_NOT_CONTRACT);
 
         miniMeFactory = _miniMeFactory;
         aragonID = _aragonID;
-        appIds = _appIds;
     }
 
     function prepareDAO() public returns (Kernel) {
@@ -195,33 +191,33 @@ contract TrustKit is KitBase, IsContract {
     }
 
     function _createVotingApps(Kernel dao) internal returns (Voting holdVoting, Voting heirsVoting) {
-        bytes32 votingAppId = appIds[uint8(Apps.Voting)];
+        bytes32 votingAppId = VOTING_APP_ID;
         address latestVotingAddress = latestVersionAppBase(votingAppId);
         holdVoting = Voting(dao.newAppInstance(votingAppId, latestVotingAddress));
         heirsVoting = Voting(dao.newAppInstance(votingAppId, latestVotingAddress));
     }
 
     function _createTokenManagerApps(Kernel dao) internal returns (TokenManager holdTokenManager, TokenManager heirsTokenManager) {
-        bytes32 tokenManagerAppId = appIds[uint8(Apps.TokenManager)];
+        bytes32 tokenManagerAppId = TOKEN_MANAGER_APP_ID;
         address latestTokenManagerAddress = latestVersionAppBase(tokenManagerAppId);
         holdTokenManager = TokenManager(dao.newAppInstance(tokenManagerAppId, latestTokenManagerAddress));
         heirsTokenManager = TokenManager(dao.newAppInstance(tokenManagerAppId, latestTokenManagerAddress));
     }
 
     function _createVaultApp(Kernel dao) internal returns (Vault) {
-        bytes32 vaultAppId = appIds[uint8(Apps.Vault)];
+        bytes32 vaultAppId = VAULT_APP_ID;
         address latestVaultAddress = latestVersionAppBase(vaultAppId);
         return Vault(dao.newAppInstance(vaultAppId, latestVaultAddress, new bytes(0), true));
     }
 
     function _createFinanceApp(Kernel dao) internal returns (Finance) {
-        bytes32 financeAppId = appIds[uint8(Apps.Finance)];
+        bytes32 financeAppId = FINANCE_APP_ID;
         address latestFinanceAddress = latestVersionAppBase(financeAppId);
         return Finance(dao.newAppInstance(financeAppId, latestFinanceAddress));
     }
 
     function _createAgentApp(Kernel dao) internal returns (Agent) {
-        bytes32 agentAppId = appIds[uint8(Apps.Agent)];
+        bytes32 agentAppId = AGENT_APP_ID;
         address latestAgentAddress = latestVersionAppBase(agentAppId);
         return Agent(dao.newAppInstance(agentAppId, latestAgentAddress));
     }

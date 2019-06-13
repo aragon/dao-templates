@@ -19,11 +19,8 @@ import "@aragon/kits-base/contracts/KitBase.sol";
 
 
 contract BetaKitBase is KitBase, IsContract {
-    string constant private ERROR_BAD_APP_IDS_LENGTH = "KIT_BAD_APP_IDS_LENGTH";
-
     MiniMeTokenFactory public minimeFac;
     IFIFSResolvingRegistrar public aragonID;
-    bytes32[5] public appIds;
 
     mapping (address => address) tokenCache;
 
@@ -37,18 +34,15 @@ contract BetaKitBase is KitBase, IsContract {
         DAOFactory _daoFactory,
         ENS _ens,
         MiniMeTokenFactory _minimeFac,
-        IFIFSResolvingRegistrar _aragonID,
-        bytes32[5] _appIds
+        IFIFSResolvingRegistrar _aragonID
     )
         KitBase(_daoFactory, _ens)
         public
     {
         require(isContract(address(_daoFactory.regFactory())));
-        require(_appIds.length == 5, ERROR_BAD_APP_IDS_LENGTH);
 
         minimeFac = _minimeFac;
         aragonID = _aragonID;
-        appIds = _appIds;
     }
 
     function createDAO(
@@ -78,37 +72,37 @@ contract BetaKitBase is KitBase, IsContract {
 
         voting = Voting(
             dao.newAppInstance(
-                appIds[uint8(Apps.Voting)],
-                latestVersionAppBase(appIds[uint8(Apps.Voting)])
+                VOTING_APP_ID,
+                latestVersionAppBase(VOTING_APP_ID)
             )
         );
-        emit InstalledApp(voting, appIds[uint8(Apps.Voting)]);
+        emit InstalledApp(voting, VOTING_APP_ID);
 
         vault = Vault(
             dao.newAppInstance(
-                appIds[uint8(Apps.Vault)],
-                latestVersionAppBase(appIds[uint8(Apps.Vault)]),
+                VAULT_APP_ID,
+                latestVersionAppBase(VAULT_APP_ID),
                 new bytes(0),
                 true
             )
         );
-        emit InstalledApp(vault, appIds[uint8(Apps.Vault)]);
+        emit InstalledApp(vault, VAULT_APP_ID);
 
         finance = Finance(
             dao.newAppInstance(
-                appIds[uint8(Apps.Finance)],
-                latestVersionAppBase(appIds[uint8(Apps.Finance)])
+                FINANCE_APP_ID,
+                latestVersionAppBase(FINANCE_APP_ID)
             )
         );
-        emit InstalledApp(finance, appIds[uint8(Apps.Finance)]);
+        emit InstalledApp(finance, FINANCE_APP_ID);
 
         tokenManager = TokenManager(
             dao.newAppInstance(
-                appIds[uint8(Apps.TokenManager)],
-                latestVersionAppBase(appIds[uint8(Apps.TokenManager)])
+                TOKEN_MANAGER_APP_ID,
+                latestVersionAppBase(TOKEN_MANAGER_APP_ID)
             )
         );
-        emit InstalledApp(tokenManager, appIds[uint8(Apps.TokenManager)]);
+        emit InstalledApp(tokenManager, TOKEN_MANAGER_APP_ID);
 
         // Required for initializing the Token Manager
         token.changeController(tokenManager);

@@ -8,10 +8,9 @@ contract DemocracyKit is BetaKitBase {
         DAOFactory _daoFactory,
         ENS _ens,
         MiniMeTokenFactory _minimeFac,
-        IFIFSResolvingRegistrar _aragonID,
-        bytes32[5] _appIds
+        IFIFSResolvingRegistrar _aragonID
     )
-        BetaKitBase(_daoFactory, _ens, _minimeFac, _aragonID, _appIds)
+        BetaKitBase(_daoFactory, _ens, _minimeFac, _aragonID)
         public
     {
         // solium-disable-previous-line no-empty-blocks
