@@ -123,7 +123,7 @@ contract TrustKit is KitBase, IsContract {
         acl.createPermission(address(this), dao, dao.APP_MANAGER_ROLE(), address(this));
 
         (Voting holdVoting, Voting heirsVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager) = _setupTokenApps(dao, acl);
-        Agent agent = _setupAgentApp(dao, acl, holdVoting);
+        Agent agent = _setupAgentApp(dao, acl, holdVoting, heirsVoting);
         _setupFinanceApps(dao, acl, holdVoting);
         _mintHoldTokens(holdTokenManager, beneficiaryKeys);
         _mintHeirsTokens(heirsTokenManager, heirs, heirsStake, blockedHeirsSupply);
@@ -164,9 +164,10 @@ contract TrustKit is KitBase, IsContract {
         heirsVoting.initialize(heirsToken, HEIRS_SUPPORT_REQUIRED, HEIRS_MIN_ACCEPTANCE_QUORUM, HEIRS_VOTE_DURATION);
     }
 
-    function _setupAgentApp(Kernel dao, ACL acl, Voting holdVoting) internal returns (Agent) {
+    function _setupAgentApp(Kernel dao, ACL acl, Voting holdVoting, Voting heirsVoting) internal returns (Agent) {
         Agent agent = _createAgentApp(dao);
-        _createAgentPermissions(acl, agent, holdVoting);
+        _createAgentPermission(acl, agent, agent.EXECUTE_ROLE(), holdVoting, heirsVoting);
+        _createAgentPermission(acl, agent, agent.RUN_SCRIPT_ROLE(), holdVoting, heirsVoting);
         agent.initialize();
         return agent;
     }
@@ -225,9 +226,11 @@ contract TrustKit is KitBase, IsContract {
         return Agent(dao.newAppInstance(agentAppId, latestAgentAddress));
     }
 
-    function _createAgentPermissions(ACL acl, Agent agent, Voting holdVoting) internal {
-        acl.createPermission(holdVoting, agent, agent.EXECUTE_ROLE(), holdVoting);
-        acl.createPermission(holdVoting, agent, agent.RUN_SCRIPT_ROLE(), holdVoting);
+    function _createAgentPermission(ACL acl, Agent agent, bytes32 role, Voting holdVoting, Voting heirsVoting) internal {
+        acl.createPermission(holdVoting, agent, role, address(this));
+        acl.grantPermission(heirsVoting, agent, role);
+        acl.revokePermission(address(this), agent, role);
+        acl.setPermissionManager(holdVoting, agent, role);
     }
 
     function _createVotingPermissions(ACL acl, TokenManager tokenManager, Voting voting) internal {

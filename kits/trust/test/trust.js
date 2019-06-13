@@ -204,8 +204,10 @@ contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
       assert.isTrue(await agent.hasInitialized(), 'agent not initialized')
       assert.equal(await agent.designatedSigner(), ZERO_ADDRESS)
 
-      await assertRole(acl, agent, holdVoting, 'Agent', 'EXECUTE_ROLE')
-      await assertRole(acl, agent, holdVoting, 'Agent', 'RUN_SCRIPT_ROLE')
+      await assertRole(acl, agent, holdVoting, 'Agent Hold', 'EXECUTE_ROLE', holdVoting)
+      await assertRole(acl, agent, holdVoting, 'Agent Hold', 'RUN_SCRIPT_ROLE', holdVoting)
+      await assertRole(acl, agent, holdVoting, 'Agent Heirs', 'EXECUTE_ROLE', heirsVoting)
+      await assertRole(acl, agent, holdVoting, 'Agent Heirs', 'RUN_SCRIPT_ROLE', heirsVoting)
     })
 
     it('setup DAO and ACL permissions correctly', async () => {
