@@ -10,7 +10,7 @@ cache:
 notifications:
   email: false
 node_js:
-  - '8'
+  - '9'
 env:
   - TASK=lint
   - TASK=test:beta-base
