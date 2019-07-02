@@ -7,21 +7,25 @@
     },
     "rinkeby": {
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
+      "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
       "appName": "bare-kit.aragonpm.eth",
       "network": "rinkeby"
     },
     "staging": {
       "registry": "0xfe03625ea880a8cba336f9b5ad6e15b0a3b5a939",
+      "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
       "appName": "bare-kit.aragonpm.eth",
       "network": "rinkeby"
     },
     "mainnet": {
       "registry": "0x314159265dd8dbb310642f98f50c066173c1259b",
+      "wsRPC": "wss://mainnet.eth.aragon.network/ws",
       "appName": "bare-kit.aragonpm.eth",
       "network": "mainnet"
     },
     "rinkeby-old": {
       "registry": "0xfbae32d1cde62858bc45f51efc8cc4fa1415447e",
+      "wsRPC": "wss://rinkeby.eth.aragon.network/ws",
       "appName": "bare-kit.aragonpm.eth",
       "network": "rinkeby"
     }
