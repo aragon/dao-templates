@@ -4,7 +4,7 @@ const namehash = require('eth-ens-namehash').hash
 const deployDAOFactory = require('@aragon/os/scripts/deploy-daofactory.js')
 
 
-const apps = ['finance', 'token-manager', 'vault', 'voting']
+const apps = ['agent', 'finance', 'token-manager', 'vault', 'voting']
 const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).environments.default.appName))
 
 const getContract = name => artifacts.require(name)
@@ -38,10 +38,10 @@ contract('Beta Base Kit', accounts => {
         daoAddress = getEventResult(daoReceipt, 'DeployInstance', 'dao')
         const tokenAddr = getEventResult(daoReceipt, 'DeployInstance', 'token')
         // generated Voting app
-        financeAddress = getAppProxy(daoReceipt, appIds[0])
-        tokenManagerAddress = getAppProxy(daoReceipt, appIds[1])
-        vaultAddress = getAppProxy(daoReceipt, appIds[2])
-        votingAddress = getAppProxy(daoReceipt, appIds[3])
+        financeAddress = getAppProxy(daoReceipt, appIds[1])
+        tokenManagerAddress = getAppProxy(daoReceipt, appIds[2])
+        vaultAddress = getAppProxy(daoReceipt, appIds[3])
+        votingAddress = getAppProxy(daoReceipt, appIds[4])
 
         assert.notEqual(daoAddress, '0x0', 'DAO not generated')
         assert.equal(tokenAddr, tokenAddress, 'Token address should match')

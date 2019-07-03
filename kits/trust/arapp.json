@@ -1,0 +1,12 @@
+{
+  "environments": {
+    "rinkeby": {
+      "address": "0x50dcaf056daf4f219600544f8dbebdb65bc4a472",
+      "appName": "trust-kit.aragonpm.eth",
+      "network": "rinkeby",
+      "registry": "0x98df287b6c145399aaa709692c8d308357bc085d"
+    }
+  },
+  "roles": [],
+  "path": "contracts/TrustKit.sol"
+}

@@ -19,7 +19,7 @@ const TokenManager = artifacts.require('TokenManager')
 const Vault = artifacts.require('Vault')
 const Voting = artifacts.require('Voting')
 
-const apps = ['finance', 'token-manager', 'vault', 'voting']
+const apps = ['agent', 'finance', 'token-manager', 'vault', 'voting']
 const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).environments.default.appName))
 
 const getContract = name => artifacts.require(name)
@@ -117,13 +117,13 @@ contract('Multisig Kit', accounts => {
                 }
 
                 // generated apps
-                financeAddress = getAppProxy(receiptInstance, appIds[0])
+                financeAddress = getAppProxy(receiptInstance, appIds[1])
                 finance = await Finance.at(financeAddress)
-                tokenManagerAddress = getAppProxy(receiptInstance, appIds[1])
+                tokenManagerAddress = getAppProxy(receiptInstance, appIds[2])
                 tokenManager = TokenManager.at(tokenManagerAddress)
-                vaultAddress = getAppProxy(receiptInstance, appIds[2])
+                vaultAddress = getAppProxy(receiptInstance, appIds[3])
                 vault = await Vault.at(vaultAddress)
-                votingAddress = getAppProxy(receiptInstance, appIds[3])
+                votingAddress = getAppProxy(receiptInstance, appIds[4])
                 voting = Voting.at(votingAddress)
             })
 

@@ -10,18 +10,19 @@ cache:
 notifications:
   email: false
 node_js:
-  - '8'
+  - '9'
 env:
   - TASK=lint
   - TASK=test:beta-base
   - TASK=test:democracy
   - TASK=test:multisig
+  - TASK=test:trust
   - TASK=test:agp1
 matrix:
   allow_failures:
     - env: TASK=test:agp1
   fast_finish: true
 install:
-  - travis_wait 20 npm install
+  - travis_wait 60 npm install
 script:
   - travis_wait 60 npm run $TASK

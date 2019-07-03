@@ -1,0 +1,14 @@
+# dependencies
+node_modules
+
+# lock files
+package-lock.json
+
+# build artifacts
+build
+flattened_contracts
+abi
+abis.json
+
+# deployment files
+arapp_local.json

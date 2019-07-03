@@ -8,7 +8,7 @@ const deploy_apm = require('@aragon/os/scripts/deploy-apm.js')
 const deploy_id = require('@aragon/id/scripts/deploy-beta-aragonid.js')
 
 // ensure alphabetic order
-const apps = ['finance', 'token-manager', 'vault', 'voting']
+const apps = ['agent', 'finance', 'token-manager', 'vault', 'voting']
 const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).environments.default.appName))
 
 const newRepo = async (apm, name, acc, contract) => {
@@ -49,6 +49,7 @@ module.exports = async (callback) => {
 
     if (await ens.owner(appIds[0]) == '0x0000000000000000000000000000000000000000') {
       console.log('Deploying apps in local network')
+      await newRepo(apm, 'agent', owner, 'Agent')
       await newRepo(apm, 'voting', owner, 'Voting')
       await newRepo(apm, 'finance', owner, 'Finance')
       await newRepo(apm, 'token-manager', owner, 'TokenManager')
