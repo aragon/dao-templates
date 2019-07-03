@@ -1,8 +1,11 @@
 require('dotenv').config({ path: './node_modules/@aragon/kits-beta-base/.env'})
 const getContract = name => artifacts.require(name)
-const getKit = (indexObj, kitName) => getContract(kitName).at(indexObj.networks['devnet'].kits.filter(x => x.name == kitName)[0].address)
+const getKit = (arappObj, kitName) => getContract(kitName).at(arappObj.environments['devnet'].address)
 const pct16 = x => new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
 
+// `npm run test` needs to be run first so arapp_local.json gets created
+// then you can run it with `truffle test --network devnet test/gas.js`
+// having a docker geth image running (`npm run docker:run && npm run docker:wait-gas`)
 contract('Multisig Kit', accounts => {
     let kit
 
@@ -10,11 +13,11 @@ contract('Multisig Kit', accounts => {
     const signer1 = accounts[6]
     const signer2 = accounts[7]
     const signer3 = accounts[8]
-    let indexObj = require('../index_local.js')
+    let arappObj = require('../arapp_local.json')
 
     context('Use Kit', async () => {
         before(async () => {
-            kit = await getKit(indexObj, 'MultisigKit')
+            kit = await getKit(arappObj, 'MultisigKit')
         })
 
         it('create token', async () => {
