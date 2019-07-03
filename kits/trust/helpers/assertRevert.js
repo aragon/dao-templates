@@ -29,7 +29,7 @@ module.exports = web3 => {
     const tx = request.params[0]
     assert.isTrue(await transactionWillRevert(tx), 'Transaction should revert')
 
-    if (reason.lentgh === 0) return true
+    if (reason.length === 0) return true
     const response = await web3.eth.call(tx)
     const reasonFound = decodeReason(response)
     assert.equal(reasonFound, reason, `Revert reason '${reason}' not found. Found '${reasonFound}' instead.` )
