@@ -17,10 +17,7 @@ env:
   - TASK=test:democracy
   - TASK=test:multisig
   - TASK=test:trust
-  - TASK=test:agp1
 matrix:
-  allow_failures:
-    - env: TASK=test:agp1
   fast_finish: true
 install:
   - travis_wait 60 npm install
