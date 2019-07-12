@@ -1,0 +1,34 @@
+{
+  "name": "@aragon/templates-bare",
+  "version": "1.0.0",
+  "description": "Generic template for deploying and setting up a DAO with one app",
+  "author": "Aragon Association <legal@aragon.org>",
+  "license": "GPL-3.0-or-later",
+  "scripts": {
+    "compile": "truffle compile --all",
+    "lint": "solium --dir ./contracts",
+    "deploy:rpc": "npm run compile && truffle exec ./scripts/deploy.js --network rpc",
+    "deploy:devnet": "npm run compile && truffle exec ./scripts/deploy.js --network devnet",
+    "deploy:staging": "npm run compile && truffle exec ./scripts/deploy.js --network rinkeby --ens 0xfe03625ea880a8cba336f9b5ad6e15b0a3b5a939",
+    "deploy:rinkeby": "npm run compile && truffle exec ./scripts/deploy.js --network rinkeby --ens 0x98Df287B6C145399Aaa709692c8D308357bC085D",
+    "deploy:mainnet": "npm run compile && truffle exec ./scripts/deploy.js --network mainnet --ens 0x314159265dd8dbb310642f98f50c066173c1259b"
+  },
+  "dependencies": {
+    "@aragon/os": "^4.2.0",
+    "@aragon/id": "^2.0.3",
+    "@aragon/apps-agent": "^1.0.0",
+    "@aragon/apps-vault": "^4.1.0",
+    "@aragon/apps-voting": "^2.1.0",
+    "@aragon/apps-finance": "^3.0.0",
+    "@aragon/apps-token-manager": "^2.1.0",
+    "@aragon/apps-shared-minime": "^1.0.0",
+    "@aragon/templates-shared": "^1.0.0"
+  },
+  "devDependencies": {
+    "ganache-cli": "^6.0.3",
+    "solidity-coverage": "0.5.8",
+    "solium": "^1.0.4",
+    "truffle": "4.1.14",
+    "truffle-hdwallet-provider": "0.0.3"
+  }
+}
