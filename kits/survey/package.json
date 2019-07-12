@@ -17,7 +17,9 @@
     "publish:rinkeby": "aragon apm publish major $(npm run deploy:kit:rinkeby | tail -n 1) --environment rinkeby",
     "deploy:kit:rinkeby": "aragon contracts compile --all && ENS=0x98Df287B6C145399Aaa709692c8D308357bC085D aragon contracts exec --network rinkeby scripts/survey-deploy.js",
     "publish:mainnet": "aragon apm publish major $(npm run deploy:kit:mainnet | tail -n 1) --environment mainnet",
-    "deploy:kit:mainnet": "aragon contracts compile --all && ENS=0x314159265dd8dbb310642f98f50c066173c1259b aragon contracts exec --network mainnet scripts/survey-deploy.js"
+    "deploy:kit:mainnet": "aragon contracts compile --all && ENS=0x314159265dd8dbb310642f98f50c066173c1259b aragon contracts exec --network mainnet scripts/survey-deploy.js",
+    "publish:ropsten": "aragon apm publish major $(npm run deploy:kit:ropsten | tail -n 1) --environment ropsten",
+    "deploy:kit:ropsten": "aragon contracts compile --all && ENS=0x6afe2cacee211ea9179992f89dc61ff25c61e923 aragon contracts exec --network ropsten scripts/survey-deploy.js"
   },
   "files": [
     "abi/",

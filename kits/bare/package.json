@@ -11,7 +11,9 @@
     "publish:rinkeby": "aragon apm publish major $(npm run deploy:kit:rinkeby | tail -n 1) --environment rinkeby",
     "deploy:kit:rinkeby": "aragon contracts compile --all && aragon contracts exec --network rinkeby scripts/deploy.js",
     "publish:mainnet": "aragon apm publish major $(npm run deploy:kit:mainnet | tail -n 1) --environment mainnet",
-    "deploy:kit:mainnet": "aragon contracts compile --all && aragon contracts exec --network mainnet scripts/deploy.js"
+    "deploy:kit:mainnet": "aragon contracts compile --all && aragon contracts exec --network mainnet scripts/deploy.js",
+    "publish:ropsten": "aragon apm publish major $(npm run deploy:kit:ropsten | tail -n 1) --environment ropsten",
+    "deploy:kit:ropsten": "aragon contracts compile --all && aragon contracts exec --network ropsten scripts/deploy.js"
   },
   "dependencies": {
     "@aragon/os": "^4.2.0",
