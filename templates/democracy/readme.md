@@ -1,7 +1,5 @@
 # Aragon 0.7 Democracy template
 
-See [Beta templates description](https://github.com/aragon/dao-kits/blob/master/kits/beta-base/readme.md).
-
 ## Usage
 
 ```
@@ -43,8 +41,8 @@ The network details will be automatically selected by the `arapp.json`'s environ
 
 ## Gas usage
 
-Tested running `GAS_REPORTER=true truffle test --network devnet test/gas.js`, plus `deploy-kit.js` script in `beta-base`.
+Tested running `GAS_REPORTER=true truffle test --network devnet test/gas.js`, plus `deploy.js` script.
 
-- Create the Kit:      2816197
+- Create template:     2816197
 - Create new token:    1738117
 - Deploy new instance: 5690035
