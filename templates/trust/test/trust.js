@@ -1,20 +1,22 @@
-const namehash = require('eth-ens-namehash').hash
-const assertRole = require('../helpers/assertRole')(web3)
-const decodeEvents = require('../helpers/decodeEvents')
-const assertRevert = require('../helpers/assertRevert')(web3)
-const { getEventArgument } = require('../helpers/events')
-const { APP_IDS, getDeployedAddresses } = require('../helpers/arapp')
+const { hash: namehash } = require('eth-ens-namehash')
+const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
+const { getEventArgument } = require('@aragon/test-helpers/events')
+const { deployedAddresses } = require('@aragon/templates-shared/lib/ArappFile')(web3)
+const assertRole = require('@aragon/templates-shared/helpers/assertRole')(web3)
+const decodeEvents = require('@aragon/templates-shared/helpers/decodeEvents')
+const assertRevert = require('@aragon/templates-shared/helpers/assertRevert')(web3)
 
-const TrustKit = artifacts.require('TrustKit')
-const Kernel = artifacts.require('Kernel')
+const TrustTemplate = artifacts.require('TrustTemplate')
+
+const ENS = artifacts.require('ENS')
 const ACL = artifacts.require('ACL')
+const Kernel = artifacts.require('Kernel')
 const Vault = artifacts.require('Vault')
 const Agent = artifacts.require('Agent')
 const Voting = artifacts.require('Voting')
 const Finance = artifacts.require('Finance')
 const TokenManager = artifacts.require('TokenManager')
 const MultiSigWallet = artifacts.require('MultiSigWallet')
-const ENS = artifacts.require('ENS')
 const MiniMeToken = artifacts.require('MiniMeToken')
 const PublicResolver = artifacts.require('PublicResolver')
 const EVMScriptRegistry = artifacts.require('EVMScriptRegistry')
@@ -22,7 +24,7 @@ const EVMScriptRegistry = artifacts.require('EVMScriptRegistry')
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, multiSigKey1, multiSigKey2]) => {
-  let daoID, trustKit, dao, multiSig, acl, prepareReceipt, daoSetupReceipt, multiSigSetupReceipt
+  let daoID, trustTemplate, dao, multiSig, acl, prepareReceipt, daoSetupReceipt, multiSigSetupReceipt
   let holdVoting, heirsVoting, holdTokenManager, heirsTokenManager, holdToken, heirsToken, vault, finance, agent
 
   const HEIRS = [heir1, heir2]
@@ -30,50 +32,50 @@ contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
   const MULTI_SIG_KEYS = [multiSigKey1, multiSigKey2]
   const BENEFICIARY_KEYS = [beneficiaryKey1, beneficiaryKey2]
 
-  before('fetch trust kit', async () => {
-    trustKit = TrustKit.at((await getDeployedAddresses()).address)
+  before('fetch trust template', async () => {
+    trustTemplate = TrustTemplate.at((await deployedAddresses()).address)
   })
 
   context('when the setup dao fails', () => {
     before('prepare entity', async () => {
-      await trustKit.prepareDAO({ from: deployer })
+      await trustTemplate.prepareDAO({ from: deployer })
     })
 
     it('reverts when the given beneficiary keys are not 2', async () => {
-      await assertRevert(trustKit.setupDAO.request('id', [beneficiaryKey1], HEIRS, HEIRS_STAKE, { from: deployer }), 'TRUST_BAD_BENEFICIARY_KEY_LENGTH')
-      await assertRevert(trustKit.setupDAO.request('id', [beneficiaryKey1, beneficiaryKey2, heir1], HEIRS, HEIRS_STAKE, { from: deployer }), 'TRUST_BAD_BENEFICIARY_KEY_LENGTH')
+      await assertRevert(trustTemplate.setupDAO.request('id', [beneficiaryKey1], HEIRS, HEIRS_STAKE, { from: deployer }), 'TRUST_BAD_BENEFICIARY_KEY_LENGTH')
+      await assertRevert(trustTemplate.setupDAO.request('id', [beneficiaryKey1, beneficiaryKey2, heir1], HEIRS, HEIRS_STAKE, { from: deployer }), 'TRUST_BAD_BENEFICIARY_KEY_LENGTH')
     })
 
     it('reverts when the given heirs do not match', async () => {
-      await assertRevert(trustKit.setupDAO.request('id', BENEFICIARY_KEYS, HEIRS, [66e18], { from: deployer }), 'TRUST_BAD_HEIRS_LENGTH')
+      await assertRevert(trustTemplate.setupDAO.request('id', BENEFICIARY_KEYS, HEIRS, [66e18], { from: deployer }), 'TRUST_BAD_HEIRS_LENGTH')
     })
 
     it('reverts when the given heirs stake do not represent a 66%', async () => {
-      await assertRevert(trustKit.setupDAO.request('id', BENEFICIARY_KEYS, HEIRS, [1e18, 1e18], { from: deployer }), 'TRUST_INVALID_HEIRS_STAKE')
+      await assertRevert(trustTemplate.setupDAO.request('id', BENEFICIARY_KEYS, HEIRS, [1e18, 1e18], { from: deployer }), 'TRUST_INVALID_HEIRS_STAKE')
     })
   })
 
   context('when the setup multi sig fails', () => {
     before('prepare entity', async () => {
-      await trustKit.prepareDAO({ from: deployer })
-      await trustKit.setupDAO('id', BENEFICIARY_KEYS, HEIRS, HEIRS_STAKE, { from: deployer })
+      await trustTemplate.prepareDAO({ from: deployer })
+      await trustTemplate.setupDAO(`id-${Math.floor(Math.random() * 1000)}`, BENEFICIARY_KEYS, HEIRS, HEIRS_STAKE, { from: deployer })
     })
 
     it('reverts when given multi sig keys are not 2', async () => {
-      await assertRevert(trustKit.setupMultiSig.request([multiSigKey1], { from: deployer }), 'TRUST_BAD_MULTI_SIG_KEYS_LENGTH')
-      await assertRevert(trustKit.setupMultiSig.request([multiSigKey1, multiSigKey2, heir1], { from: deployer }), 'TRUST_BAD_MULTI_SIG_KEYS_LENGTH')
+      await assertRevert(trustTemplate.setupMultiSig.request([multiSigKey1], { from: deployer }), 'TRUST_BAD_MULTI_SIG_KEYS_LENGTH')
+      await assertRevert(trustTemplate.setupMultiSig.request([multiSigKey1, multiSigKey2, heir1], { from: deployer }), 'TRUST_BAD_MULTI_SIG_KEYS_LENGTH')
     })
   })
 
   context('when the creation succeeds', () => {
     before('create trust entity', async () => {
       daoID = `id-${Math.floor(Math.random() * 1000)}`
-      prepareReceipt = await trustKit.prepareDAO({ from: deployer })
-      daoSetupReceipt = await trustKit.setupDAO(daoID, BENEFICIARY_KEYS, HEIRS, HEIRS_STAKE, { from: deployer })
-      multiSigSetupReceipt = await trustKit.setupMultiSig(MULTI_SIG_KEYS, { from: deployer })
+      prepareReceipt = await trustTemplate.prepareDAO({ from: deployer })
+      daoSetupReceipt = await trustTemplate.setupDAO(daoID, BENEFICIARY_KEYS, HEIRS, HEIRS_STAKE, { from: deployer })
+      multiSigSetupReceipt = await trustTemplate.setupMultiSig(MULTI_SIG_KEYS, { from: deployer })
 
-      dao = Kernel.at(getEventArgument(multiSigSetupReceipt, 'DeployTrustEntity', 'dao'))
-      multiSig = MultiSigWallet.at(getEventArgument(multiSigSetupReceipt, 'DeployTrustEntity', 'multiSig'))
+      dao = Kernel.at(getEventArgument(prepareReceipt, 'DeployDao', 'dao'))
+      multiSig = MultiSigWallet.at(getEventArgument(multiSigSetupReceipt, 'DeployMultiSig', 'multiSig'))
       acl = ACL.at(await dao.acl())
     })
 
@@ -109,7 +111,7 @@ contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
     })
 
     it('registers a new DAO on ENS', async () => {
-      const ens = ENS.at((await getDeployedAddresses()).registry)
+      const ens = ENS.at((await deployedAddresses()).registry)
       const aragonIdNameHash = namehash(`${daoID}.aragonid.eth`)
       const resolvedAddress = await PublicResolver.at(await ens.resolver(aragonIdNameHash)).addr(aragonIdNameHash)
       assert.equal(resolvedAddress, dao.address, 'aragonId ENS name does not match')

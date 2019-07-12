@@ -1,8 +1,8 @@
 const fs = require('fs')
 const { hash } = require('eth-ens-namehash')
 const { isAddress } = require('web3-utils')
-const { getEventArgument } = require('../helpers/events')
-const { getAddressesFileName, getDeployedAddresses } = require('../helpers/arapp')
+const { getEventArgument } = require('@aragon/test-helpers/events')
+const { fileName, deployedAddresses } = require('@aragon/templates-shared/lib/ArappFile')(web3)
 
 const isArray = (e, l = 0) => Array.isArray(e) && (l === 0 || e.length === l)
 const isArrayOfAddresses = (e, l = 0) => isArray(e, l) && e.every(isAddress)
@@ -52,25 +52,24 @@ async function create() {
   if (process.argv.length !== 7) errorOut('Usage: truffle exec --network <network> ./scripts/create.js <json_input_file>')
   const network = process.argv[4]
 
-  const deployedAddresses = await getDeployedAddresses(network)
-  const { address: trustKitAddress } = deployedAddresses || {}
-  if (!trustKitAddress) errorOut(`Missing trust kit address for network ${network} in ${await getAddressesFileName(network)}`)
-  else console.log(`Using trust kit deployed at ${trustKitAddress}...`)
+  const { address: trustTemplateAddress } = (await deployedAddresses()) || {}
+  if (!trustTemplateAddress) errorOut(`Missing trust template address for network ${network} in ${await fileName()}`)
+  else console.log(`Using trust template deployed at ${trustTemplateAddress}...`)
 
-  const TrustKit = artifacts.require('TrustKit')
-  const trustKit = TrustKit.at(trustKitAddress)
+  const TrustTemplate = artifacts.require('TrustTemplate')
+  const trustTemplate = TrustTemplate.at(trustTemplateAddress)
   const { id, multiSigKeys, beneficiaries, heirs, heirsStakes } = parseInput()
 
   console.log('Preparing DAO...')
-  await trustKit.prepareDAO()
+  await trustTemplate.prepareDAO()
   console.log('Setting up DAO...')
-  await trustKit.setupDAO(id, beneficiaries, heirs, heirsStakes)
+  await trustTemplate.setupDAO(id, beneficiaries, heirs, heirsStakes)
   console.log('Setting up multi signature wallet...')
-  const receipt = await trustKit.setupMultiSig(multiSigKeys)
+  const receipt = await trustTemplate.setupMultiSig(multiSigKeys)
   console.log('Trust entity deployed successfully!')
 
-  const dao = getEventArgument(receipt, 'DeployTrustEntity', 'dao')
-  const multiSig = getEventArgument(receipt, 'DeployTrustEntity', 'multiSig')
+  const dao = getEventArgument(receipt, 'DeployDao', 'dao')
+  const multiSig = getEventArgument(receipt, 'DeployMultiSig', 'multiSig')
   console.log(`\n=======\nDAO: ${dao}\nMultiSig: ${multiSig}\n=======`)
 }
 
