@@ -1,4 +1,6 @@
 module.exports = web3 => {
+  const { isGanache } = require('./node')(web3)
+
   function decodeReason(returnValue) {
     if (returnValue.substring(0, 2) === '0x') returnValue = returnValue.slice(2)
 
@@ -25,7 +27,7 @@ module.exports = web3 => {
     }
   }
 
-  return async function (request, reason) {
+  async function assertRevertGeth(request, reason) {
     const tx = request.params[0]
     assert.isTrue(await transactionWillRevert(tx), 'Transaction should revert')
 
@@ -34,4 +36,12 @@ module.exports = web3 => {
     const reasonFound = decodeReason(response)
     assert.equal(reasonFound, reason, `Revert reason '${reason}' not found. Found '${reasonFound}' instead.` )
   }
+
+  async function assertRevertGanache(request, reason) {
+    const tx = request.params[0]
+    const { assertRevert } = require('@aragon/test-helpers/assertThrow')
+    await assertRevert(() => web3.eth.sendTransaction(tx), reason)
+  }
+
+  return isGanache() ? assertRevertGanache : assertRevertGeth
 }

@@ -10,8 +10,8 @@ services:
     expose:
       - 8545
     environment:
-      - DEV_CHAIN_ENABLED=true
       - NETWORK_ID=16
+      - DEV_CHAIN_ENABLED=true
     networks:
       - devnet
   ipfs:
