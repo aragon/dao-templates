@@ -1,24 +1,22 @@
 {
-  "name": "@aragon/monorepo-dao-kits",
+  "name": "@aragon/templates",
   "version": "1.0.0",
   "private": true,
-  "description": "Monorepo for all Aragon made DAO Kits or templates",
-  "main": "index.js",
-  "devDependencies": {
-    "lerna": "^2.8.0"
-  },
+  "description": "Monorepo for all Aragon templates",
+  "author": "Aragon Association <legal@aragon.org>",
+  "license": "GPL-3.0-or-later",
   "scripts": {
     "install": "npm run bootstrap",
     "bootstrap": "lerna bootstrap",
     "test": "npm run test:all",
-    "test:all": "lerna run --scope=@aragon/kits-* --concurrency=1 --stream test",
-    "test:beta-base": "lerna run --scope=@aragon/kits-beta-base --stream test",
-    "test:democracy": "lerna run --scope=@aragon/kits-democracy --stream test",
-    "test:multisig": "lerna run --scope=@aragon/kits-multisig --stream test",
-    "test:trust": "lerna run --scope=@aragon/kits-trust --stream test",
-    "lint": "lerna run --scope=@aragon/kits-* lint",
-    "link:os": "lerna exec --scope '@aragon/kits-*' 'npm link @aragon/os'"
+    "test:all": "lerna run --scope=@aragon/templates-* --concurrency=1 --stream test",
+    "test:democracy": "lerna run --scope=@aragon/templates-democracy --stream test",
+    "test:multisig": "lerna run --scope=@aragon/templates-multisig --stream test",
+    "test:trust": "lerna run --scope=@aragon/templates-trust --stream test",
+    "lint": "lerna run --scope=@aragon/templates-* lint",
+    "link:os": "lerna exec --scope '@aragon/templates-*' 'npm link @aragon/os'"
   },
-  "author": "Aragon Association <legal@aragon.org>",
-  "license": "GPL-3.0-or-later"
+  "devDependencies": {
+    "lerna": "^2.8.0"
+  }
 }

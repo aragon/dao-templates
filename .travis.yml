@@ -1,25 +1,27 @@
+language: node_js
 services:
   - docker
-language: node_js
 cache:
   directories:
     - node_modules
-    - kits/beta-base/node_modules
-    - kits/democracy/node_modules
-    - kits/multisig/node_modules
+    - templates/shared/node_modules
+    - templates/democracy/node_modules
+    - templates/multisig/node_modules
+    - templates/trust/node_modules
 notifications:
   email: false
 node_js:
   - '9'
-env:
-  - TASK=lint
-  - TASK=test:beta-base
-  - TASK=test:democracy
-  - TASK=test:multisig
-  - TASK=test:trust
-matrix:
-  fast_finish: true
 install:
   - travis_wait 60 npm install
-script:
-  - travis_wait 60 npm run $TASK
+jobs:
+  include:
+    - stage: tests
+      script: npm run lint
+      name: "Lint"
+    - script: npm run test:democracy
+      name: "Democracy"
+    - script: npm run test:multisig
+      name: "Multisig"
+    - script: npm run test:trust
+      name: "Trust"

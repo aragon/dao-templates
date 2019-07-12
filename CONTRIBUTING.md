@@ -1,8 +1,8 @@
-# Contributing to Aragon DAO Kits and Templates
+# Contributing to Aragon DAO Templates
 
 :tada: Thank you for being interested in contributing to an Aragon Project! :tada:
 
-The following is a set of guidelines and helpful pointers for contributing to Aragon DAO kits. The keyword here is *guidelines*, not rules. As such, use your best judgement and feel free to propose changes to even this document.
+The following is a set of guidelines and helpful pointers for contributing to Aragon DAO templates. The keyword here is *guidelines*, not rules. As such, use your best judgement and feel free to propose changes to even this document.
 
 ## Code of Conduct
 
