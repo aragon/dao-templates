@@ -1,7 +1,5 @@
 # Aragon 0.7 Multisig template
 
-See [Beta templates description](https://github.com/aragon/dao-kits/blob/master/kits/beta-base/readme.md).
-
 ## Usage
 
 ```
@@ -46,6 +44,6 @@ The network details will be automatically selected by the `arapp.json`'s environ
 
 Tested running `GAS_REPORTER=true truffle test --network devnet test/gas.js`
 
-- Create the Kit:      2842826
+- Create template:     2842826
 - Create new token:    1723050
 - Deploy new instance: 5708934

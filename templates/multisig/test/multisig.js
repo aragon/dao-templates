@@ -1,68 +1,36 @@
-require('dotenv').config({ path: './node_modules/@aragon/kits-beta-base/.env'})
-
-const getBlockNumber = require('@aragon/test-helpers/blockNumber')(web3)
-const getBlock = require('@aragon/test-helpers/block')(web3)
-//const timeTravel = require('@aragon/test-helpers/timeTravel')(web3)
+const { hash: namehash } = require('eth-ens-namehash')
+const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
+const { encodeCallScript } = require('@aragon/test-helpers/evmScript')
+const { isLocalNetwork } = require('@aragon/templates-shared/lib/Network')(web3)
+const { deployedAddresses } = require('@aragon/templates-shared/lib/ArappFile')(web3)
 const getBalance = require('@aragon/test-helpers/balance')(web3)
-const namehash = require('eth-ens-namehash').hash
-const keccak256 = require('js-sha3').keccak_256
+const getBlockNumber = require('@aragon/test-helpers/blockNumber')(web3)
 
-const { encodeCallScript, EMPTY_SCRIPT } = require('@aragon/test-helpers/evmScript')
+const MultisigTemplate = artifacts.require('MultisigTemplate')
 
 const ENS = artifacts.require('ENS')
-const PublicResolver = artifacts.require('PublicResolver')
-
-const MiniMeToken = artifacts.require('MiniMeToken')
-
-const Finance = artifacts.require('Finance')
-const TokenManager = artifacts.require('TokenManager')
 const Vault = artifacts.require('Vault')
 const Voting = artifacts.require('Voting')
-
-const apps = ['agent', 'finance', 'token-manager', 'vault', 'voting']
-const appIds = apps.map(app => namehash(require(`@aragon/apps-${app}/arapp`).environments.default.appName))
+const Finance = artifacts.require('Finance')
+const TokenManager = artifacts.require('TokenManager')
+const MiniMeToken = artifacts.require('MiniMeToken')
+const PublicResolver = artifacts.require('PublicResolver')
 
 const getContract = name => artifacts.require(name)
-const pct16 = x => new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
-const getEventResult = (receipt, event, param) => receipt.logs.filter(l => l.event == event)[0].args[param]
+const getEventResult = (receipt, event, param) => receipt.logs.filter(l => l.event === event)[0].args[param]
+const getAppProxy = (receipt, id) => receipt.logs.filter(l => l.event === 'InstalledApp' && l.args.appId === id)[0].args.appProxy
 const getVoteId = (receipt) => {
-    const logs = receipt.receipt.logs.filter(
-        l =>
-            l.topics[0] == web3.sha3('StartVote(uint256,address,string)')
-    )
+    const logs = receipt.receipt.logs.filter(l => l.topics[0] === web3.sha3('StartVote(uint256,address,string)'))
     return web3.toDecimal(logs[0].topics[1])
 }
-const getAppProxy = (receipt, id) => receipt.logs.filter(l => l.event == 'InstalledApp' && l.args.appId == id)[0].args.appProxy
-const networks = require("@aragon/os/truffle-config").networks
-const getNetwork = require('../../../helpers/networks.js')
-const getKitConfiguration = async (networkName) => {
-    let arappFilename
-    if (networkName == 'devnet' || networkName == 'rpc') {
-        arappFilename = 'arapp_local'
-    } else {
-        arappFilename = 'arapp'
-    }
-    const arappFile = require('../' + arappFilename)
-    const ensAddress = arappFile.environments[networkName].registry
-    const ens = getContract('ENS').at(ensAddress)
-    const kitEnsName = arappFile.environments[networkName].appName
-    const repoAddr = await artifacts.require('PublicResolver').at(await ens.resolver(namehash('aragonpm.eth'))).addr(namehash(kitEnsName))
-    const repo = getContract('Repo').at(repoAddr)
-    const kitAddress = (await repo.getLatest())[1]
-    const kitContractName = arappFile.path.split('/').pop().split('.sol')[0]
-    const kit = getContract(kitContractName).at(kitAddress)
 
-    return { ens, kit }
-}
-
-
-contract('Multisig Kit', accounts => {
+contract('Multisig Template', accounts => {
     const ETH = '0x0'
     let ens
     let daoAddress, tokenAddress
     let financeAddress, tokenManagerAddress, vaultAddress, votingAddress
     let finance, tokenManager, vault, voting
-    let kit, receiptInstance
+    let template, receiptInstance
     const owner = accounts[0]
     const signer1 = accounts[1]
     const signer2 = accounts[2]
@@ -74,19 +42,18 @@ contract('Multisig Kit', accounts => {
     const multisigSupport = new web3.BigNumber(10 ** 18).times(neededSignatures).dividedToIntegerBy(signers.length).minus(1)
     const multisigVotingTime = 1825 * 24 * 60 * 60 // 1825 days; ~5 years
 
-    before(async () => {
-        // create Multisig Kit
-        const networkName = (await getNetwork(networks)).name
-        if (networkName == 'devnet' || networkName == 'rpc') {
+    before('fetch multisig template', async () => {
+        if (await isLocalNetwork()) {
             // transfer some ETH to other accounts
             await web3.eth.sendTransaction({ from: owner, to: signer1, value: web3.toWei(10, 'ether') })
             await web3.eth.sendTransaction({ from: owner, to: signer2, value: web3.toWei(10, 'ether') })
             await web3.eth.sendTransaction({ from: owner, to: signer3, value: web3.toWei(10, 'ether') })
             await web3.eth.sendTransaction({ from: owner, to: nonHolder, value: web3.toWei(10, 'ether') })
         }
-        const configuration = await getKitConfiguration(networkName)
-        ens = configuration.ens
-        kit = configuration.kit
+
+        const { registry, address } = await deployedAddresses()
+        ens = ENS.at(registry)
+        template = MultisigTemplate.at(address)
     })
 
     // Test when organization is created in one call with `newTokenAndInstance()` and in
@@ -103,27 +70,27 @@ contract('Multisig Kit', accounts => {
 
                 if (creationStyle === 'single') {
                     // create token and instance
-                    receiptInstance = await kit.newTokenAndInstance(tokenName, tokenSymbol, aragonId, signers, neededSignatures)
+                    receiptInstance = await template.newTokenAndInstance(tokenName, tokenSymbol, aragonId, signers, neededSignatures)
                     tokenAddress = getEventResult(receiptInstance, 'DeployToken', 'token')
-                    daoAddress = getEventResult(receiptInstance, 'DeployInstance', 'dao')
+                    daoAddress = getEventResult(receiptInstance, 'DeployDao', 'dao')
                 } else if (creationStyle === 'separate') {
                     // create token
-                    const receiptToken = await kit.newToken(tokenName, tokenSymbol)
+                    const receiptToken = await template.newToken(tokenName, tokenSymbol)
                     tokenAddress = getEventResult(receiptToken, 'DeployToken', 'token')
 
                     // create instance
-                    receiptInstance = await kit.newInstance(aragonId, signers, neededSignatures)
-                    daoAddress = getEventResult(receiptInstance, 'DeployInstance', 'dao')
+                    receiptInstance = await template.newInstance(aragonId, signers, neededSignatures)
+                    daoAddress = getEventResult(receiptInstance, 'DeployDao', 'dao')
                 }
 
                 // generated apps
-                financeAddress = getAppProxy(receiptInstance, appIds[1])
+                financeAddress = getAppProxy(receiptInstance, APP_IDS.finance)
                 finance = await Finance.at(financeAddress)
-                tokenManagerAddress = getAppProxy(receiptInstance, appIds[2])
+                tokenManagerAddress = getAppProxy(receiptInstance, APP_IDS['token-manager'])
                 tokenManager = TokenManager.at(tokenManagerAddress)
-                vaultAddress = getAppProxy(receiptInstance, appIds[3])
+                vaultAddress = getAppProxy(receiptInstance, APP_IDS.vault)
                 vault = await Vault.at(vaultAddress)
-                votingAddress = getAppProxy(receiptInstance, appIds[4])
+                votingAddress = getAppProxy(receiptInstance, APP_IDS.voting)
                 voting = Voting.at(votingAddress)
             })
 
