@@ -1,4 +1,5 @@
-module.exports = web3 => async (acl, app, manager, appName, roleName, grantee = manager) => {
+module.exports = web3 => async (acl, app, manager, roleName, grantee = manager) => {
+  const appName = app.constructor.contractName
   const permission = await app[roleName]()
   const managerAddress = await acl.getPermissionManager(app.address, permission)
 

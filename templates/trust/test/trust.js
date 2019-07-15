@@ -133,9 +133,9 @@ contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
       assert.equal((await holdVoting.minAcceptQuorumPct()).toString(), 0)
       assert.equal((await holdVoting.voteTime()).toString(), 60 * 60 * 24 * 7)
 
-      await assertRole(acl, holdVoting, holdVoting, 'Hold Voting', 'CREATE_VOTES_ROLE', holdTokenManager)
-      await assertRole(acl, holdVoting, holdVoting, 'Hold Voting', 'MODIFY_QUORUM_ROLE')
-      await assertRole(acl, holdVoting, holdVoting, 'Hold Voting', 'MODIFY_SUPPORT_ROLE')
+      await assertRole(acl, holdVoting, holdVoting, 'CREATE_VOTES_ROLE', holdTokenManager)
+      await assertRole(acl, holdVoting, holdVoting, 'MODIFY_QUORUM_ROLE')
+      await assertRole(acl, holdVoting, holdVoting, 'MODIFY_SUPPORT_ROLE')
     })
 
     it('should have heirs voting app correctly setup', async () => {
@@ -144,9 +144,9 @@ contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
       assert.equal((await heirsVoting.minAcceptQuorumPct()).toString(), 0)
       assert.equal((await heirsVoting.voteTime()).toString(), 60 * 60 * 24 * 365)
 
-      await assertRole(acl, heirsVoting, heirsVoting, 'Heirs Voting', 'CREATE_VOTES_ROLE', heirsTokenManager)
-      await assertRole(acl, heirsVoting, heirsVoting, 'Heirs Voting', 'MODIFY_QUORUM_ROLE')
-      await assertRole(acl, heirsVoting, heirsVoting, 'Heirs Voting', 'MODIFY_SUPPORT_ROLE')
+      await assertRole(acl, heirsVoting, heirsVoting, 'CREATE_VOTES_ROLE', heirsTokenManager)
+      await assertRole(acl, heirsVoting, heirsVoting, 'MODIFY_QUORUM_ROLE')
+      await assertRole(acl, heirsVoting, heirsVoting, 'MODIFY_SUPPORT_ROLE')
     })
 
     it('should have hold token correctly setup', async () => {
@@ -172,55 +172,55 @@ contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
       assert.isTrue(await holdTokenManager.hasInitialized(), 'hold token manager not initialized')
       assert.equal(await holdTokenManager.token(), holdToken.address)
 
-      await assertRole(acl, holdTokenManager, multiSig, 'Hold TokenManager', 'MINT_ROLE')
-      await assertRole(acl, holdTokenManager, multiSig, 'Hold TokenManager', 'BURN_ROLE')
-      await assertRole(acl, holdTokenManager, holdVoting, 'Hold TokenManager', 'ASSIGN_ROLE')
-      await assertRole(acl, holdTokenManager, holdVoting, 'Hold TokenManager', 'REVOKE_VESTINGS_ROLE')
+      await assertRole(acl, holdTokenManager, multiSig, 'MINT_ROLE')
+      await assertRole(acl, holdTokenManager, multiSig, 'BURN_ROLE')
+      await assertRole(acl, holdTokenManager, holdVoting, 'ASSIGN_ROLE')
+      await assertRole(acl, holdTokenManager, holdVoting, 'REVOKE_VESTINGS_ROLE')
     })
 
     it('should have heirs token manager app correctly setup', async () => {
       assert.isTrue(await heirsTokenManager.hasInitialized(), 'heirs token manager not initialized')
       assert.equal(await heirsTokenManager.token(), heirsToken.address)
 
-      await assertRole(acl, heirsTokenManager, multiSig, 'Heirs TokenManager', 'MINT_ROLE')
-      await assertRole(acl, heirsTokenManager, multiSig, 'Heirs TokenManager', 'BURN_ROLE')
-      await assertRole(acl, heirsTokenManager, heirsVoting, 'Heirs TokenManager', 'ASSIGN_ROLE')
-      await assertRole(acl, heirsTokenManager, heirsVoting, 'Heirs TokenManager', 'REVOKE_VESTINGS_ROLE')
+      await assertRole(acl, heirsTokenManager, multiSig, 'MINT_ROLE')
+      await assertRole(acl, heirsTokenManager, multiSig, 'BURN_ROLE')
+      await assertRole(acl, heirsTokenManager, heirsVoting, 'ASSIGN_ROLE')
+      await assertRole(acl, heirsTokenManager, heirsVoting, 'REVOKE_VESTINGS_ROLE')
     })
 
     it('should have vault app correctly setup', async () => {
       assert.isTrue(await vault.hasInitialized(), 'vault not initialized')
-      await assertRole(acl, vault, holdVoting, 'Vault', 'TRANSFER_ROLE', finance)
+      await assertRole(acl, vault, holdVoting, 'TRANSFER_ROLE', finance)
     })
 
     it('should have finance app correctly setup', async () => {
       assert.isTrue(await finance.hasInitialized(), 'finance not initialized')
       assert.equal(web3.toChecksumAddress(await finance.vault()), vault.address)
 
-      await assertRole(acl, finance, holdVoting, 'Finance', 'CREATE_PAYMENTS_ROLE')
-      await assertRole(acl, finance, holdVoting, 'Finance', 'EXECUTE_PAYMENTS_ROLE')
-      await assertRole(acl, finance, holdVoting, 'Finance', 'MANAGE_PAYMENTS_ROLE')
+      await assertRole(acl, finance, holdVoting, 'CREATE_PAYMENTS_ROLE')
+      await assertRole(acl, finance, holdVoting, 'EXECUTE_PAYMENTS_ROLE')
+      await assertRole(acl, finance, holdVoting, 'MANAGE_PAYMENTS_ROLE')
     })
 
     it('should have agent app correctly setup', async () => {
       assert.isTrue(await agent.hasInitialized(), 'agent not initialized')
       assert.equal(await agent.designatedSigner(), ZERO_ADDRESS)
 
-      await assertRole(acl, agent, holdVoting, 'Agent Hold', 'EXECUTE_ROLE', holdVoting)
-      await assertRole(acl, agent, holdVoting, 'Agent Hold', 'RUN_SCRIPT_ROLE', holdVoting)
-      await assertRole(acl, agent, holdVoting, 'Agent Heirs', 'EXECUTE_ROLE', heirsVoting)
-      await assertRole(acl, agent, holdVoting, 'Agent Heirs', 'RUN_SCRIPT_ROLE', heirsVoting)
+      await assertRole(acl, agent, holdVoting, 'EXECUTE_ROLE', holdVoting)
+      await assertRole(acl, agent, holdVoting, 'RUN_SCRIPT_ROLE', holdVoting)
+      await assertRole(acl, agent, holdVoting, 'EXECUTE_ROLE', heirsVoting)
+      await assertRole(acl, agent, holdVoting, 'RUN_SCRIPT_ROLE', heirsVoting)
     })
 
     it('setup DAO and ACL permissions correctly', async () => {
-      await assertRole(acl, dao, holdVoting, 'Kernel', 'APP_MANAGER_ROLE')
-      await assertRole(acl, acl, holdVoting, 'ACL', 'CREATE_PERMISSIONS_ROLE')
+      await assertRole(acl, dao, holdVoting, 'APP_MANAGER_ROLE')
+      await assertRole(acl, acl, holdVoting, 'CREATE_PERMISSIONS_ROLE')
     })
 
     it('setup EVM scripts registry permissions correctly', async () => {
       const reg = await EVMScriptRegistry.at(await acl.getEVMScriptRegistry())
-      await assertRole(acl, reg, holdVoting, 'EVMScriptRegistry', 'REGISTRY_ADD_EXECUTOR_ROLE')
-      await assertRole(acl, reg, holdVoting, 'EVMScriptRegistry', 'REGISTRY_MANAGER_ROLE')
+      await assertRole(acl, reg, holdVoting, 'REGISTRY_ADD_EXECUTOR_ROLE')
+      await assertRole(acl, reg, holdVoting, 'REGISTRY_MANAGER_ROLE')
     })
   })
 })
