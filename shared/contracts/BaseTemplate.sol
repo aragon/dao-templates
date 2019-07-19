@@ -65,15 +65,28 @@ contract BaseTemplate is APMNamehash, IsContract {
         acl.createPermission(address(this), app, permission, address(this));
     }
 
+    function _createPermissions(ACL acl, address[] grantees, address app, bytes32 permission, address manager) internal {
+        acl.createPermission(grantees[0], app, permission, address(this));
+        for (uint256 i = 1; i < grantees.length; i++) {
+            acl.grantPermission(grantees[i], app, permission);
+        }
+        acl.revokePermission(address(this), app, permission);
+        acl.setPermissionManager(manager, app, permission);
+    }
+
     function _removePermission(ACL acl, address app, bytes32 permission) internal {
         acl.revokePermission(address(this), app, permission);
         acl.removePermissionManager(app, permission);
     }
 
     function _transferPermission(ACL acl, address to, address app, bytes32 permission) internal {
+        _transferPermission(acl, to, to, app, permission);
+    }
+
+    function _transferPermission(ACL acl, address to, address manager, address app, bytes32 permission) internal {
         acl.grantPermission(to, app, permission);
         acl.revokePermission(address(this), app, permission);
-        acl.setPermissionManager(to, app, permission);
+        acl.setPermissionManager(manager, app, permission);
     }
 
     /* AGENT */
