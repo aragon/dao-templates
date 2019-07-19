@@ -16,7 +16,7 @@ cache:
 notifications:
   email: false
 node_js:
-  - '9'
+  - '10'
 install:
   - travis_wait 60 npm install
 jobs:
