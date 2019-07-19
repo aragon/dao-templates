@@ -6,7 +6,7 @@ const LOCAL_FILE_NAME = 'arapp_local.json'
 const DEFAULT_ARAPP_FILE = { environments: {} }
 
 module.exports = web3 => {
-  const { isLocalNetwork, getNetworkName } = require('./Network')(web3)
+  const { isLocalNetwork, getNetworkName } = require('./network')(web3)
   
   const ArappFile = {
     async fileName() {

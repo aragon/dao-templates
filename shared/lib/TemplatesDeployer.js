@@ -182,12 +182,12 @@ module.exports = class TemplateDeployer {
   }
 
   async isLocal() {
-    const { isLocalNetwork } = require('./Network')(this.web3)
+    const { isLocalNetwork } = require('./network')(this.web3)
     return isLocalNetwork()
   }
 
   get arapp() {
-    return require('./ArappFile')(this.web3)
+    return require('./arapp-file')(this.web3)
   }
 
   get verbose() {

@@ -1,7 +1,7 @@
 const { hash: namehash } = require('eth-ens-namehash')
 const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
 const { getEventArgument } = require('@aragon/test-helpers/events')
-const { deployedAddresses } = require('@aragon/templates-shared/lib/ArappFile')(web3)
+const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
 const assertRole = require('@aragon/templates-shared/helpers/assertRole')(web3)
 const decodeEvents = require('@aragon/templates-shared/helpers/decodeEvents')
 const assertRevert = require('@aragon/templates-shared/helpers/assertRevert')(web3)

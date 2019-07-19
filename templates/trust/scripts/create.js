@@ -2,7 +2,7 @@ const fs = require('fs')
 const { hash } = require('eth-ens-namehash')
 const { isAddress } = require('web3-utils')
 const { getEventArgument } = require('@aragon/test-helpers/events')
-const { fileName, deployedAddresses } = require('@aragon/templates-shared/lib/ArappFile')(web3)
+const { fileName, deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
 
 const isArray = (e, l = 0) => Array.isArray(e) && (l === 0 || e.length === l)
 const isArrayOfAddresses = (e, l = 0) => isArray(e, l) && e.every(isAddress)

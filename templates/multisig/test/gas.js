@@ -1,4 +1,4 @@
-const { deployedAddresses } = require('@aragon/templates-shared/lib/ArappFile')(web3)
+const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
 
 const MultisigTemplate = artifacts.require('MultisigTemplate')
 

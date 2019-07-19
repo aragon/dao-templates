@@ -1,8 +1,8 @@
 const { hash: namehash } = require('eth-ens-namehash')
 const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
-const { isLocalNetwork } = require('@aragon/templates-shared/lib/Network')(web3)
+const { isLocalNetwork } = require('@aragon/templates-shared/lib/network')(web3)
 const { encodeCallScript } = require('@aragon/test-helpers/evmScript')
-const { deployedAddresses } = require('@aragon/templates-shared/lib/ArappFile')(web3)
+const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
 
 const getBalance = require('@aragon/test-helpers/balance')(web3)
 const getBlockNumber = require('@aragon/test-helpers/blockNumber')(web3)
