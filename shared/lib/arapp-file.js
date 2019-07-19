@@ -7,38 +7,42 @@ const DEFAULT_ARAPP_FILE = { environments: {} }
 
 module.exports = web3 => {
   const { isLocalNetwork, getNetworkName } = require('./network')(web3)
-  
-  const ArappFile = {
-    async fileName() {
-      return (await isLocalNetwork()) ? LOCAL_FILE_NAME : FILE_NAME
-    },
 
-    async filePath() {
-      return path.resolve(await ArappFile.fileName())
-    },
-
-    async file() {
-      const filePath = await ArappFile.filePath()
-      const file = fs.existsSync(filePath) ? require(filePath) : DEFAULT_ARAPP_FILE
-      if (!file.environments) file.environments = {}
-      return file
-    },
-
-    async deployedAddresses() {
-      const network = await getNetworkName()
-      const file = await ArappFile.file()
-      return file.environments[network] || {}
-    },
-
-    async write(appName, address, contractName, registry) {
-      const network = await getNetworkName()
-      const data = await ArappFile.file()
-      data.path = `contracts/${contractName}.sol`
-      if (data.environments === undefined) data.environments = {}
-      data.environments[network] = { appName, address, network, registry }
-      fs.writeFileSync(await ArappFile.filePath(), JSON.stringify(data, null, 2))
-    }
+  async function arappFileName() {
+    return (await isLocalNetwork()) ? LOCAL_FILE_NAME : FILE_NAME
   }
 
-  return ArappFile
+  async function arappFilePath() {
+    return path.resolve(await arappFileName())
+  }
+
+  async function read() {
+    const filePath = await arappFilePath()
+    const file = fs.existsSync(filePath) ? require(filePath) : DEFAULT_ARAPP_FILE
+    if (!file.environments) file.environments = {}
+    return file
+  }
+
+  async function deployedAddresses() {
+    const network = await getNetworkName()
+    const file = await read()
+    return file.environments[network] || {}
+  }
+
+  async function write(appName, address, contractName, registry) {
+    const network = await getNetworkName()
+    const data = await read()
+    data.path = `contracts/${contractName}.sol`
+    if (data.environments === undefined) data.environments = {}
+    data.environments[network] = { appName, address, network, registry }
+    fs.writeFileSync(await arappFilePath(), JSON.stringify(data, null, 2))
+  }
+
+  return {
+    read,
+    write,
+    deployedAddresses,
+    fileName: arappFileName,
+    filePath: arappFilePath,
+  }
 }
