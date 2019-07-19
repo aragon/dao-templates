@@ -14,6 +14,9 @@
     "test:democracy": "lerna run --scope=@aragon/templates-democracy --stream test",
     "test:multisig": "lerna run --scope=@aragon/templates-multisig --stream test",
     "test:trust": "lerna run --scope=@aragon/templates-trust --stream test",
+    "test:company": "lerna run --scope=@aragon/templates-company --stream test",
+    "test:company:board": "lerna run --scope=@aragon/templates-company-board --stream test",
+    "test:membership": "lerna run --scope=@aragon/templates-membership --stream test",
     "test:reputation": "lerna run --scope=@aragon/templates-reputation --stream test",
     "lint": "lerna run --scope=@aragon/templates-* lint",
     "link:os": "lerna exec --scope '@aragon/templates-*' 'npm link @aragon/os'"
