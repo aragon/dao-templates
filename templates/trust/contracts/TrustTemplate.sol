@@ -101,7 +101,7 @@ contract TrustTemplate is BaseTemplate {
 
     function _setupApps(Kernel dao, address[] beneficiaryKeys, address[] heirs, uint256[] heirsStake, uint256 blockedHeirsSupply) internal {
         ACL acl = ACL(dao.acl());
-        Agent agent = _installAgentApp(dao);
+        Agent agent = _installNonDefaultAgentApp(dao);
         Vault vault = _installVaultApp(dao);
         Finance finance = _installFinanceApp(dao, vault, 30 days);
         (Voting holdVoting, Voting heirsVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager) = _installTokenApps(dao);
