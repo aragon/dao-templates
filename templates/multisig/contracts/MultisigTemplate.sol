@@ -43,8 +43,8 @@ contract MultisigTemplate is BaseTemplate {
         // so 2 signatures => 2 * 10 ^ 18 / 4 = 50 * 10 ^ 16 > 50 * 10 ^ 16 - 1 would pass
         // We can avoid safemath checks here as it's very unlikely a user will pass in enough
         // signers to cause this to overflow
-        uint256 multiSigSupport = requiredSignatures * 10 ** 18 / signers.length - 1;
         MiniMeToken token = _popTokenCache(msg.sender);
+        uint256 multiSigSupport = requiredSignatures * 10 ** 18 / signers.length - 1;
 
         // Create DAO and install apps
         (Kernel dao, ACL acl) = _createDAO();
@@ -65,14 +65,14 @@ contract MultisigTemplate is BaseTemplate {
         _createFinancePermissions(acl, finance, voting, voting);
         _createTokenManagerPermissions(acl, tokenManager, voting, voting);
         _createEvmScriptsRegistryPermissions(acl, voting, voting);
-        _createVotingPermissions(acl, voting, tokenManager);
+        _createCustomVotingPermissions(acl, voting, tokenManager);
         _transferPermissionFromTemplate(acl, voting, dao, dao.APP_MANAGER_ROLE());
         _transferPermissionFromTemplate(acl, voting, acl, acl.CREATE_PERMISSIONS_ROLE());
 
         _registerID(id, dao);
     }
 
-    function _createVotingPermissions(ACL acl, Voting voting, TokenManager tokenManager) internal {
+    function _createCustomVotingPermissions(ACL acl, Voting voting, TokenManager tokenManager) internal {
         acl.createPermission(tokenManager, voting, voting.CREATE_VOTES_ROLE(), voting);
         acl.createPermission(voting, voting, voting.MODIFY_QUORUM_ROLE(), voting);
         acl.createPermission(voting, voting, voting.MODIFY_SUPPORT_ROLE(), voting);

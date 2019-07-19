@@ -111,13 +111,12 @@ contract TrustTemplate is BaseTemplate {
 
         _createVaultPermissions(acl, vault, finance, holdVoting);
         _createFinancePermissions(acl, finance, holdVoting, holdVoting);
-        _createTokenManagerPermissions(acl, holdTokenManager, holdVoting);
-        _createTokenManagerPermissions(acl, heirsTokenManager, heirsVoting);
         _createEvmScriptsRegistryPermissions(acl, holdVoting, holdVoting);
-        _createVotingPermissions(acl, holdTokenManager, holdVoting);
-        _createVotingPermissions(acl, heirsTokenManager, heirsVoting);
-        _createAgentPermission(acl, agent, agent.EXECUTE_ROLE(), holdVoting, heirsVoting);
-        _createAgentPermission(acl, agent, agent.RUN_SCRIPT_ROLE(), holdVoting, heirsVoting);
+        _createCustomVotingPermissions(acl, holdTokenManager, holdVoting);
+        _createCustomAgentPermissions(acl, agent, holdVoting, heirsVoting);
+        _createCustomVotingPermissions(acl, heirsTokenManager, heirsVoting);
+        _createCustomTokenManagerPermissions(acl, holdTokenManager, holdVoting);
+        _createCustomTokenManagerPermissions(acl, heirsTokenManager, heirsVoting);
 
         _storeAppsCache(msg.sender, agent, holdVoting, holdTokenManager, heirsTokenManager);
     }
@@ -172,19 +171,21 @@ contract TrustTemplate is BaseTemplate {
         _removePermissionFromTemplate(acl, heirsTokenManager, heirsTokenManager.MINT_ROLE());
     }
 
-    function _createAgentPermission(ACL acl, Agent agent, bytes32 permission, Voting holdVoting, Voting heirsVoting) internal {
-        acl.createPermission(holdVoting, agent, permission, address(this));
-        acl.grantPermission(heirsVoting, agent, permission);
-        acl.revokePermission(address(this), agent, permission);
-        acl.setPermissionManager(holdVoting, agent, permission);
+    function _createCustomAgentPermissions(ACL acl, Agent agent, Voting holdVoting, Voting heirsVoting) internal {
+        address[] memory grantees = new address[](2);
+        grantees[0] = address(holdVoting);
+        grantees[1] = address(heirsVoting);
+
+        _createPermissions(acl, grantees, agent, agent.EXECUTE_ROLE(), holdVoting);
+        _createPermissions(acl, grantees, agent, agent.RUN_SCRIPT_ROLE(), holdVoting);
     }
 
-    function _createTokenManagerPermissions(ACL acl, TokenManager tokenManager, Voting voting) internal {
+    function _createCustomTokenManagerPermissions(ACL acl, TokenManager tokenManager, Voting voting) internal {
         acl.createPermission(voting, tokenManager, tokenManager.ASSIGN_ROLE(), voting);
         acl.createPermission(voting, tokenManager, tokenManager.REVOKE_VESTINGS_ROLE(), voting);
     }
 
-    function _createVotingPermissions(ACL acl, TokenManager tokenManager, Voting voting) internal {
+    function _createCustomVotingPermissions(ACL acl, TokenManager tokenManager, Voting voting) internal {
         acl.createPermission(tokenManager, voting, voting.CREATE_VOTES_ROLE(), voting);
         acl.createPermission(voting, voting, voting.MODIFY_QUORUM_ROLE(), voting);
         acl.createPermission(voting, voting, voting.MODIFY_SUPPORT_ROLE(), voting);

@@ -63,14 +63,14 @@ contract DemocracyTemplate is BaseTemplate {
         _createFinancePermissions(acl, finance, voting, voting);
         _createTokenManagerPermissions(acl, tokenManager, voting, voting);
         _createEvmScriptsRegistryPermissions(acl, voting, voting);
-        _createVotingPermissions(acl, voting, tokenManager);
+        _createCustomVotingPermissions(acl, voting, tokenManager);
         _transferPermissionFromTemplate(acl, voting, dao, dao.APP_MANAGER_ROLE());
         _transferPermissionFromTemplate(acl, voting, acl, acl.CREATE_PERMISSIONS_ROLE());
 
         _registerID(id, dao);
     }
 
-    function _createVotingPermissions(ACL acl, Voting voting, TokenManager tokenManager) internal {
+    function _createCustomVotingPermissions(ACL acl, Voting voting, TokenManager tokenManager) internal {
         acl.createPermission(tokenManager, voting, voting.CREATE_VOTES_ROLE(), voting);
         acl.createPermission(voting, voting, voting.MODIFY_QUORUM_ROLE(), voting);
         acl.createBurnedPermission(voting, voting.MODIFY_SUPPORT_ROLE());

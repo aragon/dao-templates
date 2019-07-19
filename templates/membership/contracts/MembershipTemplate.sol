@@ -56,9 +56,9 @@ contract MembershipTemplate is BaseTemplate {
         _createAgentPermissions(acl, agent, voting, voting);
         _createVaultPermissions(acl, Vault(agent), finance, voting);
         _createFinancePermissions(acl, finance, voting, voting);
-        _createTokenManagerPermissions(acl, tokenManager, voting);
         _createEvmScriptsRegistryPermissions(acl, voting, voting);
         _createCustomVotingPermissions(acl, voting, tokenManager);
+        _createCustomTokenManagerPermissions(acl, tokenManager, voting);
         _transferPermissionFromTemplate(acl, voting, dao, dao.APP_MANAGER_ROLE());
         _transferPermissionFromTemplate(acl, voting, acl, acl.CREATE_PERMISSIONS_ROLE());
 
@@ -79,7 +79,7 @@ contract MembershipTemplate is BaseTemplate {
         acl.createPermission(voting, voting, voting.MODIFY_SUPPORT_ROLE(), voting);
     }
 
-    function _createTokenManagerPermissions(ACL acl, TokenManager tokenManager, Voting voting) internal {
+    function _createCustomTokenManagerPermissions(ACL acl, TokenManager tokenManager, Voting voting) internal {
         acl.createPermission(voting, tokenManager, tokenManager.BURN_ROLE(), voting);
         acl.createPermission(voting, tokenManager, tokenManager.MINT_ROLE(), voting);
     }
