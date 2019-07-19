@@ -1,0 +1,25 @@
+{
+  "name": "@aragon/templates-shared",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared helpers for Aragon templates",
+  "dependencies": {
+    "@aragon/apps-agent": "1.0.0",
+    "@aragon/apps-finance": "3.0.0",
+    "@aragon/apps-shared-migrations": "1.0.0",
+    "@aragon/apps-shared-minime": "1.0.0",
+    "@aragon/apps-token-manager": "2.1.0",
+    "@aragon/apps-vault": "4.1.0",
+    "@aragon/apps-voting": "2.1.0",
+    "@aragon/test-helpers": "^2.0.0",
+    "@aragon/id": "2.0.3",
+    "@aragon/os": "4.2.0",
+    "dotenv": "^6.1.0",
+    "eth-ens-namehash": "^2.0.8",
+    "web3-eth-abi": "1.0.0-beta.33",
+    "yargs": "^13.2.4"
+  },
+  "devDependencies": {
+    "dotenv": "^6.1.0"
+  }
+}
