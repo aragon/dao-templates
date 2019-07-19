@@ -15,14 +15,14 @@ module.exports = class TemplateDeployer {
     this.options = { apps: APPS, ...options }
   }
 
-  async deploy(id, contractName) {
+  async deploy(templateName, contractName) {
     await this.fetchOrDeployDependencies()
 
     const Template = this.artifacts.require(contractName)
     const template = await Template.new(this.daoFactory.address, this.ens.address, this.miniMeFactory.address, this.aragonID.address)
     await logDeploy(template)
-    if ((await this.isLocal()) && !(await this._isPackageRegistered(id))) await this._registerPackage(id, template)
-    return this._writeArappFile(id, template)
+    if ((await this.isLocal()) && !(await this._isPackageRegistered(templateName))) await this._registerPackage(templateName, template)
+    return this._writeArappFile(templateName, template)
   }
 
   async fetchOrDeployDependencies() {
@@ -35,13 +35,13 @@ module.exports = class TemplateDeployer {
   }
 
   async _checkAppsDeployment() {
-    for (const { id, contractName } of this.options.apps) {
-      if (await this._isPackageRegistered(id)) {
-        this.log(`Using registered ${id} app`)
+    for (const { name, contractName } of this.options.apps) {
+      if (await this._isPackageRegistered(name)) {
+        this.log(`Using registered ${name} app`)
       } else if (await this.isLocal()) {
-        await this._registerApp(id, contractName)
+        await this._registerApp(name, contractName)
       } else {
-        this.log(`No ${id} app registered`)
+        this.log(`No ${name} app registered`)
       }
     }
   }
@@ -143,14 +143,14 @@ module.exports = class TemplateDeployer {
     return this.ens.owner(aragonIDHash)
   }
 
-  async _registerApp(id, contractName) {
+  async _registerApp(name, contractName) {
     const app = await this.artifacts.require(contractName).new()
-    return this._registerPackage(id, app)
+    return this._registerPackage(name, app)
   }
 
-  async _registerPackage(id, instance) {
-    this.log(`Registering package for ${instance.constructor.contractName} as "${id}.aragonpm.eth"`)
-    return this.apm.newRepoWithVersion(id, this.owner, [1, 0, 0], instance.address, '')
+  async _registerPackage(name, instance) {
+    this.log(`Registering package for ${instance.constructor.contractName} as "${name}.aragonpm.eth"`)
+    return this.apm.newRepoWithVersion(name, this.owner, [1, 0, 0], instance.address, '')
   }
 
   async _isAPMRegistered() {
@@ -161,8 +161,8 @@ module.exports = class TemplateDeployer {
     return this._isRepoRegistered(namehash('aragonid.eth'))
   }
 
-  async _isPackageRegistered(id) {
-    return this._isRepoRegistered(namehash(`${id}.aragonpm.eth`))
+  async _isPackageRegistered(name) {
+    return this._isRepoRegistered(namehash(`${name}.aragonpm.eth`))
   }
 
   async _isRepoRegistered(hash) {

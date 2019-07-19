@@ -1,15 +1,15 @@
 const { hash: namehash } = require('eth-ens-namehash')
 
 const APPS = [
-  { id: 'agent', contractName: 'Agent' },
-  { id: 'vault', contractName: 'Vault' },
-  { id: 'voting', contractName: 'Voting' },
-  { id: 'finance', contractName: 'Finance' },
-  { id: 'token-manager', contractName: 'TokenManager' },
+  { name: 'agent', contractName: 'Agent' },
+  { name: 'vault', contractName: 'Vault' },
+  { name: 'voting', contractName: 'Voting' },
+  { name: 'finance', contractName: 'Finance' },
+  { name: 'token-manager', contractName: 'TokenManager' },
 ]
 
-const APP_IDS = APPS.reduce((ids, { id }) => {
-  ids[id] = namehash(`${id}.aragonpm.eth`)
+const APP_IDS = APPS.reduce((ids, { name }) => {
+  ids[name] = namehash(`${name}.aragonpm.eth`)
   return ids
 }, {})
 
