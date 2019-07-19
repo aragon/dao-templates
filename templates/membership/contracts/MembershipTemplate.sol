@@ -44,7 +44,7 @@ contract MembershipTemplate is BaseTemplate {
 
         // Create DAO and install apps
         (Kernel dao, ACL acl) = _createDAO();
-        Agent agent = _installAgentApp(dao);
+        Agent agent = _installDefaultAgentApp(dao);
         Finance finance = _installFinanceApp(dao, Vault(agent), FINANCE_PERIOD);
         TokenManager tokenManager = _installTokenManagerApp(dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
         Voting voting = _installVotingApp(dao, token, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION);
