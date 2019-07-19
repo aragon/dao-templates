@@ -59,18 +59,18 @@ contract MembershipTemplate is BaseTemplate {
         _createTokenManagerPermissions(acl, tokenManager, voting);
         _createEvmScriptsRegistryPermissions(acl, voting, voting);
         _createCustomVotingPermissions(acl, voting, tokenManager);
-        _transferPermission(acl, voting, dao, dao.APP_MANAGER_ROLE());
-        _transferPermission(acl, voting, acl, acl.CREATE_PERMISSIONS_ROLE());
+        _transferPermissionFromTemplate(acl, voting, dao, dao.APP_MANAGER_ROLE());
+        _transferPermissionFromTemplate(acl, voting, acl, acl.CREATE_PERMISSIONS_ROLE());
 
         _registerID(id, dao);
     }
 
     function _mintTokens(ACL acl, TokenManager tokenManager, address[] members) internal {
-        _createPermission(acl, tokenManager, tokenManager.MINT_ROLE());
+        _createPermissionForTemplate(acl, tokenManager, tokenManager.MINT_ROLE());
         for (uint256 i = 0; i < members.length; i++) {
             tokenManager.mint(members[i], 1e18);
         }
-        _removePermission(acl, tokenManager, tokenManager.MINT_ROLE());
+        _removePermissionFromTemplate(acl, tokenManager, tokenManager.MINT_ROLE());
     }
 
     function _createCustomVotingPermissions(ACL acl, Voting voting, TokenManager tokenManager) internal {

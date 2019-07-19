@@ -91,24 +91,24 @@ contract CompanyBoardTemplate is BaseTemplate {
         _createCustomTokenManagerPermissions(acl, shareTokenManager, shareVoting);
         _createEvmScriptsRegistryPermissions(acl, shareVoting, shareVoting);
         _createCustomVotingPermissions(acl, boardVoting, shareVoting, boardTokenManager);
-        _transferPermission(acl, boardVoting, shareVoting, dao, dao.APP_MANAGER_ROLE());
-        _transferPermission(acl, boardVoting, shareVoting, acl, acl.CREATE_PERMISSIONS_ROLE());
+        _transferPermissionFromTemplate(acl, boardVoting, shareVoting, dao, dao.APP_MANAGER_ROLE());
+        _transferPermissionFromTemplate(acl, boardVoting, shareVoting, acl, acl.CREATE_PERMISSIONS_ROLE());
     }
 
     function _mintShareTokens(ACL acl, TokenManager shareTokenManager, address[] shareHolders, uint256[] shareStakes) internal {
-        _createPermission(acl, shareTokenManager, shareTokenManager.MINT_ROLE());
+        _createPermissionForTemplate(acl, shareTokenManager, shareTokenManager.MINT_ROLE());
         for (uint256 i = 0; i < shareHolders.length; i++) {
             shareTokenManager.mint(shareHolders[i], shareStakes[i]);
         }
-        _removePermission(acl, shareTokenManager, shareTokenManager.MINT_ROLE());
+        _removePermissionFromTemplate(acl, shareTokenManager, shareTokenManager.MINT_ROLE());
     }
 
     function _mintBoardTokens(ACL acl, TokenManager boardTokenManager, address[] boardMembers) internal {
-        _createPermission(acl, boardTokenManager, boardTokenManager.MINT_ROLE());
+        _createPermissionForTemplate(acl, boardTokenManager, boardTokenManager.MINT_ROLE());
         for (uint256 i = 0; i < boardMembers.length; i++) {
             boardTokenManager.mint(boardMembers[i], 1e18);
         }
-        _removePermission(acl, boardTokenManager, boardTokenManager.MINT_ROLE());
+        _removePermissionFromTemplate(acl, boardTokenManager, boardTokenManager.MINT_ROLE());
     }
 
     function _createCustomAgentPermissions(ACL acl, Agent agent, Voting boardVoting, Voting shareVoting) internal {

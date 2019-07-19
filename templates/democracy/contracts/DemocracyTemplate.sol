@@ -52,11 +52,11 @@ contract DemocracyTemplate is BaseTemplate {
         Voting voting = _installVotingApp(dao, token, supportNeeded, minAcceptanceQuorum, voteDuration);
 
         // Mint tokens
-        _createPermission(acl, tokenManager, tokenManager.MINT_ROLE());
+        _createPermissionForTemplate(acl, tokenManager, tokenManager.MINT_ROLE());
         for (uint256 i = 0; i < holders.length; i++) {
             tokenManager.mint(holders[i], stakes[i]);
         }
-        _removePermission(acl, tokenManager, tokenManager.MINT_ROLE());
+        _removePermissionFromTemplate(acl, tokenManager, tokenManager.MINT_ROLE());
 
         // Set up permissions
         _createVaultPermissions(acl, vault, finance, voting);
@@ -64,8 +64,8 @@ contract DemocracyTemplate is BaseTemplate {
         _createTokenManagerPermissions(acl, tokenManager, voting, voting);
         _createEvmScriptsRegistryPermissions(acl, voting, voting);
         _createVotingPermissions(acl, voting, tokenManager);
-        _transferPermission(acl, voting, dao, dao.APP_MANAGER_ROLE());
-        _transferPermission(acl, voting, acl, acl.CREATE_PERMISSIONS_ROLE());
+        _transferPermissionFromTemplate(acl, voting, dao, dao.APP_MANAGER_ROLE());
+        _transferPermissionFromTemplate(acl, voting, acl, acl.CREATE_PERMISSIONS_ROLE());
 
         _registerID(id, dao);
     }

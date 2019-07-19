@@ -59,18 +59,18 @@ contract ReputationTemplate is BaseTemplate {
         _createEvmScriptsRegistryPermissions(acl, voting, voting);
         _createCustomVotingPermissions(acl, voting, tokenManager);
         _createCustomTokenManagerPermissions(acl, tokenManager, voting);
-        _transferPermission(acl, voting, dao, dao.APP_MANAGER_ROLE());
-        _transferPermission(acl, voting, acl, acl.CREATE_PERMISSIONS_ROLE());
+        _transferPermissionFromTemplate(acl, voting, dao, dao.APP_MANAGER_ROLE());
+        _transferPermissionFromTemplate(acl, voting, acl, acl.CREATE_PERMISSIONS_ROLE());
 
         _registerID(id, dao);
     }
 
     function _mintTokens(ACL acl, TokenManager tokenManager, address[] holders, uint256[] stakes) internal {
-        _createPermission(acl, tokenManager, tokenManager.MINT_ROLE());
+        _createPermissionForTemplate(acl, tokenManager, tokenManager.MINT_ROLE());
         for (uint256 i = 0; i < holders.length; i++) {
             tokenManager.mint(holders[i], stakes[i]);
         }
-        _removePermission(acl, tokenManager, tokenManager.MINT_ROLE());
+        _removePermissionFromTemplate(acl, tokenManager, tokenManager.MINT_ROLE());
     }
 
     function _createCustomVotingPermissions(ACL acl, Voting voting, TokenManager tokenManager) internal {

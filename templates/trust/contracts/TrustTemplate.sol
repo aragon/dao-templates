@@ -128,8 +128,8 @@ contract TrustTemplate is BaseTemplate {
         (Agent agent, Voting holdVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager) = _getAppsCache(msg.sender);
         MultiSigWallet multiSig = _createMultiSig(multiSigKeys, agent);
         _createMultiSigPermissions(acl, multiSig, holdTokenManager, heirsTokenManager);
-        _transferPermission(acl, holdVoting, dao, dao.APP_MANAGER_ROLE());
-        _transferPermission(acl, holdVoting, acl, acl.CREATE_PERMISSIONS_ROLE());
+        _transferPermissionFromTemplate(acl, holdVoting, dao, dao.APP_MANAGER_ROLE());
+        _transferPermissionFromTemplate(acl, holdVoting, acl, acl.CREATE_PERMISSIONS_ROLE());
         _cleanCache(msg.sender);
         return multiSig;
     }
@@ -155,21 +155,21 @@ contract TrustTemplate is BaseTemplate {
     }
 
     function _mintHoldTokens(ACL acl, TokenManager holdTokenManager, address[] beneficiaryKeys) internal {
-        _createPermission(acl, holdTokenManager, holdTokenManager.MINT_ROLE());
+        _createPermissionForTemplate(acl, holdTokenManager, holdTokenManager.MINT_ROLE());
         holdTokenManager.mint(beneficiaryKeys[0], 1e18);
         holdTokenManager.mint(beneficiaryKeys[1], 1e18);
-        _removePermission(acl, holdTokenManager, holdTokenManager.MINT_ROLE());
+        _removePermissionFromTemplate(acl, holdTokenManager, holdTokenManager.MINT_ROLE());
     }
 
     function _mintHeirsTokens(ACL acl, TokenManager heirsTokenManager, address[] heirs, uint256[] heirsStake, uint256 blockedHeirsSupply)
         internal
     {
-        _createPermission(acl, heirsTokenManager, heirsTokenManager.MINT_ROLE());
+        _createPermissionForTemplate(acl, heirsTokenManager, heirsTokenManager.MINT_ROLE());
         heirsTokenManager.mint(address(0), blockedHeirsSupply);
         for (uint256 i = 0; i < heirs.length; i++) {
             heirsTokenManager.mint(heirs[i], heirsStake[i]);
         }
-        _removePermission(acl, heirsTokenManager, heirsTokenManager.MINT_ROLE());
+        _removePermissionFromTemplate(acl, heirsTokenManager, heirsTokenManager.MINT_ROLE());
     }
 
     function _createAgentPermission(ACL acl, Agent agent, bytes32 permission, Voting holdVoting, Voting heirsVoting) internal {

@@ -56,14 +56,10 @@ contract BaseTemplate is APMNamehash, IsContract {
         dao = daoFactory.newDAO(this);
         emit DeployDao(address(dao));
         acl = ACL(dao.acl());
-        _createPermission(acl, dao, dao.APP_MANAGER_ROLE());
+        _createPermissionForTemplate(acl, dao, dao.APP_MANAGER_ROLE());
     }
 
     /* ACL */
-
-    function _createPermission(ACL acl, address app, bytes32 permission) internal {
-        acl.createPermission(address(this), app, permission, address(this));
-    }
 
     function _createPermissions(ACL acl, address[] grantees, address app, bytes32 permission, address manager) internal {
         acl.createPermission(grantees[0], app, permission, address(this));
@@ -74,16 +70,20 @@ contract BaseTemplate is APMNamehash, IsContract {
         acl.setPermissionManager(manager, app, permission);
     }
 
-    function _removePermission(ACL acl, address app, bytes32 permission) internal {
+    function _createPermissionForTemplate(ACL acl, address app, bytes32 permission) internal {
+        acl.createPermission(address(this), app, permission, address(this));
+    }
+
+    function _removePermissionFromTemplate(ACL acl, address app, bytes32 permission) internal {
         acl.revokePermission(address(this), app, permission);
         acl.removePermissionManager(app, permission);
     }
 
-    function _transferPermission(ACL acl, address to, address app, bytes32 permission) internal {
-        _transferPermission(acl, to, to, app, permission);
+    function _transferPermissionFromTemplate(ACL acl, address to, address app, bytes32 permission) internal {
+        _transferPermissionFromTemplate(acl, to, to, app, permission);
     }
 
-    function _transferPermission(ACL acl, address to, address manager, address app, bytes32 permission) internal {
+    function _transferPermissionFromTemplate(ACL acl, address to, address manager, address app, bytes32 permission) internal {
         acl.grantPermission(to, app, permission);
         acl.revokePermission(address(this), app, permission);
         acl.setPermissionManager(manager, app, permission);
