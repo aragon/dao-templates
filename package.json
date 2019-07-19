@@ -10,6 +10,7 @@
     "bootstrap": "lerna bootstrap",
     "test": "npm run test:all",
     "test:all": "lerna run --scope=@aragon/templates-* --concurrency=1 --stream test",
+    "test:bare": "lerna run --scope=@aragon/templates-bare --stream test",
     "test:democracy": "lerna run --scope=@aragon/templates-democracy --stream test",
     "test:multisig": "lerna run --scope=@aragon/templates-multisig --stream test",
     "test:trust": "lerna run --scope=@aragon/templates-trust --stream test",
