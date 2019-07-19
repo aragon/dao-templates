@@ -9,6 +9,7 @@ cache:
     - templates/democracy/node_modules
     - templates/multisig/node_modules
     - templates/trust/node_modules
+    - tempaltes/company/node_modules
 notifications:
   email: false
 node_js:
@@ -28,3 +29,6 @@ jobs:
       name: "Multisig"
     - script: npm run test:trust
       name: "Trust"
+    - script: npm run test:company
+      name: "Company"
+
