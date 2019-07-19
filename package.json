@@ -22,6 +22,6 @@
     "link:os": "lerna exec --scope '@aragon/templates-*' 'npm link @aragon/os'"
   },
   "devDependencies": {
-    "lerna": "^2.8.0"
+    "lerna": "^3.0.0"
   }
 }
