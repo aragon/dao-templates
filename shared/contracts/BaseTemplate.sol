@@ -78,7 +78,13 @@ contract BaseTemplate is APMNamehash, IsContract {
 
     /* AGENT */
 
-    function _installAgentApp(Kernel dao) internal returns (Agent) {
+    function _installDefaultAgentApp(Kernel dao) internal returns (Agent) {
+        Agent agent = Agent(_installDefaultApp(dao, AGENT_APP_ID));
+        agent.initialize();
+        return agent;
+    }
+
+    function _installNonDefaultAgentApp(Kernel dao) internal returns (Agent) {
         Agent agent = Agent(_installNonDefaultApp(dao, AGENT_APP_ID));
         agent.initialize();
         return agent;
