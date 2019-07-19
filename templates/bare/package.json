@@ -25,6 +25,7 @@
     "@aragon/templates-shared": "^1.0.0"
   },
   "devDependencies": {
+    "@aragon/test-helpers": "^2.0.0",
     "ganache-cli": "^6.0.3",
     "solidity-coverage": "0.5.8",
     "solium": "^1.0.4",
