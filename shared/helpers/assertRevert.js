@@ -39,6 +39,7 @@ module.exports = web3 => {
 
   async function assertRevertGanache(request, reason) {
     const tx = request.params[0]
+    if (!tx.from) tx.from = web3.eth.accounts[0]
     const { assertRevert } = require('@aragon/test-helpers/assertThrow')
     await assertRevert(() => web3.eth.sendTransaction(tx), reason)
   }
