@@ -1,16 +1,15 @@
 const { hash: namehash } = require('eth-ens-namehash')
 const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
-const { isGanache } = require('@aragon/templates-shared/helpers/node')(web3)
 const { isLocalNetwork } = require('@aragon/templates-shared/lib/network')(web3)
 const { encodeCallScript } = require('@aragon/test-helpers/evmScript')
 const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
 
-const timeTravel = require('@aragon/test-helpers/timeTravel')(web3)
 const getBalance = require('@aragon/test-helpers/balance')(web3)
 const getBlockNumber = require('@aragon/test-helpers/blockNumber')(web3)
 const assertRole = require('@aragon/templates-shared/helpers/assertRole')(web3)
 const assertRevert = require('@aragon/templates-shared/helpers/assertRevert')(web3)
 const decodeEvents = require('@aragon/templates-shared/helpers/decodeEvents')
+const increaseTime = require('@aragon/templates-shared/helpers/increaseTime')(web3, artifacts)
 
 const DemocracyTemplate = artifacts.require('DemocracyTemplate')
 
@@ -25,7 +24,6 @@ const MiniMeToken = artifacts.require('MiniMeToken')
 const PublicResolver = artifacts.require('PublicResolver')
 const ExecutionTarget = artifacts.require('ExecutionTarget')
 const EVMScriptRegistry = artifacts.require('EVMScriptRegistry')
-const Timestamp = artifacts.require('Timestamp')
 
 const pct16 = x => new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
 const getVoteId = receipt => decodeEvents(receipt, Voting.abi, 'StartVote')[0].args.voteId
@@ -44,14 +42,6 @@ contract('Democracy', ([owner, holder20, holder29, holder51, nonHolder]) => {
   const ACCEPTANCE_QUORUM = pct16(20)
   const STAKES = [20e18, 29e18, 51e18]
   const HOLDERS = [holder20, holder29, holder51]
-
-  const increaseTime = async s => {
-    if (isGanache()) return timeTravel(s)
-    const previousTime = await (await Timestamp.new()).getNow()
-    await new Promise(resolve => setTimeout(resolve, s * 1000))
-    const currentTime = await (await Timestamp.new()).getNow()
-    assert.isAtLeast(currentTime.minus(s).toNumber(), previousTime.toNumber(), `sleep/time-travel helper failed to increase ${s} seconds`)
-  }
 
   before('fetch democracy template', async () => {
     // Transfer some ETH to other accounts if we are working in devnet or rpc
