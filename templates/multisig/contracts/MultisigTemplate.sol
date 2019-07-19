@@ -7,6 +7,11 @@ import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 contract MultisigTemplate is BaseTemplate {
     using Uint256Helpers for uint256;
 
+    string constant private ERROR_EMPTY_SIGNERS = "MULTISIG_EMPTY_SIGNERS";
+    string constant private ERROR_REQUIRED_SIGNATURES_ZERO = "MULTISIG_REQUIRED_SIGNATURES_ZERO";
+    string constant private ERROR_INVALID_REQUIRED_SIGNATURES = "MULTISIG_INVALID_REQUIRED_SIGNATURES";
+    string constant private ERROR_MISSING_TOKEN_CACHE = "MULTISIG_MISSING_TOKEN_CACHE";
+
     mapping (address => address) internal tokenCache;
 
     constructor(DAOFactory _daoFactory, ENS _ens, MiniMeTokenFactory _miniMeFactory, IFIFSResolvingRegistrar _aragonID)
@@ -28,9 +33,9 @@ contract MultisigTemplate is BaseTemplate {
     }
 
     function newInstance(string id, address[] signers, uint256 requiredSignatures) public {
-        require(signers.length > 0, "MULTISIG_EMPTY_SIGNERS");
-        require(requiredSignatures > 0, "MULTISIG_REQUIRED_SIGNATURES_ZERO");
-        require(requiredSignatures <= signers.length, "MULTISIG_INVALID_REQUIRED_SIGNATURES");
+        require(signers.length > 0, ERROR_EMPTY_SIGNERS);
+        require(requiredSignatures > 0, ERROR_REQUIRED_SIGNATURES_ZERO);
+        require(requiredSignatures <= signers.length, ERROR_INVALID_REQUIRED_SIGNATURES);
 
         // We are subtracting 1 because comparison in Voting app is strict,
         // while Multisig needs to allow equal too. So for instance in 2 out of 4
@@ -78,7 +83,7 @@ contract MultisigTemplate is BaseTemplate {
     }
 
     function _popTokenCache(address owner) internal returns (MiniMeToken) {
-        require(tokenCache[owner] != address(0), "MULTISIG_MISSING_TOKEN_CACHE");
+        require(tokenCache[owner] != address(0), ERROR_MISSING_TOKEN_CACHE);
 
         MiniMeToken token = MiniMeToken(tokenCache[owner]);
         delete tokenCache[owner];
