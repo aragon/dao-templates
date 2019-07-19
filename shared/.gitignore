@@ -1,1 +1,4 @@
+# This folder contains the geth files to start a node locally with a gas-limit already updated to 8M.
+# Note that this saves some time when running tests againt a geth node.
+# To avoid git from tracking changes on this folder, you can run: git update-index --skip-worktree /shared/ethereum-data/
 ethereum-data
