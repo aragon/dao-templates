@@ -12,6 +12,7 @@ cache:
     - tempaltes/company/node_modules
     - templates/company-board/node_modules
     - templates/membership/node_modules
+    - templates/reputation/node_modules
 notifications:
   email: false
 node_js:
@@ -37,3 +38,5 @@ jobs:
       name: "Company Board"
     - script: npm run test:membership
       name: "Membership"
+    - script: npm run test:reputation
+      name: "Reputation"

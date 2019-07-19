@@ -17,6 +17,7 @@
     "test:company": "lerna run --scope=@aragon/templates-company --stream test",
     "test:company:board": "lerna run --scope=@aragon/templates-company-board --stream test",
     "test:membership": "lerna run --scope=@aragon/templates-membership --stream test",
+    "test:reputation": "lerna run --scope=@aragon/templates-reputation --stream test",
     "lint": "lerna run --scope=@aragon/templates-* lint",
     "link:os": "lerna exec --scope '@aragon/templates-*' 'npm link @aragon/os'"
   },
