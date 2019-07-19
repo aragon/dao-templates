@@ -1,37 +1,36 @@
-const getContract = name => artifacts.require(name)
-const getTemplate = (arappObj, contractName) => getContract(contractName).at(arappObj.environments['devnet'].address)
+const { deployedAddresses } = require('@aragon/templates-shared/lib/ArappFile')(web3)
+
+const DemocracyTemplate = artifacts.require('DemocracyTemplate')
+
 const pct16 = x => new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
 
 // `npm run test` needs to be run first so arapp_local.json gets created
 // then you can run it with `truffle test --network devnet test/gas.js`
 // having a docker geth image running (`npm run docker:run && npm run docker:wait-gas`)
-contract('Democracy Template', accounts => {
-    let template
 
-    const owner = accounts[0]
-    const holder20 = accounts[6]
-    const holder29 = accounts[7]
-    const holder51 = accounts[8]
-    let arappObj = require('../arapp_local.json')
+contract('Democracy gas', ([owner, holder20, holder29, holder51]) => {
+  let template
 
-    const neededSupport = pct16(50)
-    const minimumAcceptanceQuorum = pct16(20)
-    const votingTime = 10
+  const votingTime = 10
+  const neededSupport = pct16(50)
+  const minimumAcceptanceQuorum = pct16(20)
 
-    context('Use Template', async () => {
-        before(async () => {
-            template = await getTemplate(arappObj, 'DemocracyTemplate')
-        })
+  before('fetch multisig template', async () => {
+    const { address } = await deployedAddresses()
+    template = DemocracyTemplate.at(address)
+  })
 
-        it('create token', async () => {
-            await template.newToken('DemocracyToken', 'DTT', { from: owner })
-        })
-
-        it('create new instance', async () => {
-            const holders = [holder20, holder29, holder51]
-            const stakes = [20e18, 29e18, 51e18]
-
-            await template.newInstance('DemocracyDao-' + Math.random() * 1000, holders, stakes, neededSupport, minimumAcceptanceQuorum, votingTime, { from: owner })
-        })
+  context('use template', async () => {
+    it('create token', async () => {
+      await template.newToken('DemocracyToken', 'DTT', { from: owner })
     })
+
+    it('create new instance', async () => {
+      const holders = [holder20, holder29, holder51]
+      const stakes = [20e18, 29e18, 51e18]
+
+      const id = 'DemocracyDao-' + Math.random() * 1000
+      await template.newInstance(id, holders, stakes, neededSupport, minimumAcceptanceQuorum, votingTime, { from: owner })
+    })
+  })
 })
