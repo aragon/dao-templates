@@ -19,15 +19,15 @@ contract CompanyBoardTemplate is BaseTemplate {
     bool constant private SHARE_TRANSFERABLE = true;
     string constant private SHARE_TOKEN_NAME = "Share Token";
     string constant private SHARE_TOKEN_SYMBOL = "SHARE";
-    uint256 constant private SHARE_MAX_PER_ACCOUNT = uint256(-1);
+    uint256 constant private SHARE_MAX_PER_ACCOUNT = uint256(0);
 
+    uint64 constant private BOARD_VOTE_DURATION = uint64(7 days);                 // 1 week
     uint64 constant private BOARD_SUPPORT_REQUIRED = uint64(50 * ONE_PCT);        // 50%
     uint64 constant private BOARD_MIN_ACCEPTANCE_QUORUM = uint64(40 * ONE_PCT);   // 40%
-    uint64 constant private BOARD_VOTE_DURATION = uint64(7 days);                 // 1 week
 
+    uint64 constant private SHARE_VOTE_DURATION = uint64(7 days);                 // 1 week
     uint64 constant private SHARE_SUPPORT_REQUIRED = uint64(50 * ONE_PCT);        // 50%
     uint64 constant private SHARE_MIN_ACCEPTANCE_QUORUM = uint64(5 * ONE_PCT);    // 5%
-    uint64 constant private SHARE_VOTE_DURATION = uint64(7 days);                 // 1 week
 
     struct Cache {
         address dao;

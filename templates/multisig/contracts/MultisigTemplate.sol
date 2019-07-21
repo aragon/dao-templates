@@ -7,6 +7,9 @@ import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 contract MultisigTemplate is BaseTemplate {
     using Uint256Helpers for uint256;
 
+    bool constant private TOKEN_TRANSFERABLE = false;
+    uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(1);
+
     string constant private ERROR_EMPTY_SIGNERS = "MULTISIG_EMPTY_SIGNERS";
     string constant private ERROR_REQUIRED_SIGNATURES_ZERO = "MULTISIG_REQUIRED_SIGNATURES_ZERO";
     string constant private ERROR_INVALID_REQUIRED_SIGNATURES = "MULTISIG_INVALID_REQUIRED_SIGNATURES";
@@ -51,7 +54,7 @@ contract MultisigTemplate is BaseTemplate {
         (Kernel dao, ACL acl) = _createDAO();
         Vault vault = _installVaultApp(dao);
         Finance finance = _installFinanceApp(dao, vault, 30 days);
-        TokenManager tokenManager = _installTokenManagerApp(dao, token, false, 1);
+        TokenManager tokenManager = _installTokenManagerApp(dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
         Voting voting = _installVotingApp(dao, token, multiSigSupport.toUint64(), multiSigSupport.toUint64(), 1825 days); // ~5 years
 
         // Mint 1 token per signer

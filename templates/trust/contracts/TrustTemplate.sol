@@ -32,14 +32,20 @@ contract TrustTemplate is BaseTemplate {
     uint256 constant private MULTI_SIG_EXTERNAL_KEYS_AMOUNT = 2;                // 2 external keys for the multis sig wallet
     uint256 constant private MULTI_SIG_REQUIRED_CONFIRMATIONS = 2;              // 2 out of 3 (keys + dao)
 
+    bool constant private HOLD_TOKEN_TRANSFERABLE = true;
     string constant private HOLD_TOKEN_NAME = "Beneficiaries Token";
     string constant private HOLD_TOKEN_SYMBOL = "HOLD";
+    uint256 constant private HOLD_TOKEN_MAX_PER_ACCOUNT = uint256(0);           // no limit of tokens per account
+
     uint64 constant private HOLD_VOTE_DURATION = uint64(7 days);                // 1 week
     uint64 constant private HOLD_SUPPORT_REQUIRED = uint64(100 * ONE_PCT - 1);  // 99.9999999999999999%
     uint64 constant private HOLD_MIN_ACCEPTANCE_QUORUM = uint64(0);             // 0%
 
+    bool constant private HEIRS_TOKEN_TRANSFERABLE = true;
     string constant private HEIRS_TOKEN_NAME = "Heirs Token";
     string constant private HEIRS_TOKEN_SYMBOL = "HEIRS";
+    uint256 constant private HEIRS_TOKEN_MAX_PER_ACCOUNT = uint256(0);          // no limit of tokens per account
+
     uint64 constant private HEIRS_VOTE_DURATION = uint64(365 days);             // 1 year
     uint64 constant private HEIRS_SUPPORT_REQUIRED = uint64(66 * ONE_PCT);      // 66%
     uint64 constant private HEIRS_MIN_ACCEPTANCE_QUORUM = uint64(0);            // 0%
@@ -150,8 +156,8 @@ contract TrustTemplate is BaseTemplate {
 
         holdVoting = _installVotingApp(dao, holdToken, HOLD_SUPPORT_REQUIRED, HOLD_MIN_ACCEPTANCE_QUORUM, HOLD_VOTE_DURATION);
         heirsVoting = _installVotingApp(dao, heirsToken, HEIRS_SUPPORT_REQUIRED, HEIRS_MIN_ACCEPTANCE_QUORUM, HEIRS_VOTE_DURATION);
-        holdTokenManager = _installTokenManagerApp(dao, holdToken, true, uint256(-1));
-        heirsTokenManager = _installTokenManagerApp(dao, heirsToken, true, uint256(-1));
+        holdTokenManager = _installTokenManagerApp(dao, holdToken, HOLD_TOKEN_TRANSFERABLE, HOLD_TOKEN_MAX_PER_ACCOUNT);
+        heirsTokenManager = _installTokenManagerApp(dao, heirsToken, HEIRS_TOKEN_TRANSFERABLE, HEIRS_TOKEN_MAX_PER_ACCOUNT);
     }
 
     function _mintHoldTokens(ACL acl, TokenManager holdTokenManager, address[] beneficiaryKeys) internal {

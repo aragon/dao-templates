@@ -11,11 +11,12 @@ contract MembershipTemplate is BaseTemplate {
     string constant private TOKEN_NAME = "Member Token";
     string constant private TOKEN_SYMBOL = "MEMBER";
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(1e18);
+
     uint64 constant private ONE_PCT = uint64(1e16);                         // 1%
+    uint64 constant private FINANCE_PERIOD = uint64(30 days);               // 30 days
+    uint64 constant private VOTE_DURATION = uint64(7 days);                 // 1 week
     uint64 constant private SUPPORT_REQUIRED = uint64(50 * ONE_PCT);        // 50%
     uint64 constant private MIN_ACCEPTANCE_QUORUM = uint64(20 * ONE_PCT);   // 20%
-    uint64 constant private VOTE_DURATION = uint64(7 days);                 // 1 week
-    uint64 constant private FINANCE_PERIOD = uint64(30 days);               // 30 days
 
     mapping (address => address) internal tokenCache;
 
