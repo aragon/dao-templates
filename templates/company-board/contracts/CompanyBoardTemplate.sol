@@ -41,7 +41,8 @@ contract CompanyBoardTemplate is BaseTemplate {
         BaseTemplate(_daoFactory, _ens, _miniMeFactory, _aragonID)
         public
     {
-        // solium-disable-previous-line no-empty-blocks
+        _ensureAragonIdIsValid(_aragonID);
+        _ensureMiniMeFactoryIsValid(_miniMeFactory);
     }
 
     function newTokensAndInstance(string id, address[] boardMembers, address[] shareHolders, uint256[] shareStakes) public {

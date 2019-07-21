@@ -18,7 +18,8 @@ contract MultisigTemplate is BaseTemplate {
         BaseTemplate(_daoFactory, _ens, _miniMeFactory, _aragonID)
         public
     {
-        // solium-disable-previous-line no-empty-blocks
+        _ensureAragonIdIsValid(_aragonID);
+        _ensureMiniMeFactoryIsValid(_miniMeFactory);
     }
 
     function newTokenAndInstance(string tokenName, string tokenSymbol, string id, address[] signers, uint256 requiredSignatures) public {

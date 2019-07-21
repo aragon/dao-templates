@@ -13,7 +13,8 @@ contract DemocracyTemplate is BaseTemplate {
         BaseTemplate(_daoFactory, _ens, _miniMeFactory, _aragonID)
         public
     {
-        // solium-disable-previous-line no-empty-blocks
+        _ensureAragonIdIsValid(_aragonID);
+        _ensureMiniMeFactoryIsValid(_miniMeFactory);
     }
 
     function newTokenAndInstance(

@@ -35,7 +35,9 @@ contract BaseTemplate is APMNamehash, IsContract {
     string constant private ERROR_ENS_NOT_CONTRACT = "TEMPLATE_ENS_NOT_CONTRACT";
     string constant private ERROR_DAO_FACTORY_NOT_CONTRACT = "TEMPLATE_DAO_FACTORY_NOT_CONTRACT";
     string constant private ERROR_ARAGON_ID_NOT_PROVIDED = "TEMPLATE_ARAGON_ID_NOT_PROVIDED";
+    string constant private ERROR_ARAGON_ID_NOT_CONTRACT = "TEMPLATE_ARAGON_ID_NOT_CONTRACT";
     string constant private ERROR_MINIME_FACTORY_NOT_PROVIDED = "TEMPLATE_MINIME_FACTORY_NOT_PROVIDED";
+    string constant private ERROR_MINIME_FACTORY_NOT_CONTRACT = "TEMPLATE_MINIME_FACTORY_NOT_CONTRACT";
 
     ENS public ens;
     DAOFactory public daoFactory;
@@ -199,16 +201,24 @@ contract BaseTemplate is APMNamehash, IsContract {
     /* TOKEN */
 
     function _createToken(string name, string symbol) internal returns (MiniMeToken) {
-        require(isContract(address(miniMeFactory)), ERROR_MINIME_FACTORY_NOT_PROVIDED);
+        require(address(miniMeFactory) != address(0), ERROR_MINIME_FACTORY_NOT_PROVIDED);
         MiniMeToken token = miniMeFactory.createCloneToken(MiniMeToken(address(0)), 0, name, 18, symbol, true);
         emit DeployToken(address(token));
         return token;
     }
 
+    function _ensureMiniMeFactoryIsValid(address _miniMeFactory) internal {
+        require(isContract(address(_miniMeFactory)), ERROR_MINIME_FACTORY_NOT_CONTRACT);
+    }
+
     /* IDS */
 
     function _registerID(string name, address owner) internal {
-        require(isContract(address(aragonID)), ERROR_ARAGON_ID_NOT_PROVIDED);
+        require(address(aragonID) != address(0), ERROR_ARAGON_ID_NOT_PROVIDED);
         aragonID.register(keccak256(abi.encodePacked(name)), owner);
+    }
+
+    function _ensureAragonIdIsValid(address _aragonID) internal {
+        require(isContract(address(_aragonID)), ERROR_ARAGON_ID_NOT_CONTRACT);
     }
 }
