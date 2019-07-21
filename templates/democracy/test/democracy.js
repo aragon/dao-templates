@@ -273,7 +273,7 @@ contract('Democracy', ([owner, holder20, holder29, holder51, nonHolder]) => {
           let voteId
           const payment = new web3.BigNumber(2e16)
 
-          beforeEach('fund finance', async () => {
+          beforeEach('make a payment', async () => {
             await finance.sendTransaction({ value: payment, from: owner })
             const paymentAction = { to: finance.address, calldata: finance.contract.newImmediatePayment.getData(ETH, nonHolder, payment, 'voting payment') }
             const paymentScript = encodeCallScript([paymentAction])
