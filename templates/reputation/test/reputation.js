@@ -1,5 +1,6 @@
 const { hash: namehash } = require('eth-ens-namehash')
 const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
+const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
 const { getEventArgument } = require('@aragon/test-helpers/events')
 const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
 const assertRole = require('@aragon/templates-shared/helpers/assertRole')(web3)
@@ -45,7 +46,7 @@ contract('Reputation', ([_, deployer, holder1, holder2, holder3]) => {
 
   context('when the creation succeeds', () => {
     before('create reputation entity', async () => {
-      daoID = `id-${Math.floor(Math.random() * 1000)}`
+      daoID = randomId()
       const tokenReceipt = await reputationTemplate.newToken({ from: deployer })
       receipt = await reputationTemplate.newInstance(daoID, HOLDERS, STAKES, { from: deployer })
 

@@ -1,5 +1,6 @@
 const { hash: namehash } = require('eth-ens-namehash')
 const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
+const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
 const { isLocalNetwork } = require('@aragon/templates-shared/lib/network')(web3)
 const { encodeCallScript } = require('@aragon/test-helpers/evmScript')
 const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
@@ -64,7 +65,7 @@ contract('Democracy', ([owner, holder20, holder29, holder51, nonHolder]) => {
       let aragonId
 
       before('create democracy entity', async () => {
-        aragonId = 'democracydao-' + Math.floor(Math.random() * 1000)
+        aragonId = randomId()
 
         if (creationStyle === 'single') {
           receiptInstance = (await template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, aragonId, HOLDERS, STAKES, REQUIRED_SUPPORT, ACCEPTANCE_QUORUM, VOTING_TIME)).receipt

@@ -1,5 +1,6 @@
 const { hash: namehash } = require('eth-ens-namehash')
 const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
+const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
 const { getEventArgument } = require('@aragon/test-helpers/events')
 const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
 const assertRole = require('@aragon/templates-shared/helpers/assertRole')(web3)
@@ -58,7 +59,7 @@ contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
   context('when the setup multi sig fails', () => {
     before('prepare entity', async () => {
       await trustTemplate.prepareDAO({ from: deployer })
-      await trustTemplate.setupDAO(`id-${Math.floor(Math.random() * 1000)}`, BENEFICIARY_KEYS, HEIRS, HEIRS_STAKE, { from: deployer })
+      await trustTemplate.setupDAO(randomId(), BENEFICIARY_KEYS, HEIRS, HEIRS_STAKE, { from: deployer })
     })
 
     it('reverts when given multi sig keys are not 2', async () => {
@@ -69,7 +70,7 @@ contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
 
   context('when the creation succeeds', () => {
     before('create trust entity', async () => {
-      daoID = `id-${Math.floor(Math.random() * 1000)}`
+      daoID = randomId()
       prepareReceipt = await trustTemplate.prepareDAO({ from: deployer })
       daoSetupReceipt = await trustTemplate.setupDAO(daoID, BENEFICIARY_KEYS, HEIRS, HEIRS_STAKE, { from: deployer })
       multiSigSetupReceipt = await trustTemplate.setupMultiSig(MULTI_SIG_KEYS, { from: deployer })

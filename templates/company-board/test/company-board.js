@@ -1,5 +1,6 @@
 const { hash: namehash } = require('eth-ens-namehash')
 const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
+const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
 const { getEventArgument } = require('@aragon/test-helpers/events')
 const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
 const assertRole = require('@aragon/templates-shared/helpers/assertRole')(web3)
@@ -50,7 +51,7 @@ contract('Company with board', ([_, deployer, boardMember1, boardMember2, shareH
 
   context('when the creation succeeds', () => {
     before('create company with board entity', async () => {
-      daoID = `id-${Math.floor(Math.random() * 1000)}`
+      daoID = randomId()
       tokenReceipt = await companyTemplate.newTokens({ from: deployer })
       prepareReceipt = await companyTemplate.prepareInstance(daoID, { from: deployer })
       setupReceipt = await companyTemplate.setupInstance(BOARD_MEMBERS, SHARE_HOLDERS, SHARE_STAKES, { from: deployer })
