@@ -93,9 +93,9 @@ contract('Membership', ([_, deployer, member1, member2, member3]) => {
       assert.equal(await token.name(), 'Member Token')
       assert.equal(await token.symbol(), 'MEMBER')
       assert.equal((await token.decimals()).toString(), 18)
-      assert.equal((await token.totalSupply()).toString(), MEMBERS.length * 1e18)
+      assert.equal((await token.totalSupply()).toString(), MEMBERS.length)
 
-      for (const holder of MEMBERS) assert.equal((await token.balanceOf(holder)).toString(), 1e18)
+      for (const holder of MEMBERS) assert.equal((await token.balanceOf(holder)).toString(), 1)
     })
 
     it('should have token manager app correctly setup', async () => {

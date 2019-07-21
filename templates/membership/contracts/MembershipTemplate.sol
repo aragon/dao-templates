@@ -10,7 +10,7 @@ contract MembershipTemplate is BaseTemplate {
     bool constant private TOKEN_TRANSFERABLE = false;
     string constant private TOKEN_NAME = "Member Token";
     string constant private TOKEN_SYMBOL = "MEMBER";
-    uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(1e18);
+    uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(1);
 
     uint64 constant private ONE_PCT = uint64(1e16);                         // 1%
     uint64 constant private FINANCE_PERIOD = uint64(30 days);               // 30 days
@@ -70,7 +70,7 @@ contract MembershipTemplate is BaseTemplate {
     function _mintTokens(ACL acl, TokenManager tokenManager, address[] members) internal {
         _createPermissionForTemplate(acl, tokenManager, tokenManager.MINT_ROLE());
         for (uint256 i = 0; i < members.length; i++) {
-            tokenManager.mint(members[i], 1e18);
+            tokenManager.mint(members[i], 1);
         }
         _removePermissionFromTemplate(acl, tokenManager, tokenManager.MINT_ROLE());
     }
