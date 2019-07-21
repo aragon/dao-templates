@@ -121,9 +121,9 @@ contract('Company with board', ([_, deployer, boardMember1, boardMember2, shareH
       assert.equal(await boardToken.name(), 'Board Token')
       assert.equal(await boardToken.symbol(), 'BOARD')
       assert.equal((await boardToken.decimals()).toString(), 18)
-      assert.equal((await boardToken.totalSupply()).toString(), BOARD_MEMBERS.length * 1e18)
+      assert.equal((await boardToken.totalSupply()).toString(), BOARD_MEMBERS.length)
 
-      for (const holder of BOARD_MEMBERS) assert.equal((await boardToken.balanceOf(holder)).toString(), 1e18)
+      for (const holder of BOARD_MEMBERS) assert.equal((await boardToken.balanceOf(holder)).toString(), 1)
     })
 
     it('should have share token correctly setup', async () => {

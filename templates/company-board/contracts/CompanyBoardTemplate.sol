@@ -14,7 +14,7 @@ contract CompanyBoardTemplate is BaseTemplate {
     bool constant private BOARD_TRANSFERABLE = false;
     string constant private BOARD_TOKEN_NAME = "Board Token";
     string constant private BOARD_TOKEN_SYMBOL = "BOARD";
-    uint256 constant private BOARD_MAX_PER_ACCOUNT = uint256(1e18);
+    uint256 constant private BOARD_MAX_PER_ACCOUNT = uint256(1);
 
     bool constant private SHARE_TRANSFERABLE = true;
     string constant private SHARE_TOKEN_NAME = "Share Token";
@@ -107,7 +107,7 @@ contract CompanyBoardTemplate is BaseTemplate {
     function _mintBoardTokens(ACL acl, TokenManager boardTokenManager, address[] boardMembers) internal {
         _createPermissionForTemplate(acl, boardTokenManager, boardTokenManager.MINT_ROLE());
         for (uint256 i = 0; i < boardMembers.length; i++) {
-            boardTokenManager.mint(boardMembers[i], 1e18);
+            boardTokenManager.mint(boardMembers[i], 1);
         }
         _removePermissionFromTemplate(acl, boardTokenManager, boardTokenManager.MINT_ROLE());
     }
