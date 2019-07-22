@@ -136,6 +136,7 @@ contract('Democracy', ([owner, holder20, holder29, holder51, nonHolder]) => {
         // token manager
         await assertRole(acl, tokenManager, voting, 'ASSIGN_ROLE')
         await assertRole(acl, tokenManager, voting, 'REVOKE_VESTINGS_ROLE')
+        await assertRole(acl, tokenManager, voting, 'MINT_ROLE')
       })
 
       it('fails creating a DAO if holders and stakes do not match', async() => {
