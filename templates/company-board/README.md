@@ -2,12 +2,20 @@
 
 ## Usage
 
+Create new tokens for the company-board entity:
+
 ```
-company.prepareInstance(id)
-company.setupInstance(boardHolders, shareHolders, shareStakes)
+template.newTokens()
 ```
 
-- `id`: Identifier to be registered in AragonID
+Create a new company with board entity:
+
+```
+template.prepareInstance(name)
+template.setupInstance(boardHolders, shareHolders, shareStakes)
+```
+
+- `name`: Name for org, will assign `[name].aragonid.eth` (check capitalization)
 - `boardMembers`: Array of board member addresses (1 token will be minted for each board member)
 - `shareHolders`: Array of share holder addresses
 - `shareStakes`: Array of token stakes for share holders (token has 18 decimals, multiply token amount `* 10^18`)

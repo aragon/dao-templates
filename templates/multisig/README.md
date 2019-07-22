@@ -2,15 +2,24 @@
 
 ## Usage
 
+Create a new multisig MiniMe token:
+
 ```
-multisig.newInstance(name, signers, neededSignatures)
+template.newToken(name, symbol)
+```
+
+- `name`: Token name of the MiniMe token to be deployed for the multisig entity
+- `symbol`: Token symbol of the MiniMe token to be deployed for the multisig entity
+
+Create a new multisig entity:
+
+```
+template.newInstance(name, signers, neededSignatures)
 ```
 
 - `name`: Name for org, will assign `[name].aragonid.eth` (check capitalization)
-- `signers`: Array of addresses that are the multisig signatories
-  (they will be issued 1 token)
-- `neededSignatures`: Number of signers that need to sign to execute an action
-  (parametrizing the Voting app under the hood)
+- `signers`: Array of addresses that are the multisig signatories (they will be issued 1 token)
+- `neededSignatures`: Number of signers that need to sign to execute an action (parameterizing the Voting app under the hood)
 
 ## Deploying templates
 

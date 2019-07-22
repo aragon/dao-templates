@@ -2,11 +2,19 @@
 
 ## Usage
 
+Create a new token for the company entity:
+
 ```
-company.newInstance(id, holders, stakes)
+template.newToken()
 ```
 
-- `id`: Identifier to be registered in AragonID
+Create a new company entity:
+
+```
+template.newInstance(name, holders, stakes)
+```
+
+- `name`: Name for org, will assign `[name].aragonid.eth` (check capitalization)
 - `holders`: Array of token holder addresses
 - `stakes`: Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`)
 

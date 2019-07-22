@@ -2,11 +2,19 @@
 
 ## Usage
 
+Create a new token for the membership entity:
+
 ```
-membership.newInstance(id, holders, stakes)
+template.newToken()
 ```
 
-- `id`: Identifier to be registered in AragonID
+Create a new membership entity:
+
+```
+template.newInstance(name, members)
+```
+
+- `name`: Name for org, will assign `[name].aragonid.eth` (check capitalization)
 - `members`: Array of member addresses (1 token will be minted for each member)
 
 ## Deploying templates
