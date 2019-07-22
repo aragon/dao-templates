@@ -24,7 +24,7 @@ contract TrustTemplate is BaseTemplate {
     string constant private ERROR_BAD_BENEFICIARY_KEYS_LENGTH = "TRUST_BAD_BENEFICIARY_KEY_LENGTH";
     string constant private ERROR_INVALID_HEIRS_STAKE = "TRUST_INVALID_HEIRS_STAKE";
     string constant private ERROR_REGISTRY_FACTORY_IS_NOT_CONTRACT = "TRUST_REGISTRY_FACT_NOT_CONTRACT";
-    string constant private ERROR_MISSING_CACHE_TOKENS_FOR_SENDER = "TRUST_MISSING_SENDER_CACHE_TOKEN";
+    string constant private ERROR_MISSING_SENDER_CACHE = "TRUST_MISSING_SENDER_CACHE";
 
     uint256 constant private ONE_PCT = uint64(1e16);                            // 1%
     uint256 constant private BENEFICIARY_KEYS_AMOUNT = 2;                       // hold + cold keys
@@ -84,7 +84,7 @@ contract TrustTemplate is BaseTemplate {
     }
 
     function setupDAO(string _id, address[] _beneficiaryKeys, address[] _heirs, uint256[] _heirsStake) public returns (Kernel) {
-        require(_hasDaoCache(msg.sender), ERROR_MISSING_CACHE_TOKENS_FOR_SENDER);
+        require(_hasDaoCache(msg.sender), ERROR_MISSING_SENDER_CACHE);
         require(_heirs.length == _heirsStake.length, ERROR_BAD_HEIRS_LENGTH);
         require(_beneficiaryKeys.length == BENEFICIARY_KEYS_AMOUNT, ERROR_BAD_BENEFICIARY_KEYS_LENGTH);
         uint256 blockedHeirsSupply = _calculateBlockedHeirsSupply(_heirsStake);
@@ -96,7 +96,7 @@ contract TrustTemplate is BaseTemplate {
     }
 
     function setupMultiSig(address[] _multiSigKeys) public returns (MultiSigWallet) {
-        require(_hasDaoCache(msg.sender) && _hasAppsCache(msg.sender), ERROR_MISSING_CACHE_TOKENS_FOR_SENDER);
+        require(_hasDaoCache(msg.sender) && _hasAppsCache(msg.sender), ERROR_MISSING_SENDER_CACHE);
         require(_multiSigKeys.length == MULTI_SIG_EXTERNAL_KEYS_AMOUNT, ERROR_BAD_MULTI_SIG_KEYS_LENGTH);
 
         Kernel dao = _getDaoCache(msg.sender);

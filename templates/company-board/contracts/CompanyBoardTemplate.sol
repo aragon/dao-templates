@@ -46,9 +46,6 @@ contract CompanyBoardTemplate is BaseTemplate {
     }
 
     function newTokensAndInstance(string _id, address[] _boardMembers, address[] _shareHolders, uint256[] _shareStakes) public {
-        require(_boardMembers.length > 0, ERROR_MISSING_BOARD_MEMBERS);
-        require(_shareHolders.length == _shareStakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
-
         newTokens();
         prepareInstance(_id);
         setupInstance(_boardMembers, _shareHolders, _shareStakes);

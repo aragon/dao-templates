@@ -29,7 +29,6 @@ contract MembershipTemplate is BaseTemplate {
     }
 
     function newTokenAndInstance(string _id, address[] _members) public {
-        require(_members.length > 0, ERROR_MISSING_MEMBERS);
         newToken();
         newInstance(_id, _members);
     }

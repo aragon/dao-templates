@@ -29,7 +29,6 @@ contract ReputationTemplate is BaseTemplate {
     }
 
     function newTokenAndInstance(string _id, address[] _holders, uint256[] _stakes) public {
-        require(_holders.length == _stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         newToken();
         newInstance(_id, _holders, _stakes);
     }

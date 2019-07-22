@@ -35,7 +35,7 @@ contract('Bare', ([_, deployer, tokenAddress, authorized]) => {
     voting = Voting.at(votingEvents[0].args.proxy)
   })
 
-  it('setup DAO and ACL permissions correctly', async () => {
+  it('sets up DAO and ACL permissions correctly', async () => {
     await assertRole(acl, dao, { address: deployer }, 'APP_MANAGER_ROLE')
     await assertRole(acl, acl, { address: deployer }, 'CREATE_PERMISSIONS_ROLE')
   })

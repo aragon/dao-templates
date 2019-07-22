@@ -28,7 +28,6 @@ contract CompanyTemplate is BaseTemplate {
     }
 
     function newTokenAndInstance(string _id, address[] _holders, uint256[] _stakes) public {
-        require(_holders.length == _stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         newToken();
         newInstance(_id, _holders, _stakes);
     }
@@ -61,21 +60,21 @@ contract CompanyTemplate is BaseTemplate {
         _createAgentPermissions(acl, agent, voting, voting);
         _createVaultPermissions(acl, Vault(agent), finance, voting);
         _createFinancePermissions(acl, finance, voting, voting);
-        _createTokenManagerPermissions(acl, tokenManager, voting);
         _createEvmScriptsRegistryPermissions(acl, voting, voting);
-        _createVotingPermissions(acl, voting, tokenManager);
+        _createCustomVotingPermissions(acl, voting, tokenManager);
+        _createCustomTokenManagerPermissions(acl, tokenManager, voting);
         _transferRootPermissionsFromTemplate(dao, voting);
 
         _registerID(_id, dao);
     }
 
-    function _createVotingPermissions(ACL _acl, Voting _voting, TokenManager _tokenManager) internal {
+    function _createCustomVotingPermissions(ACL _acl, Voting _voting, TokenManager _tokenManager) internal {
         _acl.createPermission(_tokenManager, _voting, _voting.CREATE_VOTES_ROLE(), _voting);
         _acl.createPermission(_voting, _voting, _voting.MODIFY_QUORUM_ROLE(), _voting);
         _acl.createPermission(_voting, _voting, _voting.MODIFY_SUPPORT_ROLE(), _voting);
     }
 
-    function _createTokenManagerPermissions(ACL _acl, TokenManager _tokenManager, Voting _voting) internal {
+    function _createCustomTokenManagerPermissions(ACL _acl, TokenManager _tokenManager, Voting _voting) internal {
         _acl.createPermission(_voting, _tokenManager, _tokenManager.BURN_ROLE(), _voting);
         _acl.createPermission(_voting, _tokenManager, _tokenManager.MINT_ROLE(), _voting);
     }
