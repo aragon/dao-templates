@@ -4,10 +4,10 @@ const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
 const { isLocalNetwork } = require('@aragon/templates-shared/lib/network')(web3)
 const { encodeCallScript } = require('@aragon/test-helpers/evmScript')
 const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
+const { assertRole, assertMissingRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
 
 const getBalance = require('@aragon/test-helpers/balance')(web3)
 const getBlockNumber = require('@aragon/test-helpers/blockNumber')(web3)
-const assertRole = require('@aragon/templates-shared/helpers/assertRole')(web3)
 const assertRevert = require('@aragon/templates-shared/helpers/assertRevert')(web3)
 const decodeEvents = require('@aragon/templates-shared/helpers/decodeEvents')
 
@@ -130,11 +130,15 @@ contract('Multisig', ([owner, signer1, signer2, signer3, nonHolder]) => {
         await assertRole(acl, finance, voting, 'CREATE_PAYMENTS_ROLE')
         await assertRole(acl, finance, voting, 'EXECUTE_PAYMENTS_ROLE')
         await assertRole(acl, finance, voting, 'MANAGE_PAYMENTS_ROLE')
+        await assertMissingRole(acl, finance, 'CHANGE_PERIOD_ROLE')
+        await assertMissingRole(acl, finance, 'CHANGE_BUDGETS_ROLE')
 
         // token manager
         await assertRole(acl, tokenManager, voting, 'ASSIGN_ROLE')
         await assertRole(acl, tokenManager, voting, 'REVOKE_VESTINGS_ROLE')
         await assertRole(acl, tokenManager, voting, 'MINT_ROLE')
+        await assertMissingRole(acl, tokenManager, 'ISSUE_ROLE')
+        await assertMissingRole(acl, tokenManager, 'BURN_ROLE')
       })
 
       context('> Voting access', () => {

@@ -1,7 +1,7 @@
 const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
 const { getEventArgument } = require('@aragon/test-helpers/events')
 const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
-const assertRole = require('@aragon/templates-shared/helpers/assertRole')(web3)
+const { assertRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
 const decodeEvents = require('@aragon/templates-shared/helpers/decodeEvents')
 
 const ACL = artifacts.require('ACL')

@@ -4,10 +4,10 @@ const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
 const { isLocalNetwork } = require('@aragon/templates-shared/lib/network')(web3)
 const { encodeCallScript } = require('@aragon/test-helpers/evmScript')
 const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
+const { assertRole, assertBurnedRole, assertMissingRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
 
 const getBalance = require('@aragon/test-helpers/balance')(web3)
 const getBlockNumber = require('@aragon/test-helpers/blockNumber')(web3)
-const assertRole = require('@aragon/templates-shared/helpers/assertRole')(web3)
 const assertRevert = require('@aragon/templates-shared/helpers/assertRevert')(web3)
 const decodeEvents = require('@aragon/templates-shared/helpers/decodeEvents')
 const increaseTime = require('@aragon/templates-shared/helpers/increaseTime')(web3, artifacts)
@@ -123,7 +123,7 @@ contract('Democracy', ([owner, holder20, holder29, holder51, nonHolder]) => {
         // voting
         await assertRole(acl, voting, voting, 'CREATE_VOTES_ROLE', tokenManager)
         await assertRole(acl, voting, voting, 'MODIFY_QUORUM_ROLE')
-        assert.equal(await acl.getPermissionManager(voting.address, await voting.MODIFY_SUPPORT_ROLE()), await acl.BURN_ENTITY(), 'Voting MODIFY_SUPPORT Manager should be burned')
+        await assertBurnedRole(acl, voting, 'MODIFY_SUPPORT_ROLE')
 
         // vault
         await assertRole(acl, vault, voting, 'TRANSFER_ROLE', finance)
@@ -132,11 +132,15 @@ contract('Democracy', ([owner, holder20, holder29, holder51, nonHolder]) => {
         await assertRole(acl, finance, voting, 'CREATE_PAYMENTS_ROLE')
         await assertRole(acl, finance, voting, 'EXECUTE_PAYMENTS_ROLE')
         await assertRole(acl, finance, voting, 'MANAGE_PAYMENTS_ROLE')
+        await assertMissingRole(acl, finance, 'CHANGE_PERIOD_ROLE')
+        await assertMissingRole(acl, finance, 'CHANGE_BUDGETS_ROLE')
 
         // token manager
         await assertRole(acl, tokenManager, voting, 'ASSIGN_ROLE')
         await assertRole(acl, tokenManager, voting, 'REVOKE_VESTINGS_ROLE')
         await assertRole(acl, tokenManager, voting, 'MINT_ROLE')
+        await assertMissingRole(acl, tokenManager, 'ISSUE_ROLE')
+        await assertMissingRole(acl, tokenManager, 'BURN_ROLE')
       })
 
       it('fails creating a DAO if holders and stakes do not match', async() => {

@@ -3,7 +3,7 @@ const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
 const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
 const { getEventArgument } = require('@aragon/test-helpers/events')
 const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
-const assertRole = require('@aragon/templates-shared/helpers/assertRole')(web3)
+const { assertRole, assertMissingRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
 const decodeEvents = require('@aragon/templates-shared/helpers/decodeEvents')
 const assertRevert = require('@aragon/templates-shared/helpers/assertRevert')(web3)
 
@@ -78,6 +78,15 @@ contract('Membership', ([_, deployer, member1, member2, member3]) => {
       assert.equal(resolvedAddress, dao.address, 'aragonId ENS name does not match')
     })
 
+    it('should have token correctly setup', async () => {
+      assert.equal(await token.name(), 'Member Token')
+      assert.equal(await token.symbol(), 'MEMBER')
+      assert.equal((await token.decimals()).toString(), 18)
+      assert.equal((await token.totalSupply()).toString(), MEMBERS.length)
+
+      for (const holder of MEMBERS) assert.equal((await token.balanceOf(holder)).toString(), 1)
+    })
+
     it('should have voting app correctly setup', async () => {
       assert.isTrue(await voting.hasInitialized(), 'voting not initialized')
       assert.equal((await voting.supportRequiredPct()).toString(), 50e16)
@@ -89,21 +98,16 @@ contract('Membership', ([_, deployer, member1, member2, member3]) => {
       await assertRole(acl, voting, voting, 'MODIFY_SUPPORT_ROLE')
     })
 
-    it('should have token correctly setup', async () => {
-      assert.equal(await token.name(), 'Member Token')
-      assert.equal(await token.symbol(), 'MEMBER')
-      assert.equal((await token.decimals()).toString(), 18)
-      assert.equal((await token.totalSupply()).toString(), MEMBERS.length)
-
-      for (const holder of MEMBERS) assert.equal((await token.balanceOf(holder)).toString(), 1)
-    })
-
     it('should have token manager app correctly setup', async () => {
       assert.isTrue(await tokenManager.hasInitialized(), 'token manager not initialized')
       assert.equal(await tokenManager.token(), token.address)
 
       await assertRole(acl, tokenManager, voting, 'MINT_ROLE')
       await assertRole(acl, tokenManager, voting, 'BURN_ROLE')
+
+      await assertMissingRole(acl, tokenManager, 'ISSUE_ROLE')
+      await assertMissingRole(acl, tokenManager, 'ASSIGN_ROLE')
+      await assertMissingRole(acl, tokenManager, 'REVOKE_VESTINGS_ROLE')
     })
 
     it('should have finance app correctly setup', async () => {
@@ -113,6 +117,9 @@ contract('Membership', ([_, deployer, member1, member2, member3]) => {
       await assertRole(acl, finance, voting, 'CREATE_PAYMENTS_ROLE')
       await assertRole(acl, finance, voting, 'EXECUTE_PAYMENTS_ROLE')
       await assertRole(acl, finance, voting, 'MANAGE_PAYMENTS_ROLE')
+
+      await assertMissingRole(acl, finance, 'CHANGE_PERIOD_ROLE')
+      await assertMissingRole(acl, finance, 'CHANGE_BUDGETS_ROLE')
     })
 
     it('should have agent app correctly setup', async () => {
@@ -125,6 +132,9 @@ contract('Membership', ([_, deployer, member1, member2, member3]) => {
       await assertRole(acl, agent, voting, 'EXECUTE_ROLE')
       await assertRole(acl, agent, voting, 'RUN_SCRIPT_ROLE')
       await assertRole(acl, agent, voting, 'TRANSFER_ROLE', finance)
+
+      await assertMissingRole(acl, agent, 'DESIGNATE_SIGNER_ROLE')
+      await assertMissingRole(acl, agent, 'ADD_PRESIGNED_HASH_ROLE')
     })
 
     it('setup DAO and ACL permissions correctly', async () => {

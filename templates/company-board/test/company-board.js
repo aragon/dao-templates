@@ -3,7 +3,7 @@ const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
 const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
 const { getEventArgument } = require('@aragon/test-helpers/events')
 const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
-const assertRole = require('@aragon/templates-shared/helpers/assertRole')(web3)
+const { assertRole, assertMissingRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
 const decodeEvents = require('@aragon/templates-shared/helpers/decodeEvents')
 const assertRevert = require('@aragon/templates-shared/helpers/assertRevert')(web3)
 
@@ -95,6 +95,24 @@ contract('Company with board', ([_, deployer, boardMember1, boardMember2, shareH
       assert.equal(resolvedAddress, dao.address, 'aragonId ENS name does not match')
     })
 
+    it('should have board token correctly setup', async () => {
+      assert.equal(await boardToken.name(), 'Board Token')
+      assert.equal(await boardToken.symbol(), 'BOARD')
+      assert.equal((await boardToken.decimals()).toString(), 18)
+      assert.equal((await boardToken.totalSupply()).toString(), BOARD_MEMBERS.length)
+
+      for (const holder of BOARD_MEMBERS) assert.equal((await boardToken.balanceOf(holder)).toString(), 1)
+    })
+
+    it('should have share token correctly setup', async () => {
+      assert.equal(await shareToken.name(), 'Share Token')
+      assert.equal(await shareToken.symbol(), 'SHARE')
+      assert.equal((await shareToken.decimals()).toString(), 18)
+      assert.equal((await shareToken.totalSupply()).toString(), SHARE_STAKES.reduce((a, b) => a + b))
+
+      for (const holder of SHARE_HOLDERS) assert.equal((await shareToken.balanceOf(holder)).toString(), SHARE_STAKES[SHARE_HOLDERS.indexOf(holder)])
+    })
+
     it('should have board voting app correctly setup', async () => {
       assert.isTrue(await boardVoting.hasInitialized(), 'voting not initialized')
       assert.equal((await boardVoting.supportRequiredPct()).toString(), 50e16)
@@ -117,30 +135,16 @@ contract('Company with board', ([_, deployer, boardMember1, boardMember2, shareH
       await assertRole(acl, shareVoting, shareVoting, 'MODIFY_SUPPORT_ROLE')
     })
 
-    it('should have board token correctly setup', async () => {
-      assert.equal(await boardToken.name(), 'Board Token')
-      assert.equal(await boardToken.symbol(), 'BOARD')
-      assert.equal((await boardToken.decimals()).toString(), 18)
-      assert.equal((await boardToken.totalSupply()).toString(), BOARD_MEMBERS.length)
-
-      for (const holder of BOARD_MEMBERS) assert.equal((await boardToken.balanceOf(holder)).toString(), 1)
-    })
-
-    it('should have share token correctly setup', async () => {
-      assert.equal(await shareToken.name(), 'Share Token')
-      assert.equal(await shareToken.symbol(), 'SHARE')
-      assert.equal((await shareToken.decimals()).toString(), 18)
-      assert.equal((await shareToken.totalSupply()).toString(), SHARE_STAKES.reduce((a, b) => a + b))
-
-      for (const holder of SHARE_HOLDERS) assert.equal((await shareToken.balanceOf(holder)).toString(), SHARE_STAKES[SHARE_HOLDERS.indexOf(holder)])
-    })
-
     it('should have board token manager app correctly setup', async () => {
       assert.isTrue(await boardTokenManager.hasInitialized(), 'token manager not initialized')
       assert.equal(await boardTokenManager.token(), boardToken.address)
 
       await assertRole(acl, boardTokenManager, shareVoting, 'MINT_ROLE')
       await assertRole(acl, boardTokenManager, shareVoting, 'BURN_ROLE')
+
+      await assertMissingRole(acl, boardTokenManager, 'ISSUE_ROLE')
+      await assertMissingRole(acl, boardTokenManager, 'ASSIGN_ROLE')
+      await assertMissingRole(acl, boardTokenManager, 'REVOKE_VESTINGS_ROLE')
     })
 
     it('should have share token manager app correctly setup', async () => {
@@ -149,6 +153,10 @@ contract('Company with board', ([_, deployer, boardMember1, boardMember2, shareH
 
       await assertRole(acl, shareTokenManager, shareVoting, 'MINT_ROLE')
       await assertRole(acl, shareTokenManager, shareVoting, 'BURN_ROLE')
+
+      await assertMissingRole(acl, shareTokenManager, 'ISSUE_ROLE')
+      await assertMissingRole(acl, shareTokenManager, 'ASSIGN_ROLE')
+      await assertMissingRole(acl, shareTokenManager, 'REVOKE_VESTINGS_ROLE')
     })
 
     it('should have finance app correctly setup', async () => {
@@ -159,6 +167,9 @@ contract('Company with board', ([_, deployer, boardMember1, boardMember2, shareH
       await assertRole(acl, finance, shareVoting, 'CREATE_PAYMENTS_ROLE')
       await assertRole(acl, finance, shareVoting, 'EXECUTE_PAYMENTS_ROLE')
       await assertRole(acl, finance, shareVoting, 'MANAGE_PAYMENTS_ROLE')
+
+      await assertMissingRole(acl, finance, 'CHANGE_PERIOD_ROLE')
+      await assertMissingRole(acl, finance, 'CHANGE_BUDGETS_ROLE')
     })
 
     it('should have agent app correctly setup', async () => {
@@ -173,6 +184,9 @@ contract('Company with board', ([_, deployer, boardMember1, boardMember2, shareH
       await assertRole(acl, agent, shareVoting, 'EXECUTE_ROLE', boardVoting)
       await assertRole(acl, agent, shareVoting, 'RUN_SCRIPT_ROLE', boardVoting)
       await assertRole(acl, agent, shareVoting, 'TRANSFER_ROLE', finance)
+
+      await assertMissingRole(acl, agent, 'DESIGNATE_SIGNER_ROLE')
+      await assertMissingRole(acl, agent, 'ADD_PRESIGNED_HASH_ROLE')
     })
 
     it('setup DAO and ACL permissions correctly', async () => {

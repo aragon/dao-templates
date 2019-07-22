@@ -3,7 +3,7 @@ const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
 const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
 const { getEventArgument } = require('@aragon/test-helpers/events')
 const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
-const assertRole = require('@aragon/templates-shared/helpers/assertRole')(web3)
+const { assertRole, assertMissingRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
 const decodeEvents = require('@aragon/templates-shared/helpers/decodeEvents')
 const assertRevert = require('@aragon/templates-shared/helpers/assertRevert')(web3)
 
@@ -128,6 +128,25 @@ contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
       assert.equal(web3.toChecksumAddress(owners[2]), agent.address, 'multi sig does not include the agent as one of their owners')
     })
 
+    it('should have hold token correctly setup', async () => {
+      assert.equal(await holdToken.name(), 'Beneficiaries Token')
+      assert.equal(await holdToken.symbol(), 'HOLD')
+      assert.equal((await holdToken.decimals()).toString(), 18)
+      assert.equal((await holdToken.totalSupply()).toString(), 2e18)
+      assert.equal((await holdToken.balanceOf(beneficiaryKey1)).toString(), 1e18)
+      assert.equal((await holdToken.balanceOf(beneficiaryKey2)).toString(), 1e18)
+    })
+
+    it('should have heirs token correctly setup', async () => {
+      assert.equal(await heirsToken.name(), 'Heirs Token')
+      assert.equal(await heirsToken.symbol(), 'HEIRS')
+      assert.equal((await heirsToken.decimals()).toString(), 18)
+      assert.equal((await heirsToken.totalSupply()).toString(), 100e18)
+      assert.equal((await heirsToken.balanceOf(ZERO_ADDRESS)).toString(), 34e18)
+      assert.equal((await heirsToken.balanceOf(heir1)).toString(), 33e18)
+      assert.equal((await heirsToken.balanceOf(heir2)).toString(), 33e18)
+    })
+
     it('should have hold voting app correctly setup', async () => {
       assert.isTrue(await holdVoting.hasInitialized(), 'hold voting not initialized')
       assert.equal((await holdVoting.supportRequiredPct()).toString(), 999999999999999999)
@@ -150,25 +169,6 @@ contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
       await assertRole(acl, heirsVoting, heirsVoting, 'MODIFY_SUPPORT_ROLE')
     })
 
-    it('should have hold token correctly setup', async () => {
-      assert.equal(await holdToken.name(), 'Beneficiaries Token')
-      assert.equal(await holdToken.symbol(), 'HOLD')
-      assert.equal((await holdToken.decimals()).toString(), 18)
-      assert.equal((await holdToken.totalSupply()).toString(), 2e18)
-      assert.equal((await holdToken.balanceOf(beneficiaryKey1)).toString(), 1e18)
-      assert.equal((await holdToken.balanceOf(beneficiaryKey2)).toString(), 1e18)
-    })
-
-    it('should have heirs token correctly setup', async () => {
-      assert.equal(await heirsToken.name(), 'Heirs Token')
-      assert.equal(await heirsToken.symbol(), 'HEIRS')
-      assert.equal((await heirsToken.decimals()).toString(), 18)
-      assert.equal((await heirsToken.totalSupply()).toString(), 100e18)
-      assert.equal((await heirsToken.balanceOf(ZERO_ADDRESS)).toString(), 34e18)
-      assert.equal((await heirsToken.balanceOf(heir1)).toString(), 33e18)
-      assert.equal((await heirsToken.balanceOf(heir2)).toString(), 33e18)
-    })
-
     it('should have hold token manager app correctly setup', async () => {
       assert.isTrue(await holdTokenManager.hasInitialized(), 'hold token manager not initialized')
       assert.equal(await holdTokenManager.token(), holdToken.address)
@@ -177,6 +177,8 @@ contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
       await assertRole(acl, holdTokenManager, multiSig, 'BURN_ROLE')
       await assertRole(acl, holdTokenManager, holdVoting, 'ASSIGN_ROLE')
       await assertRole(acl, holdTokenManager, holdVoting, 'REVOKE_VESTINGS_ROLE')
+
+      await assertMissingRole(acl, holdTokenManager, 'ISSUE_ROLE')
     })
 
     it('should have heirs token manager app correctly setup', async () => {
@@ -187,6 +189,8 @@ contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
       await assertRole(acl, heirsTokenManager, multiSig, 'BURN_ROLE')
       await assertRole(acl, heirsTokenManager, heirsVoting, 'ASSIGN_ROLE')
       await assertRole(acl, heirsTokenManager, heirsVoting, 'REVOKE_VESTINGS_ROLE')
+
+      await assertMissingRole(acl, heirsTokenManager, 'ISSUE_ROLE')
     })
 
     it('should have vault app correctly setup', async () => {
@@ -201,6 +205,9 @@ contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
       await assertRole(acl, finance, holdVoting, 'CREATE_PAYMENTS_ROLE')
       await assertRole(acl, finance, holdVoting, 'EXECUTE_PAYMENTS_ROLE')
       await assertRole(acl, finance, holdVoting, 'MANAGE_PAYMENTS_ROLE')
+
+      await assertMissingRole(acl, finance, 'CHANGE_PERIOD_ROLE')
+      await assertMissingRole(acl, finance, 'CHANGE_BUDGETS_ROLE')
     })
 
     it('should have agent app correctly setup', async () => {
@@ -211,6 +218,9 @@ contract('Trust', ([deployer, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
       await assertRole(acl, agent, holdVoting, 'RUN_SCRIPT_ROLE', holdVoting)
       await assertRole(acl, agent, holdVoting, 'EXECUTE_ROLE', heirsVoting)
       await assertRole(acl, agent, holdVoting, 'RUN_SCRIPT_ROLE', heirsVoting)
+
+      await assertMissingRole(acl, agent, 'DESIGNATE_SIGNER_ROLE')
+      await assertMissingRole(acl, agent, 'ADD_PRESIGNED_HASH_ROLE')
     })
 
     it('setup DAO and ACL permissions correctly', async () => {
