@@ -92,8 +92,7 @@ contract CompanyBoardTemplate is BaseTemplate {
         _createCustomTokenManagerPermissions(acl, shareTokenManager, shareVoting);
         _createEvmScriptsRegistryPermissions(acl, shareVoting, shareVoting);
         _createCustomVotingPermissions(acl, boardVoting, shareVoting, boardTokenManager);
-        _transferPermissionFromTemplate(acl, boardVoting, shareVoting, dao, dao.APP_MANAGER_ROLE());
-        _transferPermissionFromTemplate(acl, boardVoting, shareVoting, acl, acl.CREATE_PERMISSIONS_ROLE());
+        _transferRootPermissionsFromTemplate(dao, boardVoting, shareVoting);
     }
 
     function _mintShareTokens(ACL acl, TokenManager shareTokenManager, address[] shareHolders, uint256[] shareStakes) internal {

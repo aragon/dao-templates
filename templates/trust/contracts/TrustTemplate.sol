@@ -134,8 +134,7 @@ contract TrustTemplate is BaseTemplate {
         (Agent agent, Voting holdVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager) = _getAppsCache(msg.sender);
         MultiSigWallet multiSig = _createMultiSig(multiSigKeys, agent);
         _createMultiSigPermissions(acl, multiSig, holdTokenManager, heirsTokenManager);
-        _transferPermissionFromTemplate(acl, holdVoting, dao, dao.APP_MANAGER_ROLE());
-        _transferPermissionFromTemplate(acl, holdVoting, acl, acl.CREATE_PERMISSIONS_ROLE());
+        _transferRootPermissionsFromTemplate(dao, holdVoting);
         _cleanCache(msg.sender);
         return multiSig;
     }

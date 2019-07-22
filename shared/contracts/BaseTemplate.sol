@@ -95,6 +95,18 @@ contract BaseTemplate is APMNamehash, IsContract {
         acl.setPermissionManager(manager, app, permission);
     }
 
+    function _transferRootPermissionsFromTemplate(Kernel dao, address to) internal {
+        ACL acl = ACL(dao.acl());
+        _transferPermissionFromTemplate(acl, to, dao, dao.APP_MANAGER_ROLE());
+        _transferPermissionFromTemplate(acl, to, acl, acl.CREATE_PERMISSIONS_ROLE());
+    }
+
+    function _transferRootPermissionsFromTemplate(Kernel dao, address to, address manager) internal {
+        ACL acl = ACL(dao.acl());
+        _transferPermissionFromTemplate(acl, to, manager, dao, dao.APP_MANAGER_ROLE());
+        _transferPermissionFromTemplate(acl, to, manager, acl, acl.CREATE_PERMISSIONS_ROLE());
+    }
+
     /* AGENT */
 
     function _installDefaultAgentApp(Kernel dao) internal returns (Agent) {

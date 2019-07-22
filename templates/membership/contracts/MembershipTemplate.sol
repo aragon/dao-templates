@@ -61,8 +61,7 @@ contract MembershipTemplate is BaseTemplate {
         _createEvmScriptsRegistryPermissions(acl, voting, voting);
         _createCustomVotingPermissions(acl, voting, tokenManager);
         _createCustomTokenManagerPermissions(acl, tokenManager, voting);
-        _transferPermissionFromTemplate(acl, voting, dao, dao.APP_MANAGER_ROLE());
-        _transferPermissionFromTemplate(acl, voting, acl, acl.CREATE_PERMISSIONS_ROLE());
+        _transferRootPermissionsFromTemplate(dao, voting);
 
         _registerID(id, dao);
     }

@@ -68,8 +68,7 @@ contract DemocracyTemplate is BaseTemplate {
         _createTokenManagerPermissions(acl, tokenManager, voting, voting);
         _createEvmScriptsRegistryPermissions(acl, voting, voting);
         _createCustomVotingPermissions(acl, voting, tokenManager);
-        _transferPermissionFromTemplate(acl, voting, dao, dao.APP_MANAGER_ROLE());
-        _transferPermissionFromTemplate(acl, voting, acl, acl.CREATE_PERMISSIONS_ROLE());
+        _transferRootPermissionsFromTemplate(dao, voting);
 
         _registerID(id, dao);
     }

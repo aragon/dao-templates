@@ -28,7 +28,6 @@ contract BareTemplate is BaseTemplate {
             }
         }
 
-        _transferPermissionFromTemplate(acl, root, dao, dao.APP_MANAGER_ROLE());
-        _transferPermissionFromTemplate(acl, root, acl, acl.CREATE_PERMISSIONS_ROLE());
+        _transferRootPermissionsFromTemplate(dao, root);
     }
 }
