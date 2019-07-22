@@ -16,15 +16,15 @@ contract BareTemplate is BaseTemplate {
         newInstance(bytes32(0), new bytes32[](0), address(0), new bytes(0));
     }
 
-    function newInstance(bytes32 appId, bytes32[] roles, address authorizedAddress, bytes initializeCallData) public {
+    function newInstance(bytes32 _appId, bytes32[] _roles, address _authorizedAddress, bytes _initializeCallData) public {
         address root = msg.sender;
         (Kernel dao, ACL acl) = _createDAO();
 
         // If there is no appId, an empty DAO will be created
-        if (appId != bytes32(0)) {
-            address proxy = _installApp(dao, appId, initializeCallData, false);
-            for (uint256 i = 0; i < roles.length; i++) {
-                acl.createPermission(authorizedAddress, proxy, roles[i], root);
+        if (_appId != bytes32(0)) {
+            address proxy = _installApp(dao, _appId, _initializeCallData, false);
+            for (uint256 i = 0; i < _roles.length; i++) {
+                acl.createPermission(_authorizedAddress, proxy, _roles[i], root);
             }
         }
 

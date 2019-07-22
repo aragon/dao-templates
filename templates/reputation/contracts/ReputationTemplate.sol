@@ -28,10 +28,10 @@ contract ReputationTemplate is BaseTemplate {
         _ensureMiniMeFactoryIsValid(_miniMeFactory);
     }
 
-    function newTokenAndInstance(string id, address[] holders, uint256[] stakes) public {
-        require(holders.length == stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
+    function newTokenAndInstance(string _id, address[] _holders, uint256[] _stakes) public {
+        require(_holders.length == _stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         newToken();
-        newInstance(id, holders, stakes);
+        newInstance(_id, _holders, _stakes);
     }
 
     function newToken() public returns (MiniMeToken) {
@@ -40,8 +40,8 @@ contract ReputationTemplate is BaseTemplate {
         return token;
     }
 
-    function newInstance(string id, address[] holders, uint256[] stakes) public {
-        require(holders.length == stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
+    function newInstance(string _id, address[] _holders, uint256[] _stakes) public {
+        require(_holders.length == _stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         MiniMeToken token = _popTokenCache(msg.sender);
 
         // Create DAO and install apps
@@ -52,7 +52,7 @@ contract ReputationTemplate is BaseTemplate {
         Voting voting = _installVotingApp(dao, token, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION);
 
         // Mint tokens
-        _mintTokens(acl, tokenManager, holders, stakes);
+        _mintTokens(acl, tokenManager, _holders, _stakes);
 
         // Set up permissions
         _createAgentPermissions(acl, agent, voting, voting);
@@ -63,36 +63,36 @@ contract ReputationTemplate is BaseTemplate {
         _createCustomTokenManagerPermissions(acl, tokenManager, voting);
         _transferRootPermissionsFromTemplate(dao, voting);
 
-        _registerID(id, dao);
+        _registerID(_id, dao);
     }
 
-    function _mintTokens(ACL acl, TokenManager tokenManager, address[] holders, uint256[] stakes) internal {
-        _createPermissionForTemplate(acl, tokenManager, tokenManager.MINT_ROLE());
-        for (uint256 i = 0; i < holders.length; i++) {
-            tokenManager.mint(holders[i], stakes[i]);
+    function _mintTokens(ACL _acl, TokenManager _tokenManager, address[] _holders, uint256[] _stakes) internal {
+        _createPermissionForTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
+        for (uint256 i = 0; i < _holders.length; i++) {
+            _tokenManager.mint(_holders[i], _stakes[i]);
         }
-        _removePermissionFromTemplate(acl, tokenManager, tokenManager.MINT_ROLE());
+        _removePermissionFromTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
     }
 
-    function _createCustomVotingPermissions(ACL acl, Voting voting, TokenManager tokenManager) internal {
-        acl.createPermission(tokenManager, voting, voting.CREATE_VOTES_ROLE(), voting);
-        _createVotingPermissions(acl, voting, voting, voting);
+    function _createCustomVotingPermissions(ACL _acl, Voting _voting, TokenManager _tokenManager) internal {
+        _acl.createPermission(_tokenManager, _voting, _voting.CREATE_VOTES_ROLE(), _voting);
+        _createVotingPermissions(_acl, _voting, _voting, _voting);
     }
 
-    function _createCustomTokenManagerPermissions(ACL acl, TokenManager tokenManager, Voting voting) internal {
-        acl.createPermission(voting, tokenManager, tokenManager.BURN_ROLE(), voting);
-        acl.createPermission(voting, tokenManager, tokenManager.MINT_ROLE(), voting);
+    function _createCustomTokenManagerPermissions(ACL _acl, TokenManager _tokenManager, Voting _voting) internal {
+        _acl.createPermission(_voting, _tokenManager, _tokenManager.BURN_ROLE(), _voting);
+        _acl.createPermission(_voting, _tokenManager, _tokenManager.MINT_ROLE(), _voting);
     }
 
-    function _cacheToken(MiniMeToken token, address owner) internal {
-        tokenCache[owner] = token;
+    function _cacheToken(MiniMeToken _token, address _owner) internal {
+        tokenCache[_owner] = _token;
     }
 
-    function _popTokenCache(address owner) internal returns (MiniMeToken) {
-        require(tokenCache[owner] != address(0), ERROR_MISSING_TOKEN_CACHE);
+    function _popTokenCache(address _owner) internal returns (MiniMeToken) {
+        require(tokenCache[_owner] != address(0), ERROR_MISSING_TOKEN_CACHE);
 
-        MiniMeToken token = MiniMeToken(tokenCache[owner]);
-        delete tokenCache[owner];
+        MiniMeToken token = MiniMeToken(tokenCache[_owner]);
+        delete tokenCache[_owner];
         return token;
     }
 }

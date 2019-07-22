@@ -12,7 +12,6 @@ import "@aragon/apps-finance/contracts/Finance.sol";
 import "@aragon/apps-token-manager/contracts/TokenManager.sol";
 import "@aragon/apps-shared-minime/contracts/MiniMeToken.sol";
 import "@aragon/templates-shared/contracts/BaseTemplate.sol";
-import "@aragon/id/contracts/IFIFSResolvingRegistrar.sol";
 import "./MultiSigWallet.sol";
 
 
@@ -84,37 +83,37 @@ contract TrustTemplate is BaseTemplate {
         return dao;
     }
 
-    function setupDAO(string id, address[] beneficiaryKeys, address[] heirs, uint256[] heirsStake) public returns (Kernel) {
+    function setupDAO(string _id, address[] _beneficiaryKeys, address[] _heirs, uint256[] _heirsStake) public returns (Kernel) {
         require(_hasDaoCache(msg.sender), ERROR_MISSING_CACHE_TOKENS_FOR_SENDER);
-        require(heirs.length == heirsStake.length, ERROR_BAD_HEIRS_LENGTH);
-        require(beneficiaryKeys.length == BENEFICIARY_KEYS_AMOUNT, ERROR_BAD_BENEFICIARY_KEYS_LENGTH);
-        uint256 blockedHeirsSupply = _calculateBlockedHeirsSupply(heirsStake);
+        require(_heirs.length == _heirsStake.length, ERROR_BAD_HEIRS_LENGTH);
+        require(_beneficiaryKeys.length == BENEFICIARY_KEYS_AMOUNT, ERROR_BAD_BENEFICIARY_KEYS_LENGTH);
+        uint256 blockedHeirsSupply = _calculateBlockedHeirsSupply(_heirsStake);
 
         Kernel dao = _getDaoCache(msg.sender);
-        _setupApps(dao, beneficiaryKeys, heirs, heirsStake, blockedHeirsSupply);
-        _registerID(id, address(dao));
+        _setupApps(dao, _beneficiaryKeys, _heirs, _heirsStake, blockedHeirsSupply);
+        _registerID(_id, address(dao));
         return dao;
     }
 
-    function setupMultiSig(address[] multiSigKeys) public returns (MultiSigWallet) {
+    function setupMultiSig(address[] _multiSigKeys) public returns (MultiSigWallet) {
         require(_hasDaoCache(msg.sender) && _hasAppsCache(msg.sender), ERROR_MISSING_CACHE_TOKENS_FOR_SENDER);
-        require(multiSigKeys.length == MULTI_SIG_EXTERNAL_KEYS_AMOUNT, ERROR_BAD_MULTI_SIG_KEYS_LENGTH);
+        require(_multiSigKeys.length == MULTI_SIG_EXTERNAL_KEYS_AMOUNT, ERROR_BAD_MULTI_SIG_KEYS_LENGTH);
 
         Kernel dao = _getDaoCache(msg.sender);
-        MultiSigWallet multiSig = _setupMultiSig(dao, multiSigKeys);
+        MultiSigWallet multiSig = _setupMultiSig(dao, _multiSigKeys);
         emit DeployMultiSig(address(multiSig));
         return multiSig;
     }
 
-    function _setupApps(Kernel dao, address[] beneficiaryKeys, address[] heirs, uint256[] heirsStake, uint256 blockedHeirsSupply) internal {
-        ACL acl = ACL(dao.acl());
-        Agent agent = _installNonDefaultAgentApp(dao);
-        Vault vault = _installVaultApp(dao);
-        Finance finance = _installFinanceApp(dao, vault, 30 days);
-        (Voting holdVoting, Voting heirsVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager) = _installTokenApps(dao);
+    function _setupApps(Kernel _dao, address[] _beneficiaryKeys, address[] _heirs, uint256[] _heirsStake, uint256 _blockedHeirsSupply) internal {
+        ACL acl = ACL(_dao.acl());
+        Agent agent = _installNonDefaultAgentApp(_dao);
+        Vault vault = _installVaultApp(_dao);
+        Finance finance = _installFinanceApp(_dao, vault, 30 days);
+        (Voting holdVoting, Voting heirsVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager) = _installTokenApps(_dao);
 
-        _mintHoldTokens(acl, holdTokenManager, beneficiaryKeys);
-        _mintHeirsTokens(acl, heirsTokenManager, heirs, heirsStake, blockedHeirsSupply);
+        _mintHoldTokens(acl, holdTokenManager, _beneficiaryKeys);
+        _mintHeirsTokens(acl, heirsTokenManager, _heirs, _heirsStake, _blockedHeirsSupply);
 
         _createVaultPermissions(acl, vault, finance, holdVoting);
         _createFinancePermissions(acl, finance, holdVoting, holdVoting);
@@ -128,138 +127,138 @@ contract TrustTemplate is BaseTemplate {
         _storeAppsCache(msg.sender, agent, holdVoting, holdTokenManager, heirsTokenManager);
     }
 
-    function _setupMultiSig(Kernel dao, address[] multiSigKeys) internal returns (MultiSigWallet) {
-        ACL acl = ACL(dao.acl());
+    function _setupMultiSig(Kernel _dao, address[] _multiSigKeys) internal returns (MultiSigWallet) {
+        ACL acl = ACL(_dao.acl());
 
         (Agent agent, Voting holdVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager) = _getAppsCache(msg.sender);
-        MultiSigWallet multiSig = _createMultiSig(multiSigKeys, agent);
+        MultiSigWallet multiSig = _createMultiSig(_multiSigKeys, agent);
         _createMultiSigPermissions(acl, multiSig, holdTokenManager, heirsTokenManager);
-        _transferRootPermissionsFromTemplate(dao, holdVoting);
+        _transferRootPermissionsFromTemplate(_dao, holdVoting);
         _cleanCache(msg.sender);
         return multiSig;
     }
 
-    function _createMultiSig(address[] multiSigKeys, Agent agent) internal returns (MultiSigWallet) {
+    function _createMultiSig(address[] _multiSigKeys, Agent _agent) internal returns (MultiSigWallet) {
         address[] memory multiSigOwners = new address[](3);
-        multiSigOwners[0] = multiSigKeys[0];
-        multiSigOwners[1] = multiSigKeys[1];
-        multiSigOwners[2] = address(agent);
+        multiSigOwners[0] = _multiSigKeys[0];
+        multiSigOwners[1] = _multiSigKeys[1];
+        multiSigOwners[2] = address(_agent);
         return new MultiSigWallet(multiSigOwners, MULTI_SIG_REQUIRED_CONFIRMATIONS);
     }
 
-    function _installTokenApps(Kernel dao)
+    function _installTokenApps(Kernel _dao)
         internal
         returns (Voting holdVoting, Voting heirsVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager)
     {
         (MiniMeToken holdToken, MiniMeToken heirsToken) = _getTokensCache(msg.sender);
 
-        holdVoting = _installVotingApp(dao, holdToken, HOLD_SUPPORT_REQUIRED, HOLD_MIN_ACCEPTANCE_QUORUM, HOLD_VOTE_DURATION);
-        heirsVoting = _installVotingApp(dao, heirsToken, HEIRS_SUPPORT_REQUIRED, HEIRS_MIN_ACCEPTANCE_QUORUM, HEIRS_VOTE_DURATION);
-        holdTokenManager = _installTokenManagerApp(dao, holdToken, HOLD_TOKEN_TRANSFERABLE, HOLD_TOKEN_MAX_PER_ACCOUNT);
-        heirsTokenManager = _installTokenManagerApp(dao, heirsToken, HEIRS_TOKEN_TRANSFERABLE, HEIRS_TOKEN_MAX_PER_ACCOUNT);
+        holdVoting = _installVotingApp(_dao, holdToken, HOLD_SUPPORT_REQUIRED, HOLD_MIN_ACCEPTANCE_QUORUM, HOLD_VOTE_DURATION);
+        heirsVoting = _installVotingApp(_dao, heirsToken, HEIRS_SUPPORT_REQUIRED, HEIRS_MIN_ACCEPTANCE_QUORUM, HEIRS_VOTE_DURATION);
+        holdTokenManager = _installTokenManagerApp(_dao, holdToken, HOLD_TOKEN_TRANSFERABLE, HOLD_TOKEN_MAX_PER_ACCOUNT);
+        heirsTokenManager = _installTokenManagerApp(_dao, heirsToken, HEIRS_TOKEN_TRANSFERABLE, HEIRS_TOKEN_MAX_PER_ACCOUNT);
     }
 
-    function _mintHoldTokens(ACL acl, TokenManager holdTokenManager, address[] beneficiaryKeys) internal {
-        _createPermissionForTemplate(acl, holdTokenManager, holdTokenManager.MINT_ROLE());
-        holdTokenManager.mint(beneficiaryKeys[0], 1e18);
-        holdTokenManager.mint(beneficiaryKeys[1], 1e18);
-        _removePermissionFromTemplate(acl, holdTokenManager, holdTokenManager.MINT_ROLE());
+    function _mintHoldTokens(ACL _acl, TokenManager _holdTokenManager, address[] _beneficiaryKeys) internal {
+        _createPermissionForTemplate(_acl, _holdTokenManager, _holdTokenManager.MINT_ROLE());
+        _holdTokenManager.mint(_beneficiaryKeys[0], 1e18);
+        _holdTokenManager.mint(_beneficiaryKeys[1], 1e18);
+        _removePermissionFromTemplate(_acl, _holdTokenManager, _holdTokenManager.MINT_ROLE());
     }
 
-    function _mintHeirsTokens(ACL acl, TokenManager heirsTokenManager, address[] heirs, uint256[] heirsStake, uint256 blockedHeirsSupply)
+    function _mintHeirsTokens(ACL _acl, TokenManager _heirsTokenManager, address[] _heirs, uint256[] _heirsStake, uint256 _blockedHeirsSupply)
         internal
     {
-        _createPermissionForTemplate(acl, heirsTokenManager, heirsTokenManager.MINT_ROLE());
-        heirsTokenManager.mint(address(0), blockedHeirsSupply);
-        for (uint256 i = 0; i < heirs.length; i++) {
-            heirsTokenManager.mint(heirs[i], heirsStake[i]);
+        _createPermissionForTemplate(_acl, _heirsTokenManager, _heirsTokenManager.MINT_ROLE());
+        _heirsTokenManager.mint(address(0), _blockedHeirsSupply);
+        for (uint256 i = 0; i < _heirs.length; i++) {
+            _heirsTokenManager.mint(_heirs[i], _heirsStake[i]);
         }
-        _removePermissionFromTemplate(acl, heirsTokenManager, heirsTokenManager.MINT_ROLE());
+        _removePermissionFromTemplate(_acl, _heirsTokenManager, _heirsTokenManager.MINT_ROLE());
     }
 
-    function _createCustomAgentPermissions(ACL acl, Agent agent, Voting holdVoting, Voting heirsVoting) internal {
+    function _createCustomAgentPermissions(ACL _acl, Agent _agent, Voting _holdVoting, Voting _heirsVoting) internal {
         address[] memory grantees = new address[](2);
-        grantees[0] = address(holdVoting);
-        grantees[1] = address(heirsVoting);
+        grantees[0] = address(_holdVoting);
+        grantees[1] = address(_heirsVoting);
 
-        _createPermissions(acl, grantees, agent, agent.EXECUTE_ROLE(), holdVoting);
-        _createPermissions(acl, grantees, agent, agent.RUN_SCRIPT_ROLE(), holdVoting);
+        _createPermissions(_acl, grantees, _agent, _agent.EXECUTE_ROLE(), _holdVoting);
+        _createPermissions(_acl, grantees, _agent, _agent.RUN_SCRIPT_ROLE(), _holdVoting);
     }
 
-    function _createCustomTokenManagerPermissions(ACL acl, TokenManager tokenManager, Voting voting) internal {
-        acl.createPermission(voting, tokenManager, tokenManager.ASSIGN_ROLE(), voting);
-        acl.createPermission(voting, tokenManager, tokenManager.REVOKE_VESTINGS_ROLE(), voting);
+    function _createCustomTokenManagerPermissions(ACL _acl, TokenManager _tokenManager, Voting _voting) internal {
+        _acl.createPermission(_voting, _tokenManager, _tokenManager.ASSIGN_ROLE(), _voting);
+        _acl.createPermission(_voting, _tokenManager, _tokenManager.REVOKE_VESTINGS_ROLE(), _voting);
     }
 
-    function _createCustomVotingPermissions(ACL acl, TokenManager tokenManager, Voting voting) internal {
-        acl.createPermission(tokenManager, voting, voting.CREATE_VOTES_ROLE(), voting);
-        acl.createPermission(voting, voting, voting.MODIFY_QUORUM_ROLE(), voting);
-        acl.createPermission(voting, voting, voting.MODIFY_SUPPORT_ROLE(), voting);
+    function _createCustomVotingPermissions(ACL _acl, TokenManager _tokenManager, Voting _voting) internal {
+        _acl.createPermission(_tokenManager, _voting, _voting.CREATE_VOTES_ROLE(), _voting);
+        _acl.createPermission(_voting, _voting, _voting.MODIFY_QUORUM_ROLE(), _voting);
+        _acl.createPermission(_voting, _voting, _voting.MODIFY_SUPPORT_ROLE(), _voting);
     }
 
-    function _createMultiSigPermissions(ACL acl, MultiSigWallet multiSig, TokenManager holdTokenManager, TokenManager heirsTokenManager)
+    function _createMultiSigPermissions(ACL _acl, MultiSigWallet _multiSig, TokenManager _holdTokenManager, TokenManager _heirsTokenManager)
         internal
     {
-         acl.createPermission(multiSig, holdTokenManager, holdTokenManager.BURN_ROLE(), multiSig);
-         acl.createPermission(multiSig, holdTokenManager, holdTokenManager.MINT_ROLE(), multiSig);
-         acl.createPermission(multiSig, heirsTokenManager, heirsTokenManager.BURN_ROLE(), multiSig);
-         acl.createPermission(multiSig, heirsTokenManager, heirsTokenManager.MINT_ROLE(), multiSig);
+         _acl.createPermission(_multiSig, _holdTokenManager, _holdTokenManager.BURN_ROLE(), _multiSig);
+         _acl.createPermission(_multiSig, _holdTokenManager, _holdTokenManager.MINT_ROLE(), _multiSig);
+         _acl.createPermission(_multiSig, _heirsTokenManager, _heirsTokenManager.BURN_ROLE(), _multiSig);
+         _acl.createPermission(_multiSig, _heirsTokenManager, _heirsTokenManager.MINT_ROLE(), _multiSig);
     }
 
-    function _storeDaoCache(address owner, Kernel dao, MiniMeToken holdToken, MiniMeToken heirsToken) internal {
-        daoCache[owner] = DaoCache({ dao: dao, holdToken: holdToken, heirsToken: heirsToken });
+    function _storeDaoCache(address _owner, Kernel _dao, MiniMeToken _holdToken, MiniMeToken _heirsToken) internal {
+        daoCache[_owner] = DaoCache({ dao: _dao, holdToken: _holdToken, heirsToken: _heirsToken });
     }
 
-    function _hasDaoCache(address owner) internal view returns (bool) {
-        DaoCache storage c = daoCache[owner];
+    function _hasDaoCache(address _owner) internal view returns (bool) {
+        DaoCache storage c = daoCache[_owner];
         return c.dao != address(0) && c.holdToken != address(0) && c.heirsToken != address(0);
     }
 
-    function _hasAppsCache(address owner) internal view returns (bool) {
-        AppsCache storage c = appsCache[owner];
+    function _hasAppsCache(address _owner) internal view returns (bool) {
+        AppsCache storage c = appsCache[_owner];
         return c.agent != address(0) && c.holdVoting != address(0) && c.holdTokenManager != address(0) && c.heirsTokenManager != address(0);
     }
 
-    function _storeAppsCache(address owner, Agent agent, Voting holdVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager)
+    function _storeAppsCache(address _owner, Agent _agent, Voting _holdVoting, TokenManager _holdTokenManager, TokenManager _heirsTokenManager)
         internal
     {
-        appsCache[owner] = AppsCache({
-            agent: agent,
-            holdVoting: holdVoting,
-            holdTokenManager: holdTokenManager,
-            heirsTokenManager: heirsTokenManager
+        appsCache[_owner] = AppsCache({
+            agent: _agent,
+            holdVoting: _holdVoting,
+            holdTokenManager: _holdTokenManager,
+            heirsTokenManager: _heirsTokenManager
         });
     }
 
-    function _cleanCache(address owner) internal {
-        delete daoCache[owner];
-        delete appsCache[owner];
+    function _cleanCache(address _owner) internal {
+        delete daoCache[_owner];
+        delete appsCache[_owner];
     }
 
-    function _getDaoCache(address owner) internal view returns (Kernel) {
-        return Kernel(daoCache[owner].dao);
+    function _getDaoCache(address _owner) internal view returns (Kernel) {
+        return Kernel(daoCache[_owner].dao);
     }
 
-    function _getTokensCache(address owner) internal view returns (MiniMeToken holdToken, MiniMeToken heirsToken) {
-        DaoCache storage c = daoCache[owner];
+    function _getTokensCache(address _owner) internal view returns (MiniMeToken holdToken, MiniMeToken heirsToken) {
+        DaoCache storage c = daoCache[_owner];
         holdToken = MiniMeToken(c.holdToken);
         heirsToken = MiniMeToken(c.heirsToken);
     }
 
-    function _getAppsCache(address owner) internal view
+    function _getAppsCache(address _owner) internal view
         returns (Agent agent, Voting holdVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager)
     {
-        AppsCache storage c = appsCache[owner];
+        AppsCache storage c = appsCache[_owner];
         agent = Agent(c.agent);
         holdVoting = Voting(c.holdVoting);
         holdTokenManager = TokenManager(c.holdTokenManager);
         heirsTokenManager = TokenManager(c.heirsTokenManager);
     }
 
-    function _calculateBlockedHeirsSupply(uint256[] heirsStake) internal pure returns (uint256) {
+    function _calculateBlockedHeirsSupply(uint256[] _heirsStake) internal pure returns (uint256) {
         uint256 totalHeirsSupply = 0;
-        for (uint256 i = 0; i < heirsStake.length; i++) {
-            totalHeirsSupply = totalHeirsSupply.add(heirsStake[i]);
+        for (uint256 i = 0; i < _heirsStake.length; i++) {
+            totalHeirsSupply = totalHeirsSupply.add(_heirsStake[i]);
         }
         uint256 support = HEIRS_SUPPORT_REQUIRED / ONE_PCT;
         require(totalHeirsSupply.mul(100) % support == 0, ERROR_INVALID_HEIRS_STAKE);

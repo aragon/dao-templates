@@ -67,170 +67,170 @@ contract BaseTemplate is APMNamehash, IsContract {
 
     /* ACL */
 
-    function _createPermissions(ACL acl, address[] grantees, address app, bytes32 permission, address manager) internal {
-        acl.createPermission(grantees[0], app, permission, address(this));
-        for (uint256 i = 1; i < grantees.length; i++) {
-            acl.grantPermission(grantees[i], app, permission);
+    function _createPermissions(ACL _acl, address[] _grantees, address _app, bytes32 _permission, address _manager) internal {
+        _acl.createPermission(_grantees[0], _app, _permission, address(this));
+        for (uint256 i = 1; i < _grantees.length; i++) {
+            _acl.grantPermission(_grantees[i], _app, _permission);
         }
-        acl.revokePermission(address(this), app, permission);
-        acl.setPermissionManager(manager, app, permission);
+        _acl.revokePermission(address(this), _app, _permission);
+        _acl.setPermissionManager(_manager, _app, _permission);
     }
 
-    function _createPermissionForTemplate(ACL acl, address app, bytes32 permission) internal {
-        acl.createPermission(address(this), app, permission, address(this));
+    function _createPermissionForTemplate(ACL _acl, address _app, bytes32 _permission) internal {
+        _acl.createPermission(address(this), _app, _permission, address(this));
     }
 
-    function _removePermissionFromTemplate(ACL acl, address app, bytes32 permission) internal {
-        acl.revokePermission(address(this), app, permission);
-        acl.removePermissionManager(app, permission);
+    function _removePermissionFromTemplate(ACL _acl, address _app, bytes32 _permission) internal {
+        _acl.revokePermission(address(this), _app, _permission);
+        _acl.removePermissionManager(_app, _permission);
     }
 
-    function _transferPermissionFromTemplate(ACL acl, address to, address app, bytes32 permission) internal {
-        _transferPermissionFromTemplate(acl, to, to, app, permission);
+    function _transferPermissionFromTemplate(ACL _acl, address _to, address _app, bytes32 _permission) internal {
+        _transferPermissionFromTemplate(_acl, _to, _to, _app, _permission);
     }
 
-    function _transferPermissionFromTemplate(ACL acl, address to, address manager, address app, bytes32 permission) internal {
-        acl.grantPermission(to, app, permission);
-        acl.revokePermission(address(this), app, permission);
-        acl.setPermissionManager(manager, app, permission);
+    function _transferPermissionFromTemplate(ACL _acl, address _to, address _manager, address _app, bytes32 _permission) internal {
+        _acl.grantPermission(_to, _app, _permission);
+        _acl.revokePermission(address(this), _app, _permission);
+        _acl.setPermissionManager(_manager, _app, _permission);
     }
 
-    function _transferRootPermissionsFromTemplate(Kernel dao, address to) internal {
-        ACL acl = ACL(dao.acl());
-        _transferPermissionFromTemplate(acl, to, dao, dao.APP_MANAGER_ROLE());
-        _transferPermissionFromTemplate(acl, to, acl, acl.CREATE_PERMISSIONS_ROLE());
+    function _transferRootPermissionsFromTemplate(Kernel _dao, address _to) internal {
+        ACL _acl = ACL(_dao.acl());
+        _transferPermissionFromTemplate(_acl, _to, _dao, _dao.APP_MANAGER_ROLE());
+        _transferPermissionFromTemplate(_acl, _to, _acl, _acl.CREATE_PERMISSIONS_ROLE());
     }
 
-    function _transferRootPermissionsFromTemplate(Kernel dao, address to, address manager) internal {
-        ACL acl = ACL(dao.acl());
-        _transferPermissionFromTemplate(acl, to, manager, dao, dao.APP_MANAGER_ROLE());
-        _transferPermissionFromTemplate(acl, to, manager, acl, acl.CREATE_PERMISSIONS_ROLE());
+    function _transferRootPermissionsFromTemplate(Kernel _dao, address _to, address _manager) internal {
+        ACL _acl = ACL(_dao.acl());
+        _transferPermissionFromTemplate(_acl, _to, _manager, _dao, _dao.APP_MANAGER_ROLE());
+        _transferPermissionFromTemplate(_acl, _to, _manager, _acl, _acl.CREATE_PERMISSIONS_ROLE());
     }
 
     /* AGENT */
 
-    function _installDefaultAgentApp(Kernel dao) internal returns (Agent) {
-        Agent agent = Agent(_installDefaultApp(dao, AGENT_APP_ID));
+    function _installDefaultAgentApp(Kernel _dao) internal returns (Agent) {
+        Agent agent = Agent(_installDefaultApp(_dao, AGENT_APP_ID));
         agent.initialize();
         return agent;
     }
 
-    function _installNonDefaultAgentApp(Kernel dao) internal returns (Agent) {
-        Agent agent = Agent(_installNonDefaultApp(dao, AGENT_APP_ID));
+    function _installNonDefaultAgentApp(Kernel _dao) internal returns (Agent) {
+        Agent agent = Agent(_installNonDefaultApp(_dao, AGENT_APP_ID));
         agent.initialize();
         return agent;
     }
 
-    function _createAgentPermissions(ACL acl, Agent agent, address grantee, address manager) internal {
-        acl.createPermission(grantee, agent, agent.EXECUTE_ROLE(), manager);
-        acl.createPermission(grantee, agent, agent.RUN_SCRIPT_ROLE(), manager);
+    function _createAgentPermissions(ACL _acl, Agent _agent, address _grantee, address _manager) internal {
+        _acl.createPermission(_grantee, _agent, _agent.EXECUTE_ROLE(), _manager);
+        _acl.createPermission(_grantee, _agent, _agent.RUN_SCRIPT_ROLE(), _manager);
     }
 
     /* FINANCE */
 
-    function _installFinanceApp(Kernel dao, Vault vault, uint64 periodDuration) internal returns (Finance) {
-        Finance finance = Finance(_installNonDefaultApp(dao, FINANCE_APP_ID));
-        finance.initialize(vault, periodDuration);
+    function _installFinanceApp(Kernel _dao, Vault _vault, uint64 _periodDuration) internal returns (Finance) {
+        Finance finance = Finance(_installNonDefaultApp(_dao, FINANCE_APP_ID));
+        finance.initialize(_vault, _periodDuration);
         return finance;
     }
 
-    function _createFinancePermissions(ACL acl, Finance finance, address grantee, address manager) internal {
-        acl.createPermission(grantee, finance, finance.CREATE_PAYMENTS_ROLE(), manager);
-        acl.createPermission(grantee, finance, finance.EXECUTE_PAYMENTS_ROLE(), manager);
-        acl.createPermission(grantee, finance, finance.MANAGE_PAYMENTS_ROLE(), manager);
+    function _createFinancePermissions(ACL _acl, Finance finance, address _grantee, address _manager) internal {
+        _acl.createPermission(_grantee, finance, finance.CREATE_PAYMENTS_ROLE(), _manager);
+        _acl.createPermission(_grantee, finance, finance.EXECUTE_PAYMENTS_ROLE(), _manager);
+        _acl.createPermission(_grantee, finance, finance.MANAGE_PAYMENTS_ROLE(), _manager);
     }
 
     /* TOKEN MANAGER */
 
-    function _installTokenManagerApp(Kernel dao, MiniMeToken token, bool transferable, uint256 maxAccountTokens) internal returns (TokenManager) {
-        TokenManager tokenManager = TokenManager(_installNonDefaultApp(dao, TOKEN_MANAGER_APP_ID));
-        token.changeController(tokenManager);
-        tokenManager.initialize(token, transferable, maxAccountTokens);
+    function _installTokenManagerApp(Kernel _dao, MiniMeToken _token, bool _transferable, uint256 _maxAccountTokens) internal returns (TokenManager) {
+        TokenManager tokenManager = TokenManager(_installNonDefaultApp(_dao, TOKEN_MANAGER_APP_ID));
+        _token.changeController(tokenManager);
+        tokenManager.initialize(_token, _transferable, _maxAccountTokens);
         return tokenManager;
     }
 
-    function _createTokenManagerPermissions(ACL acl, TokenManager tokenManager, address grantee, address manager) internal {
-        acl.createPermission(grantee, tokenManager, tokenManager.MINT_ROLE(), manager);
-        acl.createPermission(grantee, tokenManager, tokenManager.ASSIGN_ROLE(), manager);
-        acl.createPermission(grantee, tokenManager, tokenManager.REVOKE_VESTINGS_ROLE(), manager);
+    function _createTokenManagerPermissions(ACL _acl, TokenManager _tokenManager, address _grantee, address _manager) internal {
+        _acl.createPermission(_grantee, _tokenManager, _tokenManager.MINT_ROLE(), _manager);
+        _acl.createPermission(_grantee, _tokenManager, _tokenManager.ASSIGN_ROLE(), _manager);
+        _acl.createPermission(_grantee, _tokenManager, _tokenManager.REVOKE_VESTINGS_ROLE(), _manager);
     }
 
     /* VAULT */
 
-    function _installVaultApp(Kernel dao) internal returns (Vault) {
-        Vault vault = Vault(_installDefaultApp(dao, VAULT_APP_ID));
+    function _installVaultApp(Kernel _dao) internal returns (Vault) {
+        Vault vault = Vault(_installDefaultApp(_dao, VAULT_APP_ID));
         vault.initialize();
         return vault;
     }
 
-    function _createVaultPermissions(ACL acl, Vault vault, address grantee, address manager) internal {
-        acl.createPermission(grantee, vault, vault.TRANSFER_ROLE(), manager);
+    function _createVaultPermissions(ACL _acl, Vault _vault, address _grantee, address _manager) internal {
+        _acl.createPermission(_grantee, _vault, _vault.TRANSFER_ROLE(), _manager);
     }
 
     /* VOTING */
 
-    function _installVotingApp(Kernel dao, MiniMeToken token, uint64 support, uint64 acceptance, uint64 duration) internal returns (Voting) {
-        Voting voting = Voting(_installNonDefaultApp(dao, VOTING_APP_ID));
-        voting.initialize(token, support, acceptance, duration);
+    function _installVotingApp(Kernel _dao, MiniMeToken _token, uint64 _support, uint64 _acceptance, uint64 _duration) internal returns (Voting) {
+        Voting voting = Voting(_installNonDefaultApp(_dao, VOTING_APP_ID));
+        voting.initialize(_token, _support, _acceptance, _duration);
         return voting;
     }
 
-    function _createVotingPermissions(ACL acl, Voting voting, address grantee, address manager) internal {
-        acl.createPermission(grantee, voting, voting.MODIFY_QUORUM_ROLE(), manager);
-        acl.createPermission(grantee, voting, voting.MODIFY_SUPPORT_ROLE(), manager);
+    function _createVotingPermissions(ACL _acl, Voting _voting, address _grantee, address _manager) internal {
+        _acl.createPermission(_grantee, _voting, _voting.MODIFY_QUORUM_ROLE(), _manager);
+        _acl.createPermission(_grantee, _voting, _voting.MODIFY_SUPPORT_ROLE(), _manager);
     }
 
     /* EVM SCRIPTS */
 
-    function _createEvmScriptsRegistryPermissions(ACL acl, address grantee, address manager) internal {
-        EVMScriptRegistry registry = EVMScriptRegistry(acl.getEVMScriptRegistry());
-        acl.createPermission(grantee, registry, registry.REGISTRY_MANAGER_ROLE(), manager);
-        acl.createPermission(grantee, registry, registry.REGISTRY_ADD_EXECUTOR_ROLE(), manager);
+    function _createEvmScriptsRegistryPermissions(ACL _acl, address _grantee, address _manager) internal {
+        EVMScriptRegistry registry = EVMScriptRegistry(_acl.getEVMScriptRegistry());
+        _acl.createPermission(_grantee, registry, registry.REGISTRY_MANAGER_ROLE(), _manager);
+        _acl.createPermission(_grantee, registry, registry.REGISTRY_ADD_EXECUTOR_ROLE(), _manager);
     }
 
     /* APPS */
 
-    function _installNonDefaultApp(Kernel dao, bytes32 appId) internal returns (address) {
-        return _installApp(dao, appId, new bytes(0), false);
+    function _installNonDefaultApp(Kernel _dao, bytes32 _appId) internal returns (address) {
+        return _installApp(_dao, _appId, new bytes(0), false);
     }
 
-    function _installDefaultApp(Kernel dao, bytes32 appId) internal returns (address) {
-        return _installApp(dao, appId, new bytes(0), true);
+    function _installDefaultApp(Kernel _dao, bytes32 _appId) internal returns (address) {
+        return _installApp(_dao, _appId, new bytes(0), true);
     }
 
-    function _installApp(Kernel dao, bytes32 appId, bytes data, bool setDefault) internal returns (address) {
-        address latestBaseAppAddress = _latestVersionAppBase(appId);
-        address instance = address(dao.newAppInstance(appId, latestBaseAppAddress, data, setDefault));
-        emit InstalledApp(instance, appId);
+    function _installApp(Kernel _dao, bytes32 _appId, bytes _data, bool _setDefault) internal returns (address) {
+        address latestBaseAppAddress = _latestVersionAppBase(_appId);
+        address instance = address(_dao.newAppInstance(_appId, latestBaseAppAddress, _data, _setDefault));
+        emit InstalledApp(instance, _appId);
         return instance;
     }
 
-    function _latestVersionAppBase(bytes32 appId) internal view returns (address base) {
-        Repo repo = Repo(PublicResolver(ens.resolver(appId)).addr(appId));
+    function _latestVersionAppBase(bytes32 _appId) internal view returns (address base) {
+        Repo repo = Repo(PublicResolver(ens.resolver(_appId)).addr(_appId));
         (,base,) = repo.getLatest();
     }
 
     /* TOKEN */
 
-    function _createToken(string name, string symbol) internal returns (MiniMeToken) {
+    function _createToken(string _name, string _symbol) internal returns (MiniMeToken) {
         require(address(miniMeFactory) != address(0), ERROR_MINIME_FACTORY_NOT_PROVIDED);
-        MiniMeToken token = miniMeFactory.createCloneToken(MiniMeToken(address(0)), 0, name, 18, symbol, true);
+        MiniMeToken token = miniMeFactory.createCloneToken(MiniMeToken(address(0)), 0, _name, 18, _symbol, true);
         emit DeployToken(address(token));
         return token;
     }
 
-    function _ensureMiniMeFactoryIsValid(address _miniMeFactory) internal {
+    function _ensureMiniMeFactoryIsValid(address _miniMeFactory) internal view {
         require(isContract(address(_miniMeFactory)), ERROR_MINIME_FACTORY_NOT_CONTRACT);
     }
 
     /* IDS */
 
-    function _registerID(string name, address owner) internal {
+    function _registerID(string _name, address _owner) internal {
         require(address(aragonID) != address(0), ERROR_ARAGON_ID_NOT_PROVIDED);
-        aragonID.register(keccak256(abi.encodePacked(name)), owner);
+        aragonID.register(keccak256(abi.encodePacked(_name)), _owner);
     }
 
-    function _ensureAragonIdIsValid(address _aragonID) internal {
+    function _ensureAragonIdIsValid(address _aragonID) internal view {
         require(isContract(address(_aragonID)), ERROR_ARAGON_ID_NOT_CONTRACT);
     }
 }

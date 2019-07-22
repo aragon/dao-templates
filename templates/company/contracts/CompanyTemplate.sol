@@ -27,10 +27,10 @@ contract CompanyTemplate is BaseTemplate {
         _ensureMiniMeFactoryIsValid(_miniMeFactory);
     }
 
-    function newTokenAndInstance(string id, address[] holders, uint256[] stakes) public {
-        require(holders.length == stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
+    function newTokenAndInstance(string _id, address[] _holders, uint256[] _stakes) public {
+        require(_holders.length == _stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         newToken();
-        newInstance(id, holders, stakes);
+        newInstance(_id, _holders, _stakes);
     }
 
     function newToken() public returns (MiniMeToken) {
@@ -39,8 +39,8 @@ contract CompanyTemplate is BaseTemplate {
         return token;
     }
 
-    function newInstance(string id, address[] holders, uint256[] stakes) public {
-        require(holders.length == stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
+    function newInstance(string _id, address[] _holders, uint256[] _stakes) public {
+        require(_holders.length == _stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         MiniMeToken token = _popTokenCache(msg.sender);
 
         // Create DAO and install apps
@@ -52,8 +52,8 @@ contract CompanyTemplate is BaseTemplate {
 
         // Mint tokens
         _createPermissionForTemplate(acl, tokenManager, tokenManager.MINT_ROLE());
-        for (uint256 i = 0; i < holders.length; i++) {
-            tokenManager.mint(holders[i], stakes[i]);
+        for (uint256 i = 0; i < _holders.length; i++) {
+            tokenManager.mint(_holders[i], _stakes[i]);
         }
         _removePermissionFromTemplate(acl, tokenManager, tokenManager.MINT_ROLE());
 
@@ -66,29 +66,29 @@ contract CompanyTemplate is BaseTemplate {
         _createVotingPermissions(acl, voting, tokenManager);
         _transferRootPermissionsFromTemplate(dao, voting);
 
-        _registerID(id, dao);
+        _registerID(_id, dao);
     }
 
-    function _createVotingPermissions(ACL acl, Voting voting, TokenManager tokenManager) internal {
-        acl.createPermission(tokenManager, voting, voting.CREATE_VOTES_ROLE(), voting);
-        acl.createPermission(voting, voting, voting.MODIFY_QUORUM_ROLE(), voting);
-        acl.createPermission(voting, voting, voting.MODIFY_SUPPORT_ROLE(), voting);
+    function _createVotingPermissions(ACL _acl, Voting _voting, TokenManager _tokenManager) internal {
+        _acl.createPermission(_tokenManager, _voting, _voting.CREATE_VOTES_ROLE(), _voting);
+        _acl.createPermission(_voting, _voting, _voting.MODIFY_QUORUM_ROLE(), _voting);
+        _acl.createPermission(_voting, _voting, _voting.MODIFY_SUPPORT_ROLE(), _voting);
     }
 
-    function _createTokenManagerPermissions(ACL acl, TokenManager tokenManager, Voting voting) internal {
-        acl.createPermission(voting, tokenManager, tokenManager.BURN_ROLE(), voting);
-        acl.createPermission(voting, tokenManager, tokenManager.MINT_ROLE(), voting);
+    function _createTokenManagerPermissions(ACL _acl, TokenManager _tokenManager, Voting _voting) internal {
+        _acl.createPermission(_voting, _tokenManager, _tokenManager.BURN_ROLE(), _voting);
+        _acl.createPermission(_voting, _tokenManager, _tokenManager.MINT_ROLE(), _voting);
     }
 
-    function _cacheToken(MiniMeToken token, address owner) internal {
-        tokenCache[owner] = token;
+    function _cacheToken(MiniMeToken _token, address _owner) internal {
+        tokenCache[_owner] = _token;
     }
 
-    function _popTokenCache(address owner) internal returns (MiniMeToken) {
-        require(tokenCache[owner] != address(0), ERROR_MISSING_TOKEN_CACHE);
+    function _popTokenCache(address _owner) internal returns (MiniMeToken) {
+        require(tokenCache[_owner] != address(0), ERROR_MISSING_TOKEN_CACHE);
 
-        MiniMeToken token = MiniMeToken(tokenCache[owner]);
-        delete tokenCache[owner];
+        MiniMeToken token = MiniMeToken(tokenCache[_owner]);
+        delete tokenCache[_owner];
         return token;
     }
 }
