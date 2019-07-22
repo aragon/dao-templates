@@ -134,6 +134,7 @@ contract('Multisig', ([owner, signer1, signer2, signer3, nonHolder]) => {
         // token manager
         await assertRole(acl, tokenManager, voting, 'ASSIGN_ROLE')
         await assertRole(acl, tokenManager, voting, 'REVOKE_VESTINGS_ROLE')
+        await assertRole(acl, tokenManager, voting, 'MINT_ROLE')
       })
 
       context('> Voting access', () => {
