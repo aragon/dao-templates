@@ -6,7 +6,7 @@ import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 contract CompanyBoardTemplate is BaseTemplate {
     string private constant ERROR_MISSING_DAO_CACHE = "COMPANY_MISSING_DAO_CACHE";
     string private constant ERROR_MISSING_BOARD_MEMBERS = "COMPANY_MISSING_BOARD_MEMBERS";
-    string private constant ERROR_INVALID_HOLDERS_STAKES_LEN = "COMPANY_INVALID_HOLDERS_STAKES_LEN";
+    string private constant ERROR_BAD_HOLDERS_STAKES_LEN = "COMPANY_BAD_HOLDERS_STAKES_LEN";
 
     uint64 constant private ONE_PCT = uint64(1e16);
     uint64 constant private FINANCE_PERIOD = uint64(30 days);
@@ -47,7 +47,7 @@ contract CompanyBoardTemplate is BaseTemplate {
 
     function newTokensAndInstance(string id, address[] boardMembers, address[] shareHolders, uint256[] shareStakes) public {
         require(boardMembers.length > 0, ERROR_MISSING_BOARD_MEMBERS);
-        require(shareHolders.length == shareStakes.length, ERROR_INVALID_HOLDERS_STAKES_LEN);
+        require(shareHolders.length == shareStakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
 
         newTokens();
         prepareInstance(id);
@@ -68,7 +68,7 @@ contract CompanyBoardTemplate is BaseTemplate {
 
     function setupInstance(address[] boardMembers, address[] shareHolders, uint256[] shareStakes) public {
         require(boardMembers.length > 0, ERROR_MISSING_BOARD_MEMBERS);
-        require(shareHolders.length == shareStakes.length, ERROR_INVALID_HOLDERS_STAKES_LEN);
+        require(shareHolders.length == shareStakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         (Kernel dao, MiniMeToken boardToken, MiniMeToken shareToken) = _popCache(msg.sender);
 
         // Install apps

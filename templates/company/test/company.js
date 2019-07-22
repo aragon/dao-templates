@@ -35,8 +35,8 @@ contract('Company', ([_, deployer, holder1, holder2, holder3]) => {
 
   context('when the creation fails', () => {
     it('reverts when the given holders and stakes length do not match', async () => {
-      await assertRevert(companyTemplate.newTokenAndInstance.request('id', [], STAKES), 'COMPANY_INVALID_HOLDERS_STAKES_LEN')
-      await assertRevert(companyTemplate.newTokenAndInstance.request('id', HOLDERS, []), 'COMPANY_INVALID_HOLDERS_STAKES_LEN')
+      await assertRevert(companyTemplate.newTokenAndInstance.request('id', [], STAKES), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
+      await assertRevert(companyTemplate.newTokenAndInstance.request('id', HOLDERS, []), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
     })
 
     it('reverts when there was no token cached', async () => {

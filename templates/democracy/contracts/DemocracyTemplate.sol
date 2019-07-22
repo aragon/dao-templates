@@ -8,7 +8,7 @@ contract DemocracyTemplate is BaseTemplate {
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(0);
 
     string private constant ERROR_MISSING_TOKEN_CACHE = "DEMOCRACY_MISSING_TOKEN_CACHE";
-    string private constant ERROR_INVALID_HOLDERS_STAKES_LEN = "DEMOCRACY_INVALID_HOLDERS_STAKES_LEN";
+    string private constant ERROR_BAD_HOLDERS_STAKES_LEN = "DEMOCRACY_BAD_HOLDERS_STAKES_LEN";
 
     mapping (address => address) internal tokenCache;
 
@@ -45,7 +45,7 @@ contract DemocracyTemplate is BaseTemplate {
     function newInstance(string id, address[] holders, uint256[] stakes, uint64 supportNeeded, uint64 minAcceptanceQuorum, uint64 voteDuration)
         public
     {
-        require(holders.length == stakes.length, ERROR_INVALID_HOLDERS_STAKES_LEN);
+        require(holders.length == stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         MiniMeToken token = _popTokenCache(msg.sender);
 
         // Create DAO and install apps

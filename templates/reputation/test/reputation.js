@@ -35,8 +35,8 @@ contract('Reputation', ([_, deployer, holder1, holder2, holder3]) => {
 
   context('when the creation fails', () => {
     it('reverts when the given holders and stakes length do not match', async () => {
-      await assertRevert(reputationTemplate.newTokenAndInstance.request('id', [], STAKES, { from: deployer }), 'REPUTATION_INVALID_HOLDERS_STAKES_LEN')
-      await assertRevert(reputationTemplate.newTokenAndInstance.request('id', HOLDERS, [], { from: deployer }), 'REPUTATION_INVALID_HOLDERS_STAKES_LEN')
+      await assertRevert(reputationTemplate.newTokenAndInstance.request('id', [], STAKES, { from: deployer }), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
+      await assertRevert(reputationTemplate.newTokenAndInstance.request('id', HOLDERS, [], { from: deployer }), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
     })
 
     it('reverts when there was no token cached', async () => {

@@ -11,8 +11,8 @@ contract MultisigTemplate is BaseTemplate {
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(1);
 
     string constant private ERROR_EMPTY_SIGNERS = "MULTISIG_EMPTY_SIGNERS";
-    string constant private ERROR_REQUIRED_SIGNATURES_ZERO = "MULTISIG_REQUIRED_SIGNATURES_ZERO";
-    string constant private ERROR_INVALID_REQUIRED_SIGNATURES = "MULTISIG_INVALID_REQUIRED_SIGNATURES";
+    string constant private ERROR_REQUIRED_SIGNATURES_ZERO = "MULTISIG_REQUIRED_SIGNATURE_ZERO";
+    string constant private ERROR_BAD_REQUIRED_SIGNATURES = "MULTISIG_BAD_REQUIRED_SIGNATURES";
     string constant private ERROR_MISSING_TOKEN_CACHE = "MULTISIG_MISSING_TOKEN_CACHE";
 
     mapping (address => address) internal tokenCache;
@@ -39,7 +39,7 @@ contract MultisigTemplate is BaseTemplate {
     function newInstance(string id, address[] signers, uint256 requiredSignatures) public {
         require(signers.length > 0, ERROR_EMPTY_SIGNERS);
         require(requiredSignatures > 0, ERROR_REQUIRED_SIGNATURES_ZERO);
-        require(requiredSignatures <= signers.length, ERROR_INVALID_REQUIRED_SIGNATURES);
+        require(requiredSignatures <= signers.length, ERROR_BAD_REQUIRED_SIGNATURES);
 
         // We are subtracting 1 because comparison in Voting app is strict,
         // while Multisig needs to allow equal too. So for instance in 2 out of 4

@@ -4,8 +4,8 @@ import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 
 
 contract MembershipTemplate is BaseTemplate {
-    string private constant ERROR_MISSING_TOKEN_CACHE = "MEMBERSHIP_MISSING_TOKEN_CACHE";
     string private constant ERROR_MISSING_MEMBERS = "MEMBERSHIP_MISSING_MEMBERS";
+    string private constant ERROR_MISSING_TOKEN_CACHE = "MEMBERSHIP_MISSING_TOKEN_CACHE";
 
     bool constant private TOKEN_TRANSFERABLE = false;
     string constant private TOKEN_NAME = "Member Token";

@@ -145,10 +145,10 @@ contract('Democracy', ([owner, holder20, holder29, holder51, nonHolder]) => {
         const badStakes = [20e18, 29e18]
 
         if (creationStyle === 'single') {
-          await assertRevert(template.newTokenAndInstance.request(tokenName, tokenSymbol, aragonId, HOLDERS, badStakes, REQUIRED_SUPPORT, ACCEPTANCE_QUORUM, VOTING_TIME), 'DEMOCRACY_INVALID_HOLDERS_STAKES_LEN')
+          await assertRevert(template.newTokenAndInstance.request(tokenName, tokenSymbol, aragonId, HOLDERS, badStakes, REQUIRED_SUPPORT, ACCEPTANCE_QUORUM, VOTING_TIME), 'DEMOCRACY_BAD_HOLDERS_STAKES_LEN')
         } else if (creationStyle === 'separate') {
           await template.newToken(tokenName, tokenSymbol)
-          await assertRevert(template.newInstance.request(aragonId, HOLDERS, badStakes, REQUIRED_SUPPORT, ACCEPTANCE_QUORUM, VOTING_TIME), 'DEMOCRACY_INVALID_HOLDERS_STAKES_LEN')
+          await assertRevert(template.newInstance.request(aragonId, HOLDERS, badStakes, REQUIRED_SUPPORT, ACCEPTANCE_QUORUM, VOTING_TIME), 'DEMOCRACY_BAD_HOLDERS_STAKES_LEN')
         }
       })
 

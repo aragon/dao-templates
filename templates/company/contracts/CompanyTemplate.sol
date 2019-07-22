@@ -5,7 +5,7 @@ import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 
 contract CompanyTemplate is BaseTemplate {
     string private constant ERROR_MISSING_TOKEN_CACHE = "COMPANY_MISSING_TOKEN_CACHE";
-    string private constant ERROR_INVALID_HOLDERS_STAKES_LEN = "COMPANY_INVALID_HOLDERS_STAKES_LEN";
+    string private constant ERROR_BAD_HOLDERS_STAKES_LEN = "COMPANY_BAD_HOLDERS_STAKES_LEN";
 
     bool constant private TOKEN_TRANSFERABLE = true;
     string constant private TOKEN_NAME = "Share Token";
@@ -28,7 +28,7 @@ contract CompanyTemplate is BaseTemplate {
     }
 
     function newTokenAndInstance(string id, address[] holders, uint256[] stakes) public {
-        require(holders.length == stakes.length, ERROR_INVALID_HOLDERS_STAKES_LEN);
+        require(holders.length == stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         newToken();
         newInstance(id, holders, stakes);
     }
@@ -40,7 +40,7 @@ contract CompanyTemplate is BaseTemplate {
     }
 
     function newInstance(string id, address[] holders, uint256[] stakes) public {
-        require(holders.length == stakes.length, ERROR_INVALID_HOLDERS_STAKES_LEN);
+        require(holders.length == stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         MiniMeToken token = _popTokenCache(msg.sender);
 
         // Create DAO and install apps

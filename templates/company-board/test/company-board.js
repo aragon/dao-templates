@@ -40,8 +40,8 @@ contract('Company with board', ([_, deployer, boardMember1, boardMember2, shareH
     })
 
     it('reverts when the given holders and stakes length do not match', async () => {
-      await assertRevert(companyTemplate.newTokensAndInstance.request('id', BOARD_MEMBERS, [], SHARE_STAKES), 'COMPANY_INVALID_HOLDERS_STAKES_LEN')
-      await assertRevert(companyTemplate.newTokensAndInstance.request('id', BOARD_MEMBERS, SHARE_HOLDERS, []), 'COMPANY_INVALID_HOLDERS_STAKES_LEN')
+      await assertRevert(companyTemplate.newTokensAndInstance.request('id', BOARD_MEMBERS, [], SHARE_STAKES), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
+      await assertRevert(companyTemplate.newTokensAndInstance.request('id', BOARD_MEMBERS, SHARE_HOLDERS, []), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
     })
 
     it('reverts when there was no DAO cache', async () => {
