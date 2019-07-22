@@ -112,6 +112,9 @@ contract BaseTemplate is APMNamehash, IsContract {
     function _installDefaultAgentApp(Kernel _dao) internal returns (Agent) {
         Agent agent = Agent(_installDefaultApp(_dao, AGENT_APP_ID));
         agent.initialize();
+        // We assume that installing the Agent app as default is in order to replace the Vault app which is
+        // normally installed as default. Thus, we are setting its ID as the Vault id that the Kernel will use.
+        _dao.setRecoveryVaultAppId(AGENT_APP_ID);
         return agent;
     }
 

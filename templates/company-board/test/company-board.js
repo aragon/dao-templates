@@ -85,7 +85,7 @@ contract('Company with board', ([_, deployer, boardMember1, boardMember2, shareH
     it('costs less than 6e6 each tx', async () => {
       assert.isAtMost(tokenReceipt.receipt.gasUsed, 3.5e6, 'tokens creation should cost almost 3.5e6 gas')
       assert.isAtMost(prepareReceipt.receipt.gasUsed, 1.7e6, 'prepare DAO should cost almost 1.7e6 gas')
-      assert.isAtMost(setupReceipt.receipt.gasUsed, 5.2e6, 'setup DAO should cost almost 5.2e6 gas')
+      assert.isAtMost(setupReceipt.receipt.gasUsed, 5.3e6, 'setup DAO should cost almost 5.3e6 gas')
     })
 
     it('registers a new DAO on ENS', async () => {
@@ -164,6 +164,9 @@ contract('Company with board', ([_, deployer, boardMember1, boardMember2, shareH
     it('should have agent app correctly setup', async () => {
       assert.isTrue(await agent.hasInitialized(), 'agent not initialized')
       assert.equal(await agent.designatedSigner(), ZERO_ADDRESS)
+
+      assert.equal(await dao.recoveryVaultAppId(), APP_IDS.agent, 'agent app is not being used as the vault app of the DAO')
+      assert.equal(web3.toChecksumAddress(await dao.getRecoveryVault()), agent.address, 'agent app is not being used as the vault app of the DAO')
 
       await assertRole(acl, agent, shareVoting, 'EXECUTE_ROLE')
       await assertRole(acl, agent, shareVoting, 'RUN_SCRIPT_ROLE')

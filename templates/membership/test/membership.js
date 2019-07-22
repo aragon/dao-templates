@@ -119,6 +119,9 @@ contract('Membership', ([_, deployer, member1, member2, member3]) => {
       assert.isTrue(await agent.hasInitialized(), 'agent not initialized')
       assert.equal(await agent.designatedSigner(), ZERO_ADDRESS)
 
+      assert.equal(await dao.recoveryVaultAppId(), APP_IDS.agent, 'agent app is not being used as the vault app of the DAO')
+      assert.equal(web3.toChecksumAddress(await dao.getRecoveryVault()), agent.address, 'agent app is not being used as the vault app of the DAO')
+
       await assertRole(acl, agent, voting, 'EXECUTE_ROLE')
       await assertRole(acl, agent, voting, 'RUN_SCRIPT_ROLE')
       await assertRole(acl, agent, voting, 'TRANSFER_ROLE', finance)
