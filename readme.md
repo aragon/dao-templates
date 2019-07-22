@@ -1,4 +1,4 @@
-# DAO Kits [![Build Status](https://travis-ci.org/aragon/dao-kits.svg?branch=master)](https://travis-ci.org/aragon/dao-kits)
+# DAO Kits [![Build Status](https://travis-ci.org/aragon/dao-templates.svg?branch=master)](https://travis-ci.org/aragon/dao-kits)
 
 ## What's a DAO Kit
 
