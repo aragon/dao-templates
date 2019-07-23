@@ -17,7 +17,7 @@ Create a new democracy entity:
 template.newInstance(name, holders, stakes, support, acceptance, voteDuration)
 ```
 
-- `name`: Name for org, will assign `[name].aragonid.eth` (check capitalization)
+- `name`: Name for org, will assign `[name].aragonid.eth`
 - `holders`: Array of token holder addresses
 - `stakes`: Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`)
 - `support`, `acceptance`, and `voteDuration`: Check [Voting app spec](https://wiki.aragon.org/dev/apps/voting/)
@@ -36,6 +36,10 @@ The network details will be automatically selected by the `arapp.json`'s environ
 
 | App               | Permission            | Grantee       | Manager |
 |-------------------|-----------------------|---------------|---------|
+| Kernel            | APP_MANAGER           | Voting        | Voting  |
+| ACL               | CREATE_PERMISSIONS    | Voting        | Voting  |
+| EVMScriptRegistry | REGISTRY_ADD_EXECUTOR | Voting        | Voting  |
+| EVMScriptRegistry | REGISTRY_MANAGER      | Voting        | Voting  |
 | Voting            | CREATE_VOTES          | Token Manager | Voting  |
 | Voting            | MODIFY_QUORUM         | Voting        | Voting  |
 | Voting            | MODIFY_SUPPORT        | None          | Burned  |
@@ -45,10 +49,6 @@ The network details will be automatically selected by the `arapp.json`'s environ
 | Finance           | DISABLE_PAYMENTS      | Voting        | Voting  |
 | Token Manager     | ASSIGN                | Voting        | Voting  |
 | Token Manager     | REVOKE_VESTINGS       | Voting        | Voting  |
-| Kernel            | APP_MANAGER           | Voting        | Voting  |
-| ACL               | CREATE_PERMISSIONS    | Voting        | Voting  |
-| EVMScriptRegistry | REGISTRY_ADD_EXECUTOR | Voting        | Voting  |
-| EVMScriptRegistry | REGISTRY_MANAGER      | Voting        | Voting  |
 
 ## Gas usage
 

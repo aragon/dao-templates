@@ -2,20 +2,19 @@
 
 ## Usage
 
-Create new tokens for the company-board entity:
+Create new tokens and initialize DAO for the company-board entity:
 
 ```
-template.newTokens()
+template.prepareInstance()
 ```
 
-Create a new company with board entity:
+Setup company-board DAO:
 
 ```
-template.prepareInstance(name)
-template.setupInstance(boardHolders, shareHolders, shareStakes)
+template.setupInstance(name, boardHolders, shareHolders, shareStakes)
 ```
 
-- `name`: Name for org, will assign `[name].aragonid.eth` (check capitalization)
+- `name`: Name for org, will assign `[name].aragonid.eth`
 - `boardMembers`: Array of board member addresses (1 token will be minted for each board member)
 - `shareHolders`: Array of share holder addresses
 - `shareStakes`: Array of token stakes for share holders (token has 18 decimals, multiply token amount `* 10^18`)
@@ -36,6 +35,8 @@ The network details will be automatically selected by the `arapp.json`'s environ
 |---------------------|-----------------------|---------------------|---------------|
 | Kernel              | APP_MANAGER           | Board Voting        | Share Voting  |
 | ACL                 | CREATE_PERMISSIONS    | Board Voting        | Share Voting  |
+| EVMScriptRegistry   | REGISTRY_MANAGER      | Share Voting        | Share Voting  |
+| EVMScriptRegistry   | REGISTRY_ADD_EXECUTOR | Share Voting        | Share Voting  |
 | Board Voting        | CREATE_VOTES          | Board Token Manager | Share Voting  |
 | Board Voting        | MODIFY_QUORUM         | Share Voting        | Share Voting  |
 | Board Voting        | MODIFY_SUPPORT        | Share Voting        | Share Voting  |
@@ -55,5 +56,3 @@ The network details will be automatically selected by the `arapp.json`'s environ
 | Board Token Manager | BURN                  | Share Voting        | Share Voting  |
 | Share Token Manager | MINT                  | Share Voting        | Share Voting  |
 | Share Token Manager | BURN                  | Share Voting        | Share Voting  |
-| EVMScriptRegistry   | REGISTRY_MANAGER      | Share Voting        | Share Voting  |
-| EVMScriptRegistry   | REGISTRY_ADD_EXECUTOR | Share Voting        | Share Voting  |

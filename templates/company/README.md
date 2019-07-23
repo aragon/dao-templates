@@ -14,7 +14,7 @@ Create a new company entity:
 template.newInstance(name, holders, stakes)
 ```
 
-- `name`: Name for org, will assign `[name].aragonid.eth` (check capitalization)
+- `name`: Name for org, will assign `[name].aragonid.eth`
 - `holders`: Array of token holder addresses
 - `stakes`: Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`)
 
@@ -34,6 +34,8 @@ The network details will be automatically selected by the `arapp.json`'s environ
 |-------------------|-----------------------|---------------|---------|
 | Kernel            | APP_MANAGER           | Voting        | Voting  |
 | ACL               | CREATE_PERMISSIONS    | Voting        | Voting  |
+| EVMScriptRegistry | REGISTRY_MANAGER      | Voting        | Voting  |
+| EVMScriptRegistry | REGISTRY_ADD_EXECUTOR | Voting        | Voting  |
 | Voting            | CREATE_VOTES          | Token Manager | Voting  |
 | Voting            | MODIFY_QUORUM         | Voting        | Voting  |
 | Voting            | MODIFY_SUPPORT        | Voting        | Voting  |
@@ -45,5 +47,3 @@ The network details will be automatically selected by the `arapp.json`'s environ
 | Finance           | DISABLE_PAYMENTS      | Voting        | Voting  |
 | Token Manager     | MINT                  | Voting        | Voting  |
 | Token Manager     | BURN                  | Voting        | Voting  |
-| EVMScriptRegistry | REGISTRY_MANAGER      | Voting        | Voting  |
-| EVMScriptRegistry | REGISTRY_ADD_EXECUTOR | Voting        | Voting  |
