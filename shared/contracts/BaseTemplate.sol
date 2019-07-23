@@ -58,6 +58,11 @@ contract BaseTemplate is APMNamehash, IsContract {
         miniMeFactory = _miniMeFactory;
     }
 
+    /**
+    * @dev Create a DAO using the DAO Factory and configure root permissions to the template to grant full control to
+    *      set it up. Once the DAO setup has finished, it may be desired calling `_transferRootPermissionsFromTemplate`
+    *      helper to transfer the root permissions to the responsible entity.
+    */
     function _createDAO() internal returns (Kernel dao, ACL acl) {
         dao = daoFactory.newDAO(this);
         emit DeployDao(address(dao));
@@ -96,9 +101,7 @@ contract BaseTemplate is APMNamehash, IsContract {
     }
 
     function _transferRootPermissionsFromTemplate(Kernel _dao, address _to) internal {
-        ACL _acl = ACL(_dao.acl());
-        _transferPermissionFromTemplate(_acl, _to, _dao, _dao.APP_MANAGER_ROLE());
-        _transferPermissionFromTemplate(_acl, _to, _acl, _acl.CREATE_PERMISSIONS_ROLE());
+        _transferRootPermissionsFromTemplate(_dao, _to, _to);
     }
 
     function _transferRootPermissionsFromTemplate(Kernel _dao, address _to, address _manager) internal {
