@@ -4,8 +4,9 @@ import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 
 
 contract DemocracyTemplate is BaseTemplate {
-    bool constant private TOKEN_TRANSFERABLE = false;
+    bool constant private TOKEN_TRANSFERABLE = true;
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(0);
+    uint64 constant private FINANCE_PERIOD = uint64(30 days);      // 30 days
 
     string private constant ERROR_MISSING_TOKEN_CACHE = "DEMOCRACY_MISSING_TOKEN_CACHE";
     string private constant ERROR_BAD_HOLDERS_STAKES_LEN = "DEMOCRACY_BAD_HOLDERS_STAKES_LEN";
@@ -51,7 +52,7 @@ contract DemocracyTemplate is BaseTemplate {
         // Create DAO and install apps
         (Kernel dao, ACL acl) = _createDAO();
         Vault vault = _installVaultApp(dao);
-        Finance finance = _installFinanceApp(dao, vault, 30 days);
+        Finance finance = _installFinanceApp(dao, vault, FINANCE_PERIOD);
         TokenManager tokenManager = _installTokenManagerApp(dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
         Voting voting = _installVotingApp(dao, token, _supportNeeded, _minAcceptanceQuorum, _voteDuration);
 
