@@ -218,9 +218,9 @@ contract BaseTemplate is APMNamehash, IsContract {
 
     /* TOKEN */
 
-    function _createToken(string _name, string _symbol) internal returns (MiniMeToken) {
+    function _createToken(string _name, string _symbol, uint8 _decimals) internal returns (MiniMeToken) {
         require(address(miniMeFactory) != address(0), ERROR_MINIME_FACTORY_NOT_PROVIDED);
-        MiniMeToken token = miniMeFactory.createCloneToken(MiniMeToken(address(0)), 0, _name, 18, _symbol, true);
+        MiniMeToken token = miniMeFactory.createCloneToken(MiniMeToken(address(0)), 0, _name, _decimals, _symbol, true);
         emit DeployToken(address(token));
         return token;
     }

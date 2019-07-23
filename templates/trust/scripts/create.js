@@ -60,9 +60,9 @@ async function create() {
   const { id, multiSigKeys, beneficiaries, heirs, heirsStakes } = parseInput()
 
   console.log('Preparing DAO...')
-  await trustTemplate.prepareDAO()
+  await trustTemplate.prepareInstance()
   console.log('Setting up DAO...')
-  await trustTemplate.setupDAO(id, beneficiaries, heirs, heirsStakes)
+  await trustTemplate.setupInstance(id, beneficiaries, heirs, heirsStakes)
   console.log('Setting up multi signature wallet...')
   const receipt = await trustTemplate.setupMultiSig(multiSigKeys)
   console.log('Trust entity deployed successfully!')

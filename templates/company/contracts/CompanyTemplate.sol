@@ -5,12 +5,15 @@ import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 
 contract CompanyTemplate is BaseTemplate {
     string private constant ERROR_MISSING_TOKEN_CACHE = "COMPANY_MISSING_TOKEN_CACHE";
+    string private constant ERROR_EMPTY_HOLDERS = "COMPANY_EMPTY_HOLDERS";
     string private constant ERROR_BAD_HOLDERS_STAKES_LEN = "COMPANY_BAD_HOLDERS_STAKES_LEN";
 
     bool constant private TOKEN_TRANSFERABLE = true;
     string constant private TOKEN_NAME = "Share Token";
     string constant private TOKEN_SYMBOL = "SHARE";
+    uint8 constant private TOKEN_DECIMALS = uint8(18);
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(0);            // no limit of tokens per account
+
     uint64 constant private ONE_PCT = uint64(1e16);                         // 1%
     uint64 constant private SUPPORT_REQUIRED = uint64(50 * ONE_PCT);        // 50%
     uint64 constant private MIN_ACCEPTANCE_QUORUM = uint64(5 * ONE_PCT);    // 5%
@@ -33,12 +36,13 @@ contract CompanyTemplate is BaseTemplate {
     }
 
     function newToken() public returns (MiniMeToken) {
-        MiniMeToken token = _createToken(TOKEN_NAME, TOKEN_SYMBOL);
+        MiniMeToken token = _createToken(TOKEN_NAME, TOKEN_SYMBOL, TOKEN_DECIMALS);
         _cacheToken(token, msg.sender);
         return token;
     }
 
     function newInstance(string _id, address[] _holders, uint256[] _stakes) public {
+        require(_holders.length > 0, ERROR_EMPTY_HOLDERS);
         require(_holders.length == _stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         MiniMeToken token = _popTokenCache(msg.sender);
 

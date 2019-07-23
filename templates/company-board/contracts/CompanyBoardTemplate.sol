@@ -6,6 +6,7 @@ import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 contract CompanyBoardTemplate is BaseTemplate {
     string private constant ERROR_MISSING_DAO_CACHE = "COMPANY_MISSING_DAO_CACHE";
     string private constant ERROR_MISSING_BOARD_MEMBERS = "COMPANY_MISSING_BOARD_MEMBERS";
+    string private constant ERROR_MISSING_SHARE_MEMBERS = "COMPANY_MISSING_SHARE_MEMBERS";
     string private constant ERROR_BAD_HOLDERS_STAKES_LEN = "COMPANY_BAD_HOLDERS_STAKES_LEN";
 
     uint64 constant private ONE_PCT = uint64(1e16);
@@ -14,11 +15,13 @@ contract CompanyBoardTemplate is BaseTemplate {
     bool constant private BOARD_TRANSFERABLE = false;
     string constant private BOARD_TOKEN_NAME = "Board Token";
     string constant private BOARD_TOKEN_SYMBOL = "BOARD";
+    uint8 constant private BOARD_TOKEN_DECIMALS = uint8(0);
     uint256 constant private BOARD_MAX_PER_ACCOUNT = uint256(1);
 
     bool constant private SHARE_TRANSFERABLE = true;
     string constant private SHARE_TOKEN_NAME = "Share Token";
     string constant private SHARE_TOKEN_SYMBOL = "SHARE";
+    uint8 constant private SHARE_TOKEN_DECIMALS = uint8(18);
     uint256 constant private SHARE_MAX_PER_ACCOUNT = uint256(0);
 
     uint64 constant private BOARD_VOTE_DURATION = uint64(7 days);                 // 1 week
@@ -45,26 +48,16 @@ contract CompanyBoardTemplate is BaseTemplate {
         _ensureMiniMeFactoryIsValid(_miniMeFactory);
     }
 
-    function newTokensAndInstance(string _id, address[] _boardMembers, address[] _shareHolders, uint256[] _shareStakes) public {
-        newTokens();
-        prepareInstance(_id);
-        setupInstance(_boardMembers, _shareHolders, _shareStakes);
-    }
-
-    function newTokens() public {
-        MiniMeToken boardToken = _createToken(BOARD_TOKEN_NAME, BOARD_TOKEN_SYMBOL);
-        MiniMeToken shareToken = _createToken(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL);
-        _cacheTokens(boardToken, shareToken, msg.sender);
-    }
-
-    function prepareInstance(string _id) public {
+    function prepareInstance() public {
         (Kernel dao,) = _createDAO();
-        _registerID(_id, dao);
-        _cacheDAO(dao, msg.sender);
+        MiniMeToken boardToken = _createToken(BOARD_TOKEN_NAME, BOARD_TOKEN_SYMBOL, BOARD_TOKEN_DECIMALS);
+        MiniMeToken shareToken = _createToken(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL, SHARE_TOKEN_DECIMALS);
+        _storeCache(dao, boardToken, shareToken, msg.sender);
     }
 
-    function setupInstance(address[] _boardMembers, address[] _shareHolders, uint256[] _shareStakes) public {
+    function setupInstance(string _id, address[] _boardMembers, address[] _shareHolders, uint256[] _shareStakes) public {
         require(_boardMembers.length > 0, ERROR_MISSING_BOARD_MEMBERS);
+        require(_shareHolders.length > 0, ERROR_MISSING_SHARE_MEMBERS);
         require(_shareHolders.length == _shareStakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         (Kernel dao, MiniMeToken boardToken, MiniMeToken shareToken) = _popCache(msg.sender);
 
@@ -90,6 +83,8 @@ contract CompanyBoardTemplate is BaseTemplate {
         _createEvmScriptsRegistryPermissions(acl, shareVoting, shareVoting);
         _createCustomVotingPermissions(acl, boardVoting, shareVoting, boardTokenManager);
         _transferRootPermissionsFromTemplate(dao, boardVoting, shareVoting);
+
+        _registerID(_id, dao);
     }
 
     function _mintShareTokens(ACL _acl, TokenManager _shareTokenManager, address[] _shareHolders, uint256[] _shareStakes) internal {
@@ -142,15 +137,11 @@ contract CompanyBoardTemplate is BaseTemplate {
         _acl.createPermission(_voting, _tokenManager, _tokenManager.MINT_ROLE(), _voting);
     }
 
-    function _cacheTokens(MiniMeToken _boardToken, MiniMeToken _shareToken, address _owner) internal {
-        Cache storage c = cache[_owner];
-        c.boardToken = address(_boardToken);
-        c.shareToken = address(_shareToken);
-    }
-
-    function _cacheDAO(Kernel _dao, address _owner) internal {
+    function _storeCache(Kernel _dao, MiniMeToken _boardToken, MiniMeToken _shareToken, address _owner) internal {
         Cache storage c = cache[_owner];
         c.dao = address(_dao);
+        c.boardToken = address(_boardToken);
+        c.shareToken = address(_shareToken);
     }
 
     function _popCache(address _owner) internal returns (Kernel dao, MiniMeToken boardToken, MiniMeToken shareToken) {

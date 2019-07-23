@@ -1,15 +1,16 @@
 const { hash: namehash } = require('eth-ens-namehash')
-const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
+const { isGeth } = require('@aragon/templates-shared/helpers/node')(web3)
 const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
 const { isLocalNetwork } = require('@aragon/templates-shared/lib/network')(web3)
 const { encodeCallScript } = require('@aragon/test-helpers/evmScript')
+const { getEventArgument } = require('@aragon/test-helpers/events')
 const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
+const { decodeEvents, getInstalledAppsById } = require('@aragon/templates-shared/helpers/events')(artifacts)
 const { assertRole, assertBurnedRole, assertMissingRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
 
 const getBalance = require('@aragon/test-helpers/balance')(web3)
 const getBlockNumber = require('@aragon/test-helpers/blockNumber')(web3)
 const assertRevert = require('@aragon/templates-shared/helpers/assertRevert')(web3)
-const decodeEvents = require('@aragon/templates-shared/helpers/decodeEvents')
 const increaseTime = require('@aragon/templates-shared/helpers/increaseTime')(web3, artifacts)
 
 const DemocracyTemplate = artifacts.require('DemocracyTemplate')
@@ -28,13 +29,12 @@ const EVMScriptRegistry = artifacts.require('EVMScriptRegistry')
 
 const pct16 = x => new web3.BigNumber(x).times(new web3.BigNumber(10).toPower(16))
 const getVoteId = receipt => decodeEvents(receipt, Voting.abi, 'StartVote')[0].args.voteId
-const getAppProxy = (receipt, id) => decodeEvents(receipt, DemocracyTemplate.abi, 'InstalledApp').find(e => e.args.appId === id).args.appProxy
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 const ETH = ZERO_ADDRESS
 
 contract('Democracy', ([owner, holder20, holder29, holder51, nonHolder]) => {
-  let daoID, template, dao, acl, ens, receiptInstance, receiptToken
+  let daoID, template, dao, acl, ens, instanceReceipt, tokenReceipt
   let voting, tokenManager, token, finance, vault
 
   const TOKEN_NAME = 'DemocracyToken'
@@ -44,15 +44,6 @@ contract('Democracy', ([owner, holder20, holder29, holder51, nonHolder]) => {
   const ACCEPTANCE_QUORUM = pct16(20)
   const STAKES = [20e18, 29e18, 51e18]
   const HOLDERS = [holder20, holder29, holder51]
-
-  before('fund holder accounts ETH', async () => {
-    if (await isLocalNetwork()) {
-      await web3.eth.sendTransaction({ from: owner, to: holder20, value: web3.toWei(10, 'ether') })
-      await web3.eth.sendTransaction({ from: owner, to: holder29, value: web3.toWei(10, 'ether') })
-      await web3.eth.sendTransaction({ from: owner, to: holder51, value: web3.toWei(10, 'ether') })
-      await web3.eth.sendTransaction({ from: owner, to: nonHolder, value: web3.toWei(10, 'ether') })
-    }
-  })
 
   before('fetch democracy template and ENS', async () => {
     const { registry, address } = await deployedAddresses()
@@ -93,38 +84,44 @@ contract('Democracy', ([owner, holder20, holder29, holder51, nonHolder]) => {
       context('when the creation succeeds', () => {
         before('create democracy entity', async () => {
           if (creationStyle === 'single') {
-            receiptInstance = (await template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, daoID, HOLDERS, STAKES, REQUIRED_SUPPORT, ACCEPTANCE_QUORUM, VOTING_TIME, { from: owner })).receipt
-            receiptToken = receiptInstance
+            instanceReceipt = await template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, daoID, HOLDERS, STAKES, REQUIRED_SUPPORT, ACCEPTANCE_QUORUM, VOTING_TIME, { from: owner })
+            tokenReceipt = instanceReceipt
           } else if (creationStyle === 'separate') {
-            receiptToken = (await template.newToken(TOKEN_NAME, TOKEN_SYMBOL, { from: owner })).receipt
-            receiptInstance = (await template.newInstance(daoID, HOLDERS, STAKES, REQUIRED_SUPPORT, ACCEPTANCE_QUORUM, VOTING_TIME, { from: owner })).receipt
+            tokenReceipt = await template.newToken(TOKEN_NAME, TOKEN_SYMBOL, { from: owner })
+            instanceReceipt = await template.newInstance(daoID, HOLDERS, STAKES, REQUIRED_SUPPORT, ACCEPTANCE_QUORUM, VOTING_TIME, { from: owner })
           }
 
-          dao = Kernel.at(decodeEvents(receiptInstance, DemocracyTemplate.abi, 'DeployDao')[0].args.dao)
-          token = MiniMeToken.at(decodeEvents(receiptToken, DemocracyTemplate.abi, 'DeployToken')[0].args.token)
+          dao = Kernel.at(getEventArgument(instanceReceipt, 'DeployDao', 'dao'))
+          token = MiniMeToken.at(getEventArgument(tokenReceipt, 'DeployToken', 'token'))
         })
 
         before('load apps', async () => {
+          const installedApps = getInstalledAppsById(instanceReceipt)
+          assert.equal(installedApps.vault.length, 1, 'should have installed 1 vault app')
+          assert.equal(installedApps.voting.length, 1, 'should have installed 1 voting app')
+          assert.equal(installedApps.finance.length, 1, 'should have installed 1 finance app')
+          assert.equal(installedApps['token-manager'].length, 1, 'should have installed 1 token manager app')
+
           acl = ACL.at(await dao.acl())
-          vault = Vault.at(getAppProxy(receiptInstance, APP_IDS.vault))
-          voting = Voting.at(getAppProxy(receiptInstance, APP_IDS.voting))
-          finance = Finance.at(getAppProxy(receiptInstance, APP_IDS.finance))
-          tokenManager = TokenManager.at(getAppProxy(receiptInstance, APP_IDS['token-manager']))
+          vault = Vault.at(installedApps.vault[0])
+          voting = Voting.at(installedApps.voting[0])
+          finance = Finance.at(installedApps.finance[0])
+          tokenManager = TokenManager.at(installedApps['token-manager'][0])
         })
 
-        it('costs ~6e6 gas', async () => {
+        it('costs ~6.6e6 gas', async () => {
           if (creationStyle === 'single') {
-            assert.isAtMost(receiptInstance.gasUsed, 6.7e6, 'create script should cost almost 6e6 gas')
+            assert.isAtMost(instanceReceipt.receipt.gasUsed, 6.7e6, 'create script should cost almost 6.7e6 gas')
           } else if (creationStyle === 'separate') {
-            assert.isAtMost(receiptToken.gasUsed, 1.8e6, 'create token script should cost almost 6e6 gas')
-            assert.isAtMost(receiptInstance.gasUsed, 5e6, 'prepare script should cost almost 6e6 gas')
+            assert.isAtMost(tokenReceipt.receipt.gasUsed, 1.8e6, 'create token script should cost almost 6.8e6 gas')
+            assert.isAtMost(instanceReceipt.receipt.gasUsed, 5e6, 'create instance should cost almost 5e6 gas')
           }
         })
 
         it('registers a new DAO on ENS', async () => {
           const aragonIdNameHash = namehash(`${daoID}.aragonid.eth`)
           const resolvedAddress = await PublicResolver.at(await ens.resolver(aragonIdNameHash)).addr(aragonIdNameHash)
-          assert.equal(web3.toChecksumAddress(resolvedAddress), dao.address, 'aragonId ENS name does not match')
+          assert.equal(resolvedAddress, dao.address, 'aragonId ENS name does not match')
         })
 
         it('creates a new token', async () => {
@@ -152,7 +149,7 @@ contract('Democracy', ([owner, holder20, holder29, holder51, nonHolder]) => {
 
         it('should have token manager app correctly setup', async () => {
           assert.isTrue(await tokenManager.hasInitialized(), 'token manager not initialized')
-          assert.equal(web3.toChecksumAddress(await tokenManager.token()), token.address)
+          assert.equal(await tokenManager.token(), token.address)
 
           await assertRole(acl, tokenManager, voting, 'ASSIGN_ROLE')
           await assertRole(acl, tokenManager, voting, 'REVOKE_VESTINGS_ROLE')
@@ -193,6 +190,15 @@ contract('Democracy', ([owner, holder20, holder29, holder51, nonHolder]) => {
       })
 
       context('integration', () => {
+        before('fund holder accounts ETH', async () => {
+          if (await isLocalNetwork() && isGeth()) {
+            await web3.eth.sendTransaction({ from: owner, to: holder20, value: web3.toWei(10, 'ether') })
+            await web3.eth.sendTransaction({ from: owner, to: holder29, value: web3.toWei(10, 'ether') })
+            await web3.eth.sendTransaction({ from: owner, to: holder51, value: web3.toWei(10, 'ether') })
+            await web3.eth.sendTransaction({ from: owner, to: nonHolder, value: web3.toWei(10, 'ether') })
+          }
+        })
+
         context('> Vote access', () => {
           it('set up voting correctly', async () => {
             assert.equal((await voting.voteTime()).toString(), VOTING_TIME.toString(), 'voting time not correct')
@@ -236,7 +242,7 @@ contract('Democracy', ([owner, holder20, holder29, holder51, nonHolder]) => {
               beforeEach('create vote', async () => {
                 const newVoteAction = { to: voting.address, calldata: voting.contract.newVote.getData(mockScript, 'metadata') }
                 const newVoteScript = encodeCallScript([newVoteAction])
-                const { receipt } = await tokenManager.forward(newVoteScript, { from: holder20 })
+                const receipt = await tokenManager.forward(newVoteScript, { from: holder20 })
                 voteId = getVoteId(receipt)
               })
 
@@ -323,7 +329,7 @@ contract('Democracy', ([owner, holder20, holder29, holder51, nonHolder]) => {
             const newVoteAction = { to: voting.address, calldata: voting.contract.newVote.getData(paymentScript, 'metadata') }
             const newVoteScript = encodeCallScript([newVoteAction])
 
-            const { receipt } = await tokenManager.forward(newVoteScript, { from: holder20 })
+            const receipt = await tokenManager.forward(newVoteScript, { from: holder20 })
             voteId = getVoteId(receipt)
           })
 

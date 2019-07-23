@@ -34,6 +34,7 @@ contract TrustTemplate is BaseTemplate {
     bool constant private HOLD_TOKEN_TRANSFERABLE = true;
     string constant private HOLD_TOKEN_NAME = "Beneficiaries Token";
     string constant private HOLD_TOKEN_SYMBOL = "HOLD";
+    uint8 constant private HOLD_TOKEN_DECIMALS = 18;
     uint256 constant private HOLD_TOKEN_MAX_PER_ACCOUNT = uint256(0);           // no limit of tokens per account
 
     uint64 constant private HOLD_VOTE_DURATION = uint64(7 days);                // 1 week
@@ -43,6 +44,7 @@ contract TrustTemplate is BaseTemplate {
     bool constant private HEIRS_TOKEN_TRANSFERABLE = true;
     string constant private HEIRS_TOKEN_NAME = "Heirs Token";
     string constant private HEIRS_TOKEN_SYMBOL = "HEIRS";
+    uint8 constant private HEIRS_TOKEN_DECIMALS = 18;
     uint256 constant private HEIRS_TOKEN_MAX_PER_ACCOUNT = uint256(0);          // no limit of tokens per account
 
     uint64 constant private HEIRS_VOTE_DURATION = uint64(365 days);             // 1 year
@@ -75,22 +77,22 @@ contract TrustTemplate is BaseTemplate {
         _ensureMiniMeFactoryIsValid(_miniMeFactory);
     }
 
-    function prepareDAO() public returns (Kernel) {
+    function prepareInstance() public returns (Kernel) {
         (Kernel dao,) = _createDAO();
-        MiniMeToken holdToken = _createToken(HOLD_TOKEN_NAME, HOLD_TOKEN_SYMBOL);
-        MiniMeToken heirsToken = _createToken(HEIRS_TOKEN_NAME, HEIRS_TOKEN_SYMBOL);
+        MiniMeToken holdToken = _createToken(HOLD_TOKEN_NAME, HOLD_TOKEN_SYMBOL, HOLD_TOKEN_DECIMALS);
+        MiniMeToken heirsToken = _createToken(HEIRS_TOKEN_NAME, HEIRS_TOKEN_SYMBOL, HEIRS_TOKEN_DECIMALS);
         _storeDaoCache(msg.sender, dao, holdToken, heirsToken);
         return dao;
     }
 
-    function setupDAO(string _id, address[] _beneficiaryKeys, address[] _heirs, uint256[] _heirsStake) public returns (Kernel) {
+    function setupInstance(string _id, address[] _beneficiaryKeys, address[] _heirs, uint256[] _heirsStakes) public returns (Kernel) {
         require(_hasDaoCache(msg.sender), ERROR_MISSING_SENDER_CACHE);
-        require(_heirs.length == _heirsStake.length, ERROR_BAD_HEIRS_LENGTH);
+        require(_heirs.length == _heirsStakes.length, ERROR_BAD_HEIRS_LENGTH);
         require(_beneficiaryKeys.length == BENEFICIARY_KEYS_AMOUNT, ERROR_BAD_BENEFICIARY_KEYS_LENGTH);
-        uint256 blockedHeirsSupply = _calculateBlockedHeirsSupply(_heirsStake);
+        uint256 blockedHeirsSupply = _calculateBlockedHeirsSupply(_heirsStakes);
 
         Kernel dao = _getDaoCache(msg.sender);
-        _setupApps(dao, _beneficiaryKeys, _heirs, _heirsStake, blockedHeirsSupply);
+        _setupApps(dao, _beneficiaryKeys, _heirs, _heirsStakes, blockedHeirsSupply);
         _registerID(_id, address(dao));
         return dao;
     }
@@ -105,7 +107,7 @@ contract TrustTemplate is BaseTemplate {
         return multiSig;
     }
 
-    function _setupApps(Kernel _dao, address[] _beneficiaryKeys, address[] _heirs, uint256[] _heirsStake, uint256 _blockedHeirsSupply) internal {
+    function _setupApps(Kernel _dao, address[] _beneficiaryKeys, address[] _heirs, uint256[] _heirsStakes, uint256 _blockedHeirsSupply) internal {
         ACL acl = ACL(_dao.acl());
         Agent agent = _installNonDefaultAgentApp(_dao);
         Vault vault = _installVaultApp(_dao);
@@ -113,13 +115,13 @@ contract TrustTemplate is BaseTemplate {
         (Voting holdVoting, Voting heirsVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager) = _installTokenApps(_dao);
 
         _mintHoldTokens(acl, holdTokenManager, _beneficiaryKeys);
-        _mintHeirsTokens(acl, heirsTokenManager, _heirs, _heirsStake, _blockedHeirsSupply);
+        _mintHeirsTokens(acl, heirsTokenManager, _heirs, _heirsStakes, _blockedHeirsSupply);
 
         _createVaultPermissions(acl, vault, finance, holdVoting);
         _createFinancePermissions(acl, finance, holdVoting, holdVoting);
         _createEvmScriptsRegistryPermissions(acl, holdVoting, holdVoting);
-        _createCustomVotingPermissions(acl, holdTokenManager, holdVoting);
         _createCustomAgentPermissions(acl, agent, holdVoting, heirsVoting);
+        _createCustomVotingPermissions(acl, holdTokenManager, holdVoting);
         _createCustomVotingPermissions(acl, heirsTokenManager, heirsVoting);
         _createCustomTokenManagerPermissions(acl, holdTokenManager, holdVoting);
         _createCustomTokenManagerPermissions(acl, heirsTokenManager, heirsVoting);
@@ -165,13 +167,13 @@ contract TrustTemplate is BaseTemplate {
         _removePermissionFromTemplate(_acl, _holdTokenManager, _holdTokenManager.MINT_ROLE());
     }
 
-    function _mintHeirsTokens(ACL _acl, TokenManager _heirsTokenManager, address[] _heirs, uint256[] _heirsStake, uint256 _blockedHeirsSupply)
+    function _mintHeirsTokens(ACL _acl, TokenManager _heirsTokenManager, address[] _heirs, uint256[] _heirsStakes, uint256 _blockedHeirsSupply)
         internal
     {
         _createPermissionForTemplate(_acl, _heirsTokenManager, _heirsTokenManager.MINT_ROLE());
         _heirsTokenManager.mint(address(0), _blockedHeirsSupply);
         for (uint256 i = 0; i < _heirs.length; i++) {
-            _heirsTokenManager.mint(_heirs[i], _heirsStake[i]);
+            _heirsTokenManager.mint(_heirs[i], _heirsStakes[i]);
         }
         _removePermissionFromTemplate(_acl, _heirsTokenManager, _heirsTokenManager.MINT_ROLE());
     }
@@ -255,10 +257,10 @@ contract TrustTemplate is BaseTemplate {
         heirsTokenManager = TokenManager(c.heirsTokenManager);
     }
 
-    function _calculateBlockedHeirsSupply(uint256[] _heirsStake) internal pure returns (uint256) {
+    function _calculateBlockedHeirsSupply(uint256[] _heirsStakes) internal pure returns (uint256) {
         uint256 totalHeirsSupply = 0;
-        for (uint256 i = 0; i < _heirsStake.length; i++) {
-            totalHeirsSupply = totalHeirsSupply.add(_heirsStake[i]);
+        for (uint256 i = 0; i < _heirsStakes.length; i++) {
+            totalHeirsSupply = totalHeirsSupply.add(_heirsStakes[i]);
         }
         uint256 support = HEIRS_SUPPORT_REQUIRED / ONE_PCT;
         require(totalHeirsSupply.mul(100) % support == 0, ERROR_INVALID_HEIRS_STAKE);

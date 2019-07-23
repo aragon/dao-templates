@@ -7,8 +7,12 @@ import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 contract MultisigTemplate is BaseTemplate {
     using Uint256Helpers for uint256;
 
+    uint8 constant private TOKEN_DECIMALS = uint8(0);
     bool constant private TOKEN_TRANSFERABLE = false;
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(1);
+
+    uint64 constant private VOTE_DURATION = uint64(1825 days);     // ~5 years
+    uint64 constant private FINANCE_PERIOD = uint64(30 days);      // 30 days
 
     string constant private ERROR_EMPTY_SIGNERS = "MULTISIG_EMPTY_SIGNERS";
     string constant private ERROR_REQUIRED_SIGNATURES_ZERO = "MULTISIG_REQUIRED_SIGNATURE_ZERO";
@@ -25,42 +29,42 @@ contract MultisigTemplate is BaseTemplate {
         _ensureMiniMeFactoryIsValid(_miniMeFactory);
     }
 
-    function newTokenAndInstance(string _tokenName, string _tokenSymbol, string _id, address[] _signer, uint256 _requiredSignatures) public {
+    function newTokenAndInstance(string _tokenName, string _tokenSymbol, string _id, address[] _signers, uint256 _requiredSignatures) public {
         newToken(_tokenName, _tokenSymbol);
-        newInstance(_id, _signer, _requiredSignatures);
+        newInstance(_id, _signers, _requiredSignatures);
     }
 
     function newToken(string _name, string _symbol) public returns (MiniMeToken) {
-        MiniMeToken token = _createToken(_name, _symbol);
+        MiniMeToken token = _createToken(_name, _symbol, TOKEN_DECIMALS);
         _cacheToken(token, msg.sender);
         return token;
     }
 
-    function newInstance(string _id, address[] _signer, uint256 _requiredSignatures) public {
-        require(_signer.length > 0, ERROR_EMPTY_SIGNERS);
+    function newInstance(string _id, address[] _signers, uint256 _requiredSignatures) public {
+        require(_signers.length > 0, ERROR_EMPTY_SIGNERS);
         require(_requiredSignatures > 0, ERROR_REQUIRED_SIGNATURES_ZERO);
-        require(_requiredSignatures <= _signer.length, ERROR_BAD_REQUIRED_SIGNATURES);
+        require(_requiredSignatures <= _signers.length, ERROR_BAD_REQUIRED_SIGNATURES);
 
         // We are subtracting 1 because comparison in Voting app is strict,
         // while Multisig needs to allow equal too. So for instance in 2 out of 4
         // multisig, we would define 50 * 10 ^ 16 - 1 instead of just 50 * 10 ^ 16,
         // so 2 signatures => 2 * 10 ^ 18 / 4 = 50 * 10 ^ 16 > 50 * 10 ^ 16 - 1 would pass
         // We can avoid safemath checks here as it's very unlikely a user will pass in enough
-        // _signer to cause this to overflow
+        // _signers to cause this to overflow
         MiniMeToken token = _popTokenCache(msg.sender);
-        uint256 multiSigSupport = _requiredSignatures * 10 ** 18 / _signer.length - 1;
+        uint256 multiSigSupport = _requiredSignatures * 10 ** 18 / _signers.length - 1;
 
         // Create DAO and install apps
         (Kernel dao, ACL acl) = _createDAO();
         Vault vault = _installVaultApp(dao);
-        Finance finance = _installFinanceApp(dao, vault, 30 days);
+        Finance finance = _installFinanceApp(dao, vault, FINANCE_PERIOD);
         TokenManager tokenManager = _installTokenManagerApp(dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
-        Voting voting = _installVotingApp(dao, token, multiSigSupport.toUint64(), multiSigSupport.toUint64(), 1825 days); // ~5 years
+        Voting voting = _installVotingApp(dao, token, multiSigSupport.toUint64(), multiSigSupport.toUint64(), VOTE_DURATION); // ~5 years
 
         // Mint 1 token per signer
         _createPermissionForTemplate(acl, tokenManager, tokenManager.MINT_ROLE());
-        for (uint256 i = 0; i < _signer.length; i++) {
-            tokenManager.mint(_signer[i], 1);
+        for (uint256 i = 0; i < _signers.length; i++) {
+            tokenManager.mint(_signers[i], 1);
         }
         _removePermissionFromTemplate(acl, tokenManager, tokenManager.MINT_ROLE());
 

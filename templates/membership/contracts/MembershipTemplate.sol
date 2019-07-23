@@ -10,6 +10,7 @@ contract MembershipTemplate is BaseTemplate {
     bool constant private TOKEN_TRANSFERABLE = false;
     string constant private TOKEN_NAME = "Member Token";
     string constant private TOKEN_SYMBOL = "MEMBER";
+    uint8 constant private TOKEN_DECIMALS = uint8(0);
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(1);
 
     uint64 constant private ONE_PCT = uint64(1e16);                         // 1%
@@ -34,7 +35,7 @@ contract MembershipTemplate is BaseTemplate {
     }
 
     function newToken() public returns (MiniMeToken) {
-        MiniMeToken token = _createToken(TOKEN_NAME, TOKEN_SYMBOL);
+        MiniMeToken token = _createToken(TOKEN_NAME, TOKEN_SYMBOL, TOKEN_DECIMALS);
         _cacheToken(token, msg.sender);
         return token;
     }

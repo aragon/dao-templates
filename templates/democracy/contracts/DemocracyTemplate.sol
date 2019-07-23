@@ -4,6 +4,7 @@ import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 
 
 contract DemocracyTemplate is BaseTemplate {
+    uint8 constant private TOKEN_DECIMALS = uint8(18);
     bool constant private TOKEN_TRANSFERABLE = true;
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(0);
     uint64 constant private FINANCE_PERIOD = uint64(30 days);      // 30 days
@@ -38,7 +39,7 @@ contract DemocracyTemplate is BaseTemplate {
     }
 
     function newToken(string _name, string _symbol) public returns (MiniMeToken) {
-        MiniMeToken token = _createToken(_name, _symbol);
+        MiniMeToken token = _createToken(_name, _symbol, TOKEN_DECIMALS);
         _cacheToken(token, msg.sender);
         return token;
     }

@@ -5,11 +5,13 @@ import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 
 contract ReputationTemplate is BaseTemplate {
     string private constant ERROR_MISSING_TOKEN_CACHE = "REPUTATION_MISSING_TOKEN_CACHE";
+    string private constant ERROR_EMPTY_HOLDERS = "REPUTATION_EMPTY_HOLDERS";
     string private constant ERROR_BAD_HOLDERS_STAKES_LEN = "REPUTATION_BAD_HOLDERS_STAKES_LEN";
 
     bool constant private TOKEN_TRANSFERABLE = false;
     string constant private TOKEN_NAME = "Reputation Token";
     string constant private TOKEN_SYMBOL = "REP";
+    uint8 constant private TOKEN_DECIMALS = uint8(18);
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(0);
 
     uint64 constant private ONE_PCT = uint64(1e16);                         // 1%
@@ -34,12 +36,13 @@ contract ReputationTemplate is BaseTemplate {
     }
 
     function newToken() public returns (MiniMeToken) {
-        MiniMeToken token = _createToken(TOKEN_NAME, TOKEN_SYMBOL);
+        MiniMeToken token = _createToken(TOKEN_NAME, TOKEN_SYMBOL, TOKEN_DECIMALS);
         _cacheToken(token, msg.sender);
         return token;
     }
 
     function newInstance(string _id, address[] _holders, uint256[] _stakes) public {
+        require(_holders.length > 0, ERROR_EMPTY_HOLDERS);
         require(_holders.length == _stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         MiniMeToken token = _popTokenCache(msg.sender);
 
