@@ -9,8 +9,8 @@ contract DemocracyTemplate is BaseTemplate {
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(0);
     uint64 constant private FINANCE_PERIOD = uint64(30 days);      // 30 days
 
-    string private constant ERROR_MISSING_TOKEN_CACHE = "DEMOCRACY_MISSING_TOKEN_CACHE";
-    string private constant ERROR_BAD_HOLDERS_STAKES_LEN = "DEMOCRACY_BAD_HOLDERS_STAKES_LEN";
+    string constant private ERROR_MISSING_TOKEN_CACHE = "DEMOCRACY_MISSING_TOKEN_CACHE";
+    string constant private ERROR_BAD_HOLDERS_STAKES_LEN = "DEMOCRACY_BAD_HOLDERS_STAKES_LEN";
 
     mapping (address => address) internal tokenCache;
 

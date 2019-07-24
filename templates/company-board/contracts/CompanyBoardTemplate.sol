@@ -4,11 +4,12 @@ import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 
 
 contract CompanyBoardTemplate is BaseTemplate {
-    string private constant ERROR_MISSING_DAO_CACHE = "COMPANY_MISSING_DAO_CACHE";
-    string private constant ERROR_MISSING_BOARD_MEMBERS = "COMPANY_MISSING_BOARD_MEMBERS";
-    string private constant ERROR_MISSING_SHARE_MEMBERS = "COMPANY_MISSING_SHARE_MEMBERS";
-    string private constant ERROR_BAD_HOLDERS_STAKES_LEN = "COMPANY_BAD_HOLDERS_STAKES_LEN";
+    string constant private ERROR_MISSING_DAO_CACHE = "COMPANY_MISSING_DAO_CACHE";
+    string constant private ERROR_MISSING_BOARD_MEMBERS = "COMPANY_MISSING_BOARD_MEMBERS";
+    string constant private ERROR_MISSING_SHARE_MEMBERS = "COMPANY_MISSING_SHARE_MEMBERS";
+    string constant private ERROR_BAD_HOLDERS_STAKES_LEN = "COMPANY_BAD_HOLDERS_STAKES_LEN";
 
+    bool constant private AGENT_DEFAULT = true;
     uint64 constant private ONE_PCT = uint64(1e16);
     uint64 constant private FINANCE_PERIOD = uint64(30 days);
 
@@ -63,7 +64,7 @@ contract CompanyBoardTemplate is BaseTemplate {
 
         // Install apps
         ACL acl = ACL(dao.acl());
-        Agent agent = _installDefaultAgentApp(dao);
+        Agent agent = _installAgentApp(dao, AGENT_DEFAULT);
         Finance finance = _installFinanceApp(dao, Vault(agent), FINANCE_PERIOD);
         TokenManager boardTokenManager = _installTokenManagerApp(dao, boardToken, BOARD_TRANSFERABLE, BOARD_MAX_PER_ACCOUNT);
         TokenManager shareTokenManager = _installTokenManagerApp(dao, shareToken, SHARE_TRANSFERABLE, SHARE_MAX_PER_ACCOUNT);
@@ -112,14 +113,14 @@ contract CompanyBoardTemplate is BaseTemplate {
         _createPermissions(_acl, grantees, _agent, _agent.RUN_SCRIPT_ROLE(), _shareVoting);
     }
 
-    function _createCustomFinancePermissions(ACL _acl, Finance finance, Voting _boardVoting, Voting _shareVoting) internal {
+    function _createCustomFinancePermissions(ACL _acl, Finance _finance, Voting _boardVoting, Voting _shareVoting) internal {
         address[] memory grantees = new address[](2);
         grantees[0] = address(_boardVoting);
         grantees[1] = address(_shareVoting);
 
-        _createPermissions(_acl, grantees, finance, finance.CREATE_PAYMENTS_ROLE(), _shareVoting);
-        _acl.createPermission(_shareVoting, finance, finance.EXECUTE_PAYMENTS_ROLE(), _shareVoting);
-        _acl.createPermission(_shareVoting, finance, finance.MANAGE_PAYMENTS_ROLE(), _shareVoting);
+        _createPermissions(_acl, grantees, _finance, _finance.CREATE_PAYMENTS_ROLE(), _shareVoting);
+        _acl.createPermission(_shareVoting, _finance, _finance.EXECUTE_PAYMENTS_ROLE(), _shareVoting);
+        _acl.createPermission(_shareVoting, _finance, _finance.MANAGE_PAYMENTS_ROLE(), _shareVoting);
     }
 
     function _createCustomVotingPermissions(ACL _acl, Voting _boardVoting, Voting _shareVoting, TokenManager _boardTokenManager) internal {

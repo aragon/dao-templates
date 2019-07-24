@@ -26,7 +26,9 @@ contract TrustTemplate is BaseTemplate {
     string constant private ERROR_REGISTRY_FACTORY_IS_NOT_CONTRACT = "TRUST_REGISTRY_FACT_NOT_CONTRACT";
     string constant private ERROR_MISSING_SENDER_CACHE = "TRUST_MISSING_SENDER_CACHE";
 
+    bool constant private AGENT_DEFAULT = false;
     uint256 constant private ONE_PCT = uint64(1e16);                            // 1%
+
     uint256 constant private BENEFICIARY_KEYS_AMOUNT = 2;                       // hold + cold keys
     uint256 constant private MULTI_SIG_EXTERNAL_KEYS_AMOUNT = 2;                // 2 external keys for the multis sig wallet
     uint256 constant private MULTI_SIG_REQUIRED_CONFIRMATIONS = 2;              // 2 out of 3 (keys + dao)
@@ -109,8 +111,8 @@ contract TrustTemplate is BaseTemplate {
 
     function _setupApps(Kernel _dao, address[] _beneficiaryKeys, address[] _heirs, uint256[] _heirsStakes, uint256 _blockedHeirsSupply) internal {
         ACL acl = ACL(_dao.acl());
-        Agent agent = _installNonDefaultAgentApp(_dao);
         Vault vault = _installVaultApp(_dao);
+        Agent agent = _installAgentApp(_dao, AGENT_DEFAULT);
         Finance finance = _installFinanceApp(_dao, vault, 30 days);
         (Voting holdVoting, Voting heirsVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager) = _installTokenApps(_dao);
 

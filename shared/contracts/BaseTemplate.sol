@@ -90,40 +90,32 @@ contract BaseTemplate is APMNamehash, IsContract {
         _acl.removePermissionManager(_app, _permission);
     }
 
-    function _transferPermissionFromTemplate(ACL _acl, address _to, address _app, bytes32 _permission) internal {
-        _transferPermissionFromTemplate(_acl, _to, _to, _app, _permission);
-    }
-
-    function _transferPermissionFromTemplate(ACL _acl, address _to, address _manager, address _app, bytes32 _permission) internal {
-        _acl.grantPermission(_to, _app, _permission);
-        _acl.revokePermission(address(this), _app, _permission);
-        _acl.setPermissionManager(_manager, _app, _permission);
-    }
-
     function _transferRootPermissionsFromTemplate(Kernel _dao, address _to) internal {
         _transferRootPermissionsFromTemplate(_dao, _to, _to);
     }
 
     function _transferRootPermissionsFromTemplate(Kernel _dao, address _to, address _manager) internal {
         ACL _acl = ACL(_dao.acl());
-        _transferPermissionFromTemplate(_acl, _to, _manager, _dao, _dao.APP_MANAGER_ROLE());
-        _transferPermissionFromTemplate(_acl, _to, _manager, _acl, _acl.CREATE_PERMISSIONS_ROLE());
+        _transferPermissionFromTemplate(_acl, _dao, _to, _dao.APP_MANAGER_ROLE(), _manager);
+        _transferPermissionFromTemplate(_acl, _acl, _to, _acl.CREATE_PERMISSIONS_ROLE(), _manager);
+    }
+
+    function _transferPermissionFromTemplate(ACL _acl, address _app, address _to, bytes32 _permission, address _manager) internal {
+        _acl.grantPermission(_to, _app, _permission);
+        _acl.revokePermission(address(this), _app, _permission);
+        _acl.setPermissionManager(_manager, _app, _permission);
     }
 
     /* AGENT */
 
-    function _installDefaultAgentApp(Kernel _dao) internal returns (Agent) {
-        Agent agent = Agent(_installDefaultApp(_dao, AGENT_APP_ID));
+    function _installAgentApp(Kernel _dao, bool _default) internal returns (Agent) {
+        Agent agent = Agent(_installApp(_dao, AGENT_APP_ID, _default));
         agent.initialize();
-        // We assume that installing the Agent app as default is in order to replace the Vault app which is
-        // normally installed as default. Thus, we are setting its ID as the Vault id that the Kernel will use.
-        _dao.setRecoveryVaultAppId(AGENT_APP_ID);
-        return agent;
-    }
-
-    function _installNonDefaultAgentApp(Kernel _dao) internal returns (Agent) {
-        Agent agent = Agent(_installNonDefaultApp(_dao, AGENT_APP_ID));
-        agent.initialize();
+        if (_default) {
+            // We assume that installing the Agent app as default is in order to replace the Vault app which is
+            // normally installed as default. Thus, we are setting its ID as the Vault id that the Kernel will use.
+            _dao.setRecoveryVaultAppId(AGENT_APP_ID);
+        }
         return agent;
     }
 
@@ -140,10 +132,10 @@ contract BaseTemplate is APMNamehash, IsContract {
         return finance;
     }
 
-    function _createFinancePermissions(ACL _acl, Finance finance, address _grantee, address _manager) internal {
-        _acl.createPermission(_grantee, finance, finance.CREATE_PAYMENTS_ROLE(), _manager);
-        _acl.createPermission(_grantee, finance, finance.EXECUTE_PAYMENTS_ROLE(), _manager);
-        _acl.createPermission(_grantee, finance, finance.MANAGE_PAYMENTS_ROLE(), _manager);
+    function _createFinancePermissions(ACL _acl, Finance _finance, address _grantee, address _manager) internal {
+        _acl.createPermission(_grantee, _finance, _finance.CREATE_PAYMENTS_ROLE(), _manager);
+        _acl.createPermission(_grantee, _finance, _finance.EXECUTE_PAYMENTS_ROLE(), _manager);
+        _acl.createPermission(_grantee, _finance, _finance.MANAGE_PAYMENTS_ROLE(), _manager);
     }
 
     /* TOKEN MANAGER */
@@ -197,11 +189,15 @@ contract BaseTemplate is APMNamehash, IsContract {
     /* APPS */
 
     function _installNonDefaultApp(Kernel _dao, bytes32 _appId) internal returns (address) {
-        return _installApp(_dao, _appId, new bytes(0), false);
+        return _installApp(_dao, _appId, false);
     }
 
     function _installDefaultApp(Kernel _dao, bytes32 _appId) internal returns (address) {
-        return _installApp(_dao, _appId, new bytes(0), true);
+        return _installApp(_dao, _appId, true);
+    }
+
+    function _installApp(Kernel _dao, bytes32 _appId, bool _default) internal returns (address) {
+        return _installApp(_dao, _appId, new bytes(0), _default);
     }
 
     function _installApp(Kernel _dao, bytes32 _appId, bytes _data, bool _setDefault) internal returns (address) {

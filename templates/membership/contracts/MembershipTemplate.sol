@@ -4,8 +4,8 @@ import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 
 
 contract MembershipTemplate is BaseTemplate {
-    string private constant ERROR_MISSING_MEMBERS = "MEMBERSHIP_MISSING_MEMBERS";
-    string private constant ERROR_MISSING_TOKEN_CACHE = "MEMBERSHIP_MISSING_TOKEN_CACHE";
+    string constant private ERROR_MISSING_MEMBERS = "MEMBERSHIP_MISSING_MEMBERS";
+    string constant private ERROR_MISSING_TOKEN_CACHE = "MEMBERSHIP_MISSING_TOKEN_CACHE";
 
     bool constant private TOKEN_TRANSFERABLE = false;
     string constant private TOKEN_NAME = "Member Token";
@@ -13,6 +13,7 @@ contract MembershipTemplate is BaseTemplate {
     uint8 constant private TOKEN_DECIMALS = uint8(0);
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(1);
 
+    bool constant private AGENT_DEFAULT = true;
     uint64 constant private ONE_PCT = uint64(1e16);                         // 1%
     uint64 constant private FINANCE_PERIOD = uint64(30 days);               // 30 days
     uint64 constant private VOTE_DURATION = uint64(7 days);                 // 1 week
@@ -46,7 +47,7 @@ contract MembershipTemplate is BaseTemplate {
 
         // Create DAO and install apps
         (Kernel dao, ACL acl) = _createDAO();
-        Agent agent = _installDefaultAgentApp(dao);
+        Agent agent = _installAgentApp(dao, AGENT_DEFAULT);
         Finance finance = _installFinanceApp(dao, Vault(agent), FINANCE_PERIOD);
         TokenManager tokenManager = _installTokenManagerApp(dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
         Voting voting = _installVotingApp(dao, token, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION);

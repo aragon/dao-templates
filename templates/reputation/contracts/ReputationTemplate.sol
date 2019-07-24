@@ -4,9 +4,9 @@ import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 
 
 contract ReputationTemplate is BaseTemplate {
-    string private constant ERROR_MISSING_TOKEN_CACHE = "REPUTATION_MISSING_TOKEN_CACHE";
-    string private constant ERROR_EMPTY_HOLDERS = "REPUTATION_EMPTY_HOLDERS";
-    string private constant ERROR_BAD_HOLDERS_STAKES_LEN = "REPUTATION_BAD_HOLDERS_STAKES_LEN";
+    string constant private ERROR_MISSING_TOKEN_CACHE = "REPUTATION_MISSING_TOKEN_CACHE";
+    string constant private ERROR_EMPTY_HOLDERS = "REPUTATION_EMPTY_HOLDERS";
+    string constant private ERROR_BAD_HOLDERS_STAKES_LEN = "REPUTATION_BAD_HOLDERS_STAKES_LEN";
 
     bool constant private TOKEN_TRANSFERABLE = false;
     string constant private TOKEN_NAME = "Reputation Token";
@@ -14,6 +14,7 @@ contract ReputationTemplate is BaseTemplate {
     uint8 constant private TOKEN_DECIMALS = uint8(18);
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(0);
 
+    bool constant private AGENT_DEFAULT = true;
     uint64 constant private ONE_PCT = uint64(1e16);                         // 1%
     uint64 constant private FINANCE_PERIOD = uint64(30 days);               // 30 days
     uint64 constant private VOTE_DURATION = uint64(7 days);                 // 1 week
@@ -48,7 +49,7 @@ contract ReputationTemplate is BaseTemplate {
 
         // Create DAO and install apps
         (Kernel dao, ACL acl) = _createDAO();
-        Agent agent = _installDefaultAgentApp(dao);
+        Agent agent = _installAgentApp(dao, AGENT_DEFAULT);
         Finance finance = _installFinanceApp(dao, Vault(agent), FINANCE_PERIOD);
         TokenManager tokenManager = _installTokenManagerApp(dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
         Voting voting = _installVotingApp(dao, token, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION);
