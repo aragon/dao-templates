@@ -11,7 +11,6 @@
     "test": "npm run test:all",
     "test:all": "lerna run --scope=@aragon/templates-* --concurrency=1 --stream test",
     "test:bare": "lerna run --scope=@aragon/templates-bare --stream test",
-    "test:democracy": "lerna run --scope=@aragon/templates-democracy --stream test",
     "test:trust": "lerna run --scope=@aragon/templates-trust --stream test",
     "test:company": "lerna run --scope=@aragon/templates-company --stream test",
     "test:company:board": "lerna run --scope=@aragon/templates-company-board --stream test",
