@@ -16,7 +16,7 @@
     "test:company:board": "lerna run --scope=@aragon/templates-company-board --stream test:geth",
     "test:membership": "lerna run --scope=@aragon/templates-membership --stream test:geth",
     "test:reputation": "lerna run --scope=@aragon/templates-reputation --stream test:geth",
-    "lint": "lerna run --scope=@aragon/templates-* lint",
+    "lint": "lerna run --scope=@aragon/templates-* lint"
   },
   "devDependencies": {
     "lerna": "^3.0.0"
