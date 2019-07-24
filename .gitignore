@@ -2,14 +2,6 @@
 node_modules
 **/*/node_modules
 
-# coverage
-*/**/coverage
-*/**/coverageEnv
-*/**/coverage.json
-*/**/allFiredEvents
-*/**/scTopics
-**/**/artifact.json
-
 # lerna
 lerna-debug.log
 
