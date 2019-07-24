@@ -26,9 +26,7 @@ contract TrustTemplate is BaseTemplate {
     string constant private ERROR_REGISTRY_FACTORY_IS_NOT_CONTRACT = "TRUST_REGISTRY_FACT_NOT_CONTRACT";
     string constant private ERROR_MISSING_SENDER_CACHE = "TRUST_MISSING_SENDER_CACHE";
 
-    bool constant private AGENT_DEFAULT = false;
     uint256 constant private ONE_PCT = uint64(1e16);                            // 1%
-
     uint256 constant private BENEFICIARY_KEYS_AMOUNT = 2;                       // hold + cold keys
     uint256 constant private MULTI_SIG_EXTERNAL_KEYS_AMOUNT = 2;                // 2 external keys for the multis sig wallet
     uint256 constant private MULTI_SIG_REQUIRED_CONFIRMATIONS = 2;              // 2 out of 3 (keys + dao)
@@ -112,7 +110,7 @@ contract TrustTemplate is BaseTemplate {
     function _setupApps(Kernel _dao, address[] _beneficiaryKeys, address[] _heirs, uint256[] _heirsStakes, uint256 _blockedHeirsSupply) internal {
         ACL acl = ACL(_dao.acl());
         Vault vault = _installVaultApp(_dao);
-        Agent agent = _installAgentApp(_dao, AGENT_DEFAULT);
+        Agent agent = _installNonDefaultAgentApp(_dao);
         Finance finance = _installFinanceApp(_dao, vault, 30 days);
         (Voting holdVoting, Voting heirsVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager) = _installTokenApps(_dao);
 
@@ -213,16 +211,6 @@ contract TrustTemplate is BaseTemplate {
         daoCache[_owner] = DaoCache({ dao: _dao, holdToken: _holdToken, heirsToken: _heirsToken });
     }
 
-    function _hasDaoCache(address _owner) internal view returns (bool) {
-        DaoCache storage c = daoCache[_owner];
-        return c.dao != address(0) && c.holdToken != address(0) && c.heirsToken != address(0);
-    }
-
-    function _hasAppsCache(address _owner) internal view returns (bool) {
-        AppsCache storage c = appsCache[_owner];
-        return c.agent != address(0) && c.holdVoting != address(0) && c.holdTokenManager != address(0) && c.heirsTokenManager != address(0);
-    }
-
     function _storeAppsCache(address _owner, Agent _agent, Voting _holdVoting, TokenManager _holdTokenManager, TokenManager _heirsTokenManager)
         internal
     {
@@ -237,6 +225,16 @@ contract TrustTemplate is BaseTemplate {
     function _cleanCache(address _owner) internal {
         delete daoCache[_owner];
         delete appsCache[_owner];
+    }
+
+    function _hasDaoCache(address _owner) internal view returns (bool) {
+        DaoCache storage c = daoCache[_owner];
+        return c.dao != address(0) && c.holdToken != address(0) && c.heirsToken != address(0);
+    }
+
+    function _hasAppsCache(address _owner) internal view returns (bool) {
+        AppsCache storage c = appsCache[_owner];
+        return c.agent != address(0) && c.holdVoting != address(0) && c.holdTokenManager != address(0) && c.heirsTokenManager != address(0);
     }
 
     function _getDaoCache(address _owner) internal view returns (Kernel) {

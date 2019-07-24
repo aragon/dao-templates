@@ -39,10 +39,10 @@ contract BaseTemplate is APMNamehash, IsContract {
     string constant private ERROR_MINIME_FACTORY_NOT_PROVIDED = "TEMPLATE_MINIME_FAC_NOT_PROVIDED";
     string constant private ERROR_MINIME_FACTORY_NOT_CONTRACT = "TEMPLATE_MINIME_FAC_NOT_CONTRACT";
 
-    ENS public ens;
-    DAOFactory public daoFactory;
-    MiniMeTokenFactory public miniMeFactory;
-    IFIFSResolvingRegistrar public aragonID;
+    ENS internal ens;
+    DAOFactory internal daoFactory;
+    MiniMeTokenFactory internal miniMeFactory;
+    IFIFSResolvingRegistrar internal aragonID;
 
     event DeployDao(address dao);
     event DeployToken(address token);
@@ -108,14 +108,18 @@ contract BaseTemplate is APMNamehash, IsContract {
 
     /* AGENT */
 
-    function _installAgentApp(Kernel _dao, bool _default) internal returns (Agent) {
-        Agent agent = Agent(_installApp(_dao, AGENT_APP_ID, _default));
+    function _installDefaultAgentApp(Kernel _dao) internal returns (Agent) {
+        Agent agent = Agent(_installDefaultApp(_dao, AGENT_APP_ID));
         agent.initialize();
-        if (_default) {
-            // We assume that installing the Agent app as default is in order to replace the Vault app which is
-            // normally installed as default. Thus, we are setting its ID as the Vault id that the Kernel will use.
-            _dao.setRecoveryVaultAppId(AGENT_APP_ID);
-        }
+        // We assume that installing the Agent app as default is in order to replace the Vault app which is
+        // normally installed as default. Thus, we are setting its ID as the Vault id that the Kernel will use.
+        _dao.setRecoveryVaultAppId(AGENT_APP_ID);
+        return agent;
+    }
+
+    function _installNonDefaultAgentApp(Kernel _dao) internal returns (Agent) {
+        Agent agent = Agent(_installNonDefaultApp(_dao, AGENT_APP_ID));
+        agent.initialize();
         return agent;
     }
 
@@ -189,15 +193,11 @@ contract BaseTemplate is APMNamehash, IsContract {
     /* APPS */
 
     function _installNonDefaultApp(Kernel _dao, bytes32 _appId) internal returns (address) {
-        return _installApp(_dao, _appId, false);
+        return _installApp(_dao, _appId, new bytes(0), false);
     }
 
     function _installDefaultApp(Kernel _dao, bytes32 _appId) internal returns (address) {
-        return _installApp(_dao, _appId, true);
-    }
-
-    function _installApp(Kernel _dao, bytes32 _appId, bool _default) internal returns (address) {
-        return _installApp(_dao, _appId, new bytes(0), _default);
+        return _installApp(_dao, _appId, new bytes(0), true);
     }
 
     function _installApp(Kernel _dao, bytes32 _appId, bytes _data, bool _setDefault) internal returns (address) {

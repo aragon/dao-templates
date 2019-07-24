@@ -9,7 +9,6 @@ contract CompanyBoardTemplate is BaseTemplate {
     string constant private ERROR_MISSING_SHARE_MEMBERS = "COMPANY_MISSING_SHARE_MEMBERS";
     string constant private ERROR_BAD_HOLDERS_STAKES_LEN = "COMPANY_BAD_HOLDERS_STAKES_LEN";
 
-    bool constant private AGENT_DEFAULT = true;
     uint64 constant private ONE_PCT = uint64(1e16);
     uint64 constant private FINANCE_PERIOD = uint64(30 days);
 
@@ -64,7 +63,7 @@ contract CompanyBoardTemplate is BaseTemplate {
 
         // Install apps
         ACL acl = ACL(dao.acl());
-        Agent agent = _installAgentApp(dao, AGENT_DEFAULT);
+        Agent agent = _installDefaultAgentApp(dao);
         Finance finance = _installFinanceApp(dao, Vault(agent), FINANCE_PERIOD);
         TokenManager boardTokenManager = _installTokenManagerApp(dao, boardToken, BOARD_TRANSFERABLE, BOARD_MAX_PER_ACCOUNT);
         TokenManager shareTokenManager = _installTokenManagerApp(dao, shareToken, SHARE_TRANSFERABLE, SHARE_MAX_PER_ACCOUNT);
