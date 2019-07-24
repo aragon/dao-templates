@@ -11,6 +11,9 @@ cleanup() {
   if [ -n "$pid" ] && ps -p $pid > /dev/null; then
     kill -9 $pid
   fi
+
+  # Remove local deploy file in case it was created
+  clean_deploy
 }
 
 setup_testing_variables() {
@@ -30,8 +33,12 @@ start_ganache() {
 }
 
 deploy_template() {
-  echo "Deploying tempalte..."
+  echo "Deploying template..."
   npm run deploy:rpc
+}
+
+clean_deploy() {
+  rm -f arapp_local.json
 }
 
 run_tests() {
@@ -41,5 +48,6 @@ run_tests() {
 
 setup_testing_variables
 start_ganache
+clean_deploy
 deploy_template
 run_tests $@
