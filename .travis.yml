@@ -6,7 +6,6 @@ cache:
     - node_modules
     - templates/shared/node_modules
     - templates/bare/node_modules
-    - templates/democracy/node_modules
     - templates/multisig/node_modules
     - templates/trust/node_modules
     - tempaltes/company/node_modules
@@ -26,8 +25,6 @@ jobs:
       name: "Lint"
     - script: npm run test:bare
       name: "Bare"
-    - script: npm run test:democracy
-      name: "Democracy"
     - script: npm run test:multisig
       name: "Multisig"
     - script: npm run test:trust
