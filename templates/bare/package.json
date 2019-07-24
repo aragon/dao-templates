@@ -14,8 +14,8 @@
     "deploy:mainnet": "npm run compile && truffle exec ./scripts/deploy.js --network mainnet --ens 0x314159265dd8dbb310642f98f50c066173c1259b"
   },
   "dependencies": {
-    "@aragon/os": "^4.2.0",
-    "@aragon/id": "^2.0.3",
+    "@aragon/os": "4.2.0",
+    "@aragon/id": "2.0.3",
     "@aragon/apps-agent": "^1.0.0",
     "@aragon/apps-vault": "^4.1.0",
     "@aragon/apps-voting": "^2.1.0",
@@ -26,10 +26,12 @@
   },
   "devDependencies": {
     "@aragon/test-helpers": "^2.0.0",
+    "eth-ens-namehash": "^2.0.8",
+    "eth-gas-reporter": "^0.1.1",
     "ganache-cli": "^6.0.3",
-    "solidity-coverage": "0.5.8",
     "solium": "^1.0.4",
     "truffle": "4.1.14",
+    "truffle-extract": "^1.2.1",
     "truffle-hdwallet-provider": "0.0.3"
   }
 }

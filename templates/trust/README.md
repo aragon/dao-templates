@@ -6,7 +6,7 @@ An Aragon [Trust](https://www.investopedia.com/terms/t/trust.asp) is a kind of 
 the entity itself.
 
 
-# Goals
+## Goals
 
 - Stores assets on the [Gnosis multisig](https://github.com/gnosis/MultiSigWallet), which is the most proven smart 
   contract for storing assets, while still having the flexibility of an Aragon entity.
@@ -23,7 +23,7 @@ the entity itself.
 that the funds are eventually directed towards the people or causes you originally intend to support.
 
 
-# Governance structure
+## Governance structure
 
 > Note: support percentages and time delays can be tweaked as you want, these are just sensible defaults.
 
@@ -65,20 +65,76 @@ Aragon Trusts are composed of two sub-groups:
 
 ### DAO permissions
 
-| App                   | Permission     | Grantee        | Permission manager |
-| --------------------- | -------------- | -------------- | ------------------ |
-| Agent                 | Execute action | Voting (HOLD)  | Voting (HOLD)      |
-| Agent                 | Execute action | Voting (HEIRS) | Voting (HOLD)      |
-| Agent                 | Run script     | Voting (HOLD)  | Voting (HOLD)      |
-| Agent                 | Run script     | Voting (HEIRS) | Voting (HOLD)      |
-| Token Manager (HOLD)  | Mint tokens    | Multisig       | Multisig           |
-| Token Manager (HEIRS) | Mint tokens    | Multisig       | Multisig           |
-| Token Manager (HOLD)  | Burn tokens    | Multisig       | Multisig           |
-| Token Manager (HEIRS) | Burn tokens    | Multisig       | Multisig           |
+| App                   | Permission            | Grantee             | Permission manager |
+| --------------------- | --------------------- | ------------------- | ------------------ |
+| Kernel                | APP_MANAGER           | Hold Voting         | Hold Voting        |
+| ACL                   | CREATE_PERMISSIONS    | Hold Voting         | Hold Voting        |
+| EVMScriptRegistry     | REGISTRY_MANAGER      | Hold Voting         | Hold Voting        |
+| EVMScriptRegistry     | REGISTRY_ADD_EXECUTOR | Hold Voting         | Hold Voting        |
+| Hold Voting           | CREATE_VOTES          | Hold Token Manager  | Hold Voting        |
+| Hold Voting           | MODIFY_QUORUM         | Hold Voting         | Hold Voting        |
+| Hold Voting           | MODIFY_SUPPORT        | Hold Voting         | Hold Voting        |
+| Heirs Voting          | CREATE_VOTES          | Heirs Token Manager | Heirs Voting       |
+| Heirs Voting          | MODIFY_QUORUM         | Heirs Voting        | Heirs Voting       |
+| Heirs Voting          | MODIFY_SUPPORT        | Heirs Voting        | Heirs Voting       |
+| Agent                 | EXECUTE               | Hold Voting         | Hold Voting        |
+| Agent                 | RUN_SCRIPT            | Hold Voting         | Hold Voting        |
+| Agent                 | EXECUTE               | Heirs Voting        | Hold Voting        |
+| Agent                 | RUN_SCRIPT            | Heirs Voting        | Hold Voting        |
+| Vault                 | TRANSFER              | Finance             | Hold Voting        |
+| Finance               | CREATE_PAYMENTS       | Hold Voting         | Hold Voting        |
+| Finance               | EXECUTE_PAYMENTS      | Hold Voting         | Hold Voting        |
+| Finance               | DISABLE_PAYMENTS      | Hold Voting         | Hold Voting        |
+| Hold Token Manager    | MINT                  | Multisig            | Multisig           |
+| Hold Token Manager    | BURN                  | Multisig            | Multisig           |
+| Hold Token Manager    | ASSIGN                | Hold Voting         | Hold Voting        |
+| Hold Token Manager    | REVOKE_VESTINGS       | Hold Voting         | Hold Voting        |
+| Heirs Token Manager   | MINT                  | Multisig            | Multisig           |
+| Heirs Token Manager   | BURN                  | Multisig            | Multisig           |
+| Heirs Token Manager   | ASSIGN                | Heirs Voting        | Heirs Voting       |
+| Heirs Token Manager   | REVOKE_VESTINGS       | Heirs Voting        | Heirs Voting       |
 
 
+## Usage
 
-# Threat model
+Create new tokens and initialize DAO for the trust entity:
+
+```
+template.prepareInstance()
+```
+
+Setup trust DAO:
+
+```
+template.setupInstance(name, beneficiaryKeys, heirs, heirsStakes)
+```
+
+- `name`: Name for org, will assign `[name].aragonid.eth`
+- `beneficiaryKeys`: 2-length array with the beneficiaries keys
+- `heirs`: Array of heirs addresses 
+- `stakes`: Array of token stakes for heirs (token has 18 decimals, multiply token amount `* 10^18`)
+
+Create new Gnosis multisig wallet for the trust DAO:
+
+```
+template.setupMultiSig(multisigKeys)
+```
+
+- `multisigKeys`: 2-length array with the beneficiaries keys
+
+
+## Deploying templates
+
+After deploying ENS, APM and AragonID, just run:
+
+```
+npm run deploy:rinkeby
+```
+
+The network details will be automatically selected by the `arapp.json`'s environments.
+
+
+## Threat model
 
 - The two multisig keys cannot get lost or stolen at the same time
 

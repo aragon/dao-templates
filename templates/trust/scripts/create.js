@@ -1,11 +1,10 @@
 const fs = require('fs')
 const { hash } = require('eth-ens-namehash')
-const { isAddress } = require('web3-utils')
 const { getEventArgument } = require('@aragon/test-helpers/events')
-const { fileName, deployedAddresses } = require('@aragon/templates-shared/lib/ArappFile')(web3)
+const { fileName, deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
 
 const isArray = (e, l = 0) => Array.isArray(e) && (l === 0 || e.length === l)
-const isArrayOfAddresses = (e, l = 0) => isArray(e, l) && e.every(isAddress)
+const isArrayOfAddresses = (e, l = 0) => isArray(e, l) && e.every(web3.isAddress)
 
 const existsJson = path => {
   if (path.split('.').pop() !== 'json' || !fs.existsSync(path)) return false;
@@ -61,9 +60,9 @@ async function create() {
   const { id, multiSigKeys, beneficiaries, heirs, heirsStakes } = parseInput()
 
   console.log('Preparing DAO...')
-  await trustTemplate.prepareDAO()
+  await trustTemplate.prepareInstance()
   console.log('Setting up DAO...')
-  await trustTemplate.setupDAO(id, beneficiaries, heirs, heirsStakes)
+  await trustTemplate.setupInstance(id, beneficiaries, heirs, heirsStakes)
   console.log('Setting up multi signature wallet...')
   const receipt = await trustTemplate.setupMultiSig(multiSigKeys)
   console.log('Trust entity deployed successfully!')

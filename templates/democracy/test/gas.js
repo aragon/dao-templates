@@ -1,4 +1,5 @@
-const { deployedAddresses } = require('@aragon/templates-shared/lib/ArappFile')(web3)
+const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
+const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
 
 const DemocracyTemplate = artifacts.require('DemocracyTemplate')
 
@@ -29,8 +30,7 @@ contract('Democracy gas', ([owner, holder20, holder29, holder51]) => {
       const holders = [holder20, holder29, holder51]
       const stakes = [20e18, 29e18, 51e18]
 
-      const id = 'DemocracyDao-' + Math.random() * 1000
-      await template.newInstance(id, holders, stakes, neededSupport, minimumAcceptanceQuorum, votingTime, { from: owner })
+      await template.newInstance(randomId(), holders, stakes, neededSupport, minimumAcceptanceQuorum, votingTime, { from: owner })
     })
   })
 })

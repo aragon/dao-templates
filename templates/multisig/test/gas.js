@@ -1,4 +1,5 @@
-const { deployedAddresses } = require('@aragon/templates-shared/lib/ArappFile')(web3)
+const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
+const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
 
 const MultisigTemplate = artifacts.require('MultisigTemplate')
 
@@ -23,7 +24,7 @@ contract('Multisig gas', ([owner, signer1, signer2, signer3]) => {
       const signers = [signer1, signer2, signer3]
       const neededSignatures = 2
 
-      await template.newInstance('MultisigDao-' + Math.random() * 1000, signers, neededSignatures)
+      await template.newInstance(randomId(), signers, neededSignatures)
     })
   })
 })

@@ -1,7 +1,7 @@
 const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
 const { getEventArgument } = require('@aragon/test-helpers/events')
-const { deployedAddresses } = require('@aragon/templates-shared/lib/ArappFile')(web3)
-const assertRole = require('@aragon/templates-shared/helpers/assertRole')(web3)
+const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
+const { assertRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
 const decodeEvents = require('@aragon/templates-shared/helpers/decodeEvents')
 
 const ACL = artifacts.require('ACL')
@@ -35,7 +35,7 @@ contract('Bare', ([_, deployer, tokenAddress, authorized]) => {
     voting = Voting.at(votingEvents[0].args.proxy)
   })
 
-  it('setup DAO and ACL permissions correctly', async () => {
+  it('sets up DAO and ACL permissions correctly', async () => {
     await assertRole(acl, dao, { address: deployer }, 'APP_MANAGER_ROLE')
     await assertRole(acl, acl, { address: deployer }, 'CREATE_PERMISSIONS_ROLE')
   })
