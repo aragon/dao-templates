@@ -7,6 +7,9 @@
   "scripts": {
     "compile": "truffle compile --all",
     "lint": "solium --dir ./contracts",
+    "test": "npm run test:ganache",
+    "test:ganache": "./node_modules/@aragon/templates-shared/scripts/test-ganache.sh",
+    "test:geth": "npm run docker:run && npm run docker:wait-gas && npm run deploy:devnet && truffle test --network devnet && npm run docker:stop",
     "deploy:rpc": "npm run compile && truffle exec ./scripts/deploy.js --network rpc",
     "deploy:devnet": "npm run compile && truffle exec ./scripts/deploy.js --network devnet",
     "deploy:staging": "npm run compile && truffle exec ./scripts/deploy.js --network rinkeby --ens 0xfe03625ea880a8cba336f9b5ad6e15b0a3b5a939",
