@@ -14,7 +14,6 @@ contract ReputationTemplate is BaseTemplate {
 
     uint64 constant private ONE_PCT = uint64(1e16);                         // 1%
     uint64 constant private FINANCE_PERIOD = uint64(30 days);               // 30 days
-    uint64 constant private SUPPORT_REQUIRED = uint64(50 * ONE_PCT);        // 50%
     uint64 constant private MIN_ACCEPTANCE_QUORUM = uint64(20 * ONE_PCT);   // 20%
 
     mapping (address => address) internal tokenCache;
@@ -33,10 +32,11 @@ contract ReputationTemplate is BaseTemplate {
         uint256[] _stakes, 
         string _tokenName, 
         string _tokenSymbol,
-        uint64 _voteDuration
+        uint64 _voteDuration,
+        uint64 _supportRequired
     ) public {
         newToken(_tokenName, _tokenSymbol);
-        newInstance(_id, _holders, _stakes, _voteDuration);
+        newInstance(_id, _holders, _stakes, _voteDuration, _supportRequired);
     }
 
     function newToken(string _name, string _symbol) public returns (MiniMeToken) {
@@ -45,7 +45,7 @@ contract ReputationTemplate is BaseTemplate {
         return token;
     }
 
-    function newInstance(string _id, address[] _holders, uint256[] _stakes, uint64 _voteDuration) public {
+    function newInstance(string _id, address[] _holders, uint256[] _stakes, uint64 _voteDuration, uint64 _supportRequired) public {
         require(_holders.length > 0, ERROR_EMPTY_HOLDERS);
         require(_holders.length == _stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         MiniMeToken token = _popTokenCache(msg.sender);
@@ -55,7 +55,7 @@ contract ReputationTemplate is BaseTemplate {
         Agent agent = _installDefaultAgentApp(dao);
         Finance finance = _installFinanceApp(dao, Vault(agent), FINANCE_PERIOD);
         TokenManager tokenManager = _installTokenManagerApp(dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
-        Voting voting = _installVotingApp(dao, token, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, _voteDuration);
+        Voting voting = _installVotingApp(dao, token, _supportRequired, MIN_ACCEPTANCE_QUORUM, _voteDuration);
 
         // Mint tokens
         _mintTokens(acl, tokenManager, _holders, _stakes);
