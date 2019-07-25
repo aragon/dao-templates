@@ -5,19 +5,29 @@
 Create new tokens and initialize DAO for the company-board entity:
 
 ```
-template.prepareInstance()
+template.prepareInstance(name, symbol, financePeriod)
 ```
+
+- `name`: Name for the token
+- `symbol`: Symbol for the token
+- `financePeriod`: Initial duration for accounting periods
 
 Setup company-board DAO:
 
 ```
-template.setupInstance(name, boardHolders, shareHolders, shareStakes)
+template.setupInstance(name, boardHolders, shareHolders, shareStakes, boardVoteDuration, shareVoteDuration, boardSupportRequired, shareSupportRequired, boardMinAcceptanceQuorum, shareMinAcceptanceQuorum)
 ```
 
 - `name`: Name for org, will assign `[name].aragonid.eth`
 - `boardMembers`: Array of board member addresses (1 token will be minted for each board member)
 - `shareHolders`: Array of share holder addresses
 - `shareStakes`: Array of token stakes for share holders (token has 18 decimals, multiply token amount `* 10^18`)
+- `boardVoteDuration`: Time period in which a vote can be resolved for board members
+- `shareVoteDuration`: Time period in which a vote can be resolved for share holders
+- `boardSupportRequired`: Percentage of total voting power or minimum quorum that a vote needs to be approved/executed by board members
+- `shareSupportRequired`: Percentage of total voting power or minimum quorum that a vote needs to be approved/executed by share holders
+- `boardMinAcceptanceQuorum`: Percentage of the total voting power to consider when calculating support for board members
+- `shareMinAcceptanceQuorum`: Percentage of the total voting power to consider when calculating support for share holders
 
 ## Deploying templates
 
