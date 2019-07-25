@@ -26,7 +26,7 @@
     "ropsten": {
       "registry": "0x6afe2cacee211ea9179992f89dc61ff25c61e923",
       "wsRPC": "wss://ropsten.eth.aragon.network/ws",
-      "appName": "democracy-kit.aragonpm.eth",
+      "appName": "bare-kit.aragonpm.eth",
       "network": "ropsten"
     },
     "rinkeby-old": {
