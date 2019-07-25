@@ -22,7 +22,8 @@ module.exports = class TemplateDeployer {
     const template = await Template.new(this.daoFactory.address, this.ens.address, this.miniMeFactory.address, this.aragonID.address)
     await logDeploy(template)
     if ((await this.isLocal()) && !(await this._isPackageRegistered(templateName))) await this._registerPackage(templateName, template)
-    return this._writeArappFile(templateName, template)
+    await this._writeArappFile(templateName, template)
+    return template
   }
 
   async fetchOrDeployDependencies() {
