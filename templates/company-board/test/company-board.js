@@ -37,6 +37,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
   const SHARE_SUPPORT_REQUIRED = 50e16
   const BOARD_MIN_ACCEPTANCE_QUORUM = 40e16
   const SHARE_MIN_ACCEPTANCE_QUORUM = 5e16
+  const FINANCE_PERIOD = 60 * 60 * 24 * 30
 
   before('fetch company board template and ENS', async () => {
     const { registry, address } = await deployedAddresses()
@@ -68,7 +69,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
     context('when there was an instance prepared before', () => {
       before('prepare instance', async () => {
-        await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL)
+        await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL, FINANCE_PERIOD)
       })
 
       it('reverts when no board members were given', async () => {
@@ -132,7 +133,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
   context('when the creation succeeds', () => {
     before('create company entity', async () => {
-      prepareReceipt = await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL, { from: owner })
+      prepareReceipt = await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL, FINANCE_PERIOD, { from: owner })
       setupReceipt = await template.setupInstance(
         daoID, 
         BOARD_MEMBERS, 
@@ -256,7 +257,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
     it('should have finance app correctly setup', async () => {
       assert.isTrue(await finance.hasInitialized(), 'finance not initialized')
-      assert.equal((await finance.getPeriodDuration()).toString(), 60 * 60 * 24 * 30, 'finance period should be 30 days')
+      assert.equal((await finance.getPeriodDuration()).toString(), FINANCE_PERIOD, 'finance period should be 30 days')
       assert.equal(web3.toChecksumAddress(await finance.vault()), agent.address)
 
       await assertRole(acl, finance, shareVoting, 'CREATE_PAYMENTS_ROLE', boardVoting)

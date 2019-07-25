@@ -9,8 +9,6 @@ contract CompanyBoardTemplate is BaseTemplate {
     string constant private ERROR_MISSING_SHARE_MEMBERS = "COMPANY_MISSING_SHARE_MEMBERS";
     string constant private ERROR_BAD_HOLDERS_STAKES_LEN = "COMPANY_BAD_HOLDERS_STAKES_LEN";
 
-    uint64 constant private FINANCE_PERIOD = uint64(30 days);
-
     bool constant private BOARD_TRANSFERABLE = false;
     string constant private BOARD_TOKEN_NAME = "Board Token";	
     string constant private BOARD_TOKEN_SYMBOL = "BOARD";
@@ -39,11 +37,11 @@ contract CompanyBoardTemplate is BaseTemplate {
         _ensureMiniMeFactoryIsValid(_miniMeFactory);
     }
 
-    function prepareInstance(string _shareTokenName, string _shareTokenSymbol) public {
+    function prepareInstance(string _shareTokenName, string _shareTokenSymbol, uint64 _financePeriod) public {
         (Kernel dao,) = _createDAO();
         MiniMeToken boardToken = _createToken(BOARD_TOKEN_NAME, BOARD_TOKEN_SYMBOL, BOARD_TOKEN_DECIMALS);
         MiniMeToken shareToken = _createToken(_shareTokenName, _shareTokenSymbol, SHARE_TOKEN_DECIMALS);
-        (Agent agent, Finance finance) = _setupCommon(dao);
+        (Agent agent, Finance finance) = _setupCommon(dao, _financePeriod);
         _storeCache(dao, boardToken, shareToken, agent, finance, msg.sender);
     }
 
@@ -67,11 +65,11 @@ contract CompanyBoardTemplate is BaseTemplate {
         _registerDAO(_id);
     }
 
-    function _setupCommon(Kernel _dao) internal returns (Agent _agent, Finance _finance) {
+    function _setupCommon(Kernel _dao, uint64 _financePeriod) internal returns (Agent _agent, Finance _finance) {
 
         // Install apps
         _agent = _installDefaultAgentApp(_dao);
-        _finance = _installFinanceApp(_dao, Vault(_agent), FINANCE_PERIOD); 
+        _finance = _installFinanceApp(_dao, Vault(_agent), _financePeriod); 
     }
 
     function _setupBoard(address[] _boardMembers, uint64 _boardVoteDuration, uint64 _boardSupportRequired, uint64 _boardMinAcceptanceQuorum) internal returns(TokenManager _boardTokenManager, Voting _boardVoting) {
