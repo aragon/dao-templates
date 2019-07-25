@@ -13,6 +13,8 @@ contract CompanyBoardTemplate is BaseTemplate {
     uint64 constant private FINANCE_PERIOD = uint64(30 days);
 
     bool constant private BOARD_TRANSFERABLE = false;
+    string constant private BOARD_TOKEN_NAME = "Board Token";	
+    string constant private BOARD_TOKEN_SYMBOL = "BOARD";
     uint8 constant private BOARD_TOKEN_DECIMALS = uint8(0);
     uint256 constant private BOARD_MAX_PER_ACCOUNT = uint256(1);
 
@@ -44,9 +46,9 @@ contract CompanyBoardTemplate is BaseTemplate {
         _ensureMiniMeFactoryIsValid(_miniMeFactory);
     }
 
-    function prepareInstance(string _boardTokenName, string _boardTokenSymbol, string _shareTokenName, string _shareTokenSymbol) public {
+    function prepareInstance(string _shareTokenName, string _shareTokenSymbol) public {
         (Kernel dao,) = _createDAO();
-        MiniMeToken boardToken = _createToken(_boardTokenName, _boardTokenSymbol, BOARD_TOKEN_DECIMALS);
+        MiniMeToken boardToken = _createToken(BOARD_TOKEN_NAME, BOARD_TOKEN_SYMBOL, BOARD_TOKEN_DECIMALS);
         MiniMeToken shareToken = _createToken(_shareTokenName, _shareTokenSymbol, SHARE_TOKEN_DECIMALS);
         _storeCache(dao, boardToken, shareToken, msg.sender);
     }
