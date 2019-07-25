@@ -5,6 +5,9 @@ const CONTRACT_NAME = 'TrustTemplate'
 
 module.exports = callback => {
   deployTemplate(web3, artifacts, TEMPLATE_NAME, CONTRACT_NAME)
-    .then(callback)
+    .then(template => {
+      console.log(template.address)
+      callback()
+    })
     .catch(callback)
 }

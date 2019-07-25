@@ -28,7 +28,13 @@
     "deploy:staging": "npm run compile && truffle exec ./scripts/deploy.js --network rinkeby --ens 0xfe03625ea880a8cba336f9b5ad6e15b0a3b5a939",
     "deploy:rinkeby": "npm run compile && truffle exec ./scripts/deploy.js --network rinkeby --ens 0x98Df287B6C145399Aaa709692c8D308357bC085D",
     "deploy:ropsten": "npm run compile && truffle exec ./scripts/deploy.js --network ropsten --ens 0x6afe2cacee211ea9179992f89dc61ff25c61e923",
-    "deploy:mainnet": "npm run compile && truffle exec ./scripts/deploy.js --network mainnet --ens 0x314159265dd8dbb310642f98f50c066173c1259b"
+    "deploy:mainnet": "npm run compile && truffle exec ./scripts/deploy.js --network mainnet --ens 0x314159265dd8dbb310642f98f50c066173c1259b",
+    "publish:rpc": "aragon apm publish major $(npm run deploy:rpc | tail -n 1) --environment default",
+    "publish:devnet": "aragon apm publish major $(npm run deploy:devnet | tail -n 1) --environment default",
+    "publish:staging": "aragon apm publish major $(npm run deploy:rinkeby | tail -n 1) --environment rinkeby",
+    "publish:rinkeby": "aragon apm publish major $(npm run deploy:rinkeby | tail -n 1) --environment rinkeby",
+    "publish:ropsten": "aragon apm publish major $(npm run deploy:ropsten | tail -n 1) --environment ropsten",
+    "publish:mainnet": "aragon apm publish major $(npm run deploy:mainnet | tail -n 1) --environment mainnet"
   },
   "dependencies": {
     "@aragon/os": "4.2.0",
