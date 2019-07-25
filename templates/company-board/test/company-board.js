@@ -29,6 +29,10 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
   const BOARD_MEMBERS = [boardMember1, boardMember2]
   const SHARE_HOLDERS = [shareHolder1, shareHolder2, shareHolder3]
   const SHARE_STAKES = SHARE_HOLDERS.map(() => 1e18)
+  const BOARD_TOKEN_NAME = 'Board Token'
+  const BOARD_TOKEN_SYMBOL = 'BOARD'
+  const SHARE_TOKEN_NAME = 'Share Token'
+  const SHARE_TOKEN_SYMBOL = 'SHARE'
 
   before('fetch company board template and ENS', async () => {
     const { registry, address } = await deployedAddresses()
@@ -49,7 +53,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
     context('when there was an instance prepared before', () => {
       before('prepare instance', async () => {
-        await template.prepareInstance()
+        await template.prepareInstance(BOARD_TOKEN_NAME, BOARD_TOKEN_SYMBOL, SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL)
       })
 
       it('reverts when no board members were given', async () => {
@@ -69,7 +73,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
   context('when the creation succeeds', () => {
     before('create company entity', async () => {
-      prepareReceipt = await template.prepareInstance({ from: owner })
+      prepareReceipt = await template.prepareInstance(BOARD_TOKEN_NAME, BOARD_TOKEN_SYMBOL, SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL, { from: owner })
       setupReceipt = await template.setupInstance(daoID, BOARD_MEMBERS, SHARE_HOLDERS, SHARE_STAKES, { from: owner })
 
       dao = Kernel.at(getEventArgument(prepareReceipt, 'DeployDao', 'dao'))
@@ -106,8 +110,8 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
     })
 
     it('creates a new board token', async () => {
-      assert.equal(await boardToken.name(), 'Board Token')
-      assert.equal(await boardToken.symbol(), 'BOARD')
+      assert.equal(await boardToken.name(), BOARD_TOKEN_NAME)
+      assert.equal(await boardToken.symbol(), BOARD_TOKEN_SYMBOL)
       assert.equal((await boardToken.decimals()).toString(), 0)
     })
 
@@ -117,8 +121,8 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
     })
 
     it('creates a new share token', async () => {
-      assert.equal(await shareToken.name(), 'Share Token')
-      assert.equal(await shareToken.symbol(), 'SHARE')
+      assert.equal(await shareToken.name(), SHARE_TOKEN_NAME)
+      assert.equal(await shareToken.symbol(), SHARE_TOKEN_SYMBOL)
       assert.equal((await shareToken.decimals()).toString(), 18)
     })
 
