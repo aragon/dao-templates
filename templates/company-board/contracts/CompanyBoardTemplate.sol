@@ -22,10 +22,8 @@ contract CompanyBoardTemplate is BaseTemplate {
     uint8 constant private SHARE_TOKEN_DECIMALS = uint8(18);
     uint256 constant private SHARE_MAX_PER_ACCOUNT = uint256(0);
 
-    uint64 constant private BOARD_SUPPORT_REQUIRED = uint64(50 * ONE_PCT);        // 50%
     uint64 constant private BOARD_MIN_ACCEPTANCE_QUORUM = uint64(40 * ONE_PCT);   // 40%
 
-    uint64 constant private SHARE_SUPPORT_REQUIRED = uint64(50 * ONE_PCT);        // 50%
     uint64 constant private SHARE_MIN_ACCEPTANCE_QUORUM = uint64(5 * ONE_PCT);    // 5%
 
     struct Cache {
@@ -57,11 +55,13 @@ contract CompanyBoardTemplate is BaseTemplate {
         address[] _shareHolders, 
         uint256[] _shareStakes,
         uint64 _boardVoteDuration,
-        uint64 _shareVoteDuration
+        uint64 _shareVoteDuration,
+        uint64 _boardSupportRequired,
+        uint64 _shareSupportRequired
     ) public {
         (Agent agent, Finance finance) = _setupCommon();
-        (TokenManager boardTokenManager, Voting boardVoting) = _setupBoard(_boardMembers, _boardVoteDuration);
-        (TokenManager shareTokenManager, Voting shareVoting) = _setupShare(_shareHolders, _shareStakes, _shareVoteDuration);
+        (TokenManager boardTokenManager, Voting boardVoting) = _setupBoard(_boardMembers, _boardVoteDuration, _boardSupportRequired);
+        (TokenManager shareTokenManager, Voting shareVoting) = _setupShare(_shareHolders, _shareStakes, _shareVoteDuration, _shareSupportRequired);
         _setupPermissions(agent, finance, boardVoting, boardTokenManager, shareVoting, shareTokenManager);
         (Kernel dao,,) = _popCache(msg.sender);
         _registerID(_id, dao);
@@ -75,20 +75,20 @@ contract CompanyBoardTemplate is BaseTemplate {
         _finance = _installFinanceApp(dao, Vault(_agent), FINANCE_PERIOD); 
     }
 
-    function _setupBoard(address[] _boardMembers, uint64 _boardVoteDuration) internal returns(TokenManager _boardTokenManager, Voting _boardVoting) {
+    function _setupBoard(address[] _boardMembers, uint64 _boardVoteDuration, uint64 _boardSupportRequired) internal returns(TokenManager _boardTokenManager, Voting _boardVoting) {
         require(_boardMembers.length > 0, ERROR_MISSING_BOARD_MEMBERS);
         (Kernel dao, MiniMeToken boardToken,) = _getCache(msg.sender);
 
         // Install apps
         ACL acl = ACL(dao.acl());
         _boardTokenManager = _installTokenManagerApp(dao, boardToken, BOARD_TRANSFERABLE, BOARD_MAX_PER_ACCOUNT);
-        _boardVoting = _installVotingApp(dao, boardToken, BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM, _boardVoteDuration);
+        _boardVoting = _installVotingApp(dao, boardToken, _boardSupportRequired, BOARD_MIN_ACCEPTANCE_QUORUM, _boardVoteDuration);
 
         // Mint tokens
         _mintBoardTokens(acl, _boardTokenManager, _boardMembers);
     }
 
-    function _setupShare(address[] _shareHolders, uint256[] _shareStakes, uint64 _shareVoteDuration) internal returns (TokenManager _shareTokenManager, Voting _shareVoting) {
+    function _setupShare(address[] _shareHolders, uint256[] _shareStakes, uint64 _shareVoteDuration, uint64 _shareSupportRequired) internal returns (TokenManager _shareTokenManager, Voting _shareVoting) {
         require(_shareHolders.length > 0, ERROR_MISSING_SHARE_MEMBERS);
         require(_shareHolders.length == _shareStakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         (Kernel dao,, MiniMeToken shareToken) = _getCache(msg.sender);
@@ -96,7 +96,7 @@ contract CompanyBoardTemplate is BaseTemplate {
         // Install apps
         ACL acl = ACL(dao.acl());
         _shareTokenManager = _installTokenManagerApp(dao, shareToken, SHARE_TRANSFERABLE, SHARE_MAX_PER_ACCOUNT);
-        _shareVoting = _installVotingApp(dao, shareToken, SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM, _shareVoteDuration);
+        _shareVoting = _installVotingApp(dao, shareToken, _shareSupportRequired, SHARE_MIN_ACCEPTANCE_QUORUM, _shareVoteDuration);
 
         // Mint tokens
         _mintShareTokens(acl, _shareTokenManager, _shareHolders, _shareStakes);
