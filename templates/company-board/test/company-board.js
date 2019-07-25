@@ -37,6 +37,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
   const SHARE_SUPPORT_REQUIRED = 50e16
   const BOARD_MIN_ACCEPTANCE_QUORUM = 40e16
   const SHARE_MIN_ACCEPTANCE_QUORUM = 5e16
+  const DEFAULT_FINANCE_PERIOD = 0 // When passed to template, will set 30 days as default
   const FINANCE_PERIOD = 60 * 60 * 24 * 30
 
   before('fetch company board template and ENS', async () => {
@@ -69,7 +70,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
     context('when there was an instance prepared before', () => {
       before('prepare instance', async () => {
-        await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL, FINANCE_PERIOD)
+        await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL, DEFAULT_FINANCE_PERIOD)
       })
 
       it('reverts when no board members were given', async () => {
@@ -133,7 +134,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
   context('when the creation succeeds', () => {
     before('create company entity', async () => {
-      prepareReceipt = await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL, FINANCE_PERIOD, { from: owner })
+      prepareReceipt = await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL, DEFAULT_FINANCE_PERIOD, { from: owner })
       setupReceipt = await template.setupInstance(
         daoID, 
         BOARD_MEMBERS, 

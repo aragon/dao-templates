@@ -19,6 +19,8 @@ contract CompanyBoardTemplate is BaseTemplate {
     uint8 constant private SHARE_TOKEN_DECIMALS = uint8(18);
     uint256 constant private SHARE_MAX_PER_ACCOUNT = uint256(0);
 
+    uint64 constant private DEFAULT_FINANCE_PERIOD = uint64(30 days);
+
     struct Cache {
         address dao;
         address boardToken;
@@ -69,7 +71,7 @@ contract CompanyBoardTemplate is BaseTemplate {
 
         // Install apps
         _agent = _installDefaultAgentApp(_dao);
-        _finance = _installFinanceApp(_dao, Vault(_agent), _financePeriod); 
+        _finance = _installFinanceApp(_dao, Vault(_agent), _financePeriod == 0 ? DEFAULT_FINANCE_PERIOD : _financePeriod); 
     }
 
     function _setupBoard(address[] _boardMembers, uint64 _boardVoteDuration, uint64 _boardSupportRequired, uint64 _boardMinAcceptanceQuorum) internal returns(TokenManager _boardTokenManager, Voting _boardVoting) {
