@@ -35,6 +35,8 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
   const SHARE_VOTE_DURATION = 60 * 60 * 24 * 7
   const BOARD_SUPPORT_REQUIRED = 50e16
   const SHARE_SUPPORT_REQUIRED = 50e16
+  const BOARD_MIN_ACCEPTANCE_QUORUM = 40e16
+  const SHARE_MIN_ACCEPTANCE_QUORUM = 5e16
 
   before('fetch company board template and ENS', async () => {
     const { registry, address } = await deployedAddresses()
@@ -57,7 +59,9 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
           BOARD_VOTE_DURATION, 
           SHARE_VOTE_DURATION,
           BOARD_SUPPORT_REQUIRED,
-          SHARE_SUPPORT_REQUIRED
+          SHARE_SUPPORT_REQUIRED,
+          BOARD_MIN_ACCEPTANCE_QUORUM,
+          SHARE_MIN_ACCEPTANCE_QUORUM
         ), 'COMPANY_MISSING_DAO_CACHE')
       })
     })
@@ -76,7 +80,9 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
           BOARD_VOTE_DURATION, 
           SHARE_VOTE_DURATION,
           BOARD_SUPPORT_REQUIRED,
-          SHARE_SUPPORT_REQUIRED
+          SHARE_SUPPORT_REQUIRED,
+          BOARD_MIN_ACCEPTANCE_QUORUM,
+          SHARE_MIN_ACCEPTANCE_QUORUM
         ), 'COMPANY_MISSING_BOARD_MEMBERS')
       })
 
@@ -89,7 +95,9 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
           BOARD_VOTE_DURATION, 
           SHARE_VOTE_DURATION,
           BOARD_SUPPORT_REQUIRED,
-          SHARE_SUPPORT_REQUIRED
+          SHARE_SUPPORT_REQUIRED,
+          BOARD_MIN_ACCEPTANCE_QUORUM,
+          SHARE_MIN_ACCEPTANCE_QUORUM
         ), 'COMPANY_MISSING_SHARE_MEMBERS')
       })
 
@@ -102,7 +110,9 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
           BOARD_VOTE_DURATION, 
           SHARE_VOTE_DURATION,
           BOARD_SUPPORT_REQUIRED,
-          SHARE_SUPPORT_REQUIRED
+          SHARE_SUPPORT_REQUIRED,
+          BOARD_MIN_ACCEPTANCE_QUORUM,
+          SHARE_MIN_ACCEPTANCE_QUORUM
         ), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
         await assertRevert(template.setupInstance.request(
           daoID, 
@@ -112,7 +122,9 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
           BOARD_VOTE_DURATION, 
           SHARE_VOTE_DURATION,
           BOARD_SUPPORT_REQUIRED,
-          SHARE_SUPPORT_REQUIRED
+          SHARE_SUPPORT_REQUIRED,
+          BOARD_MIN_ACCEPTANCE_QUORUM,
+          SHARE_MIN_ACCEPTANCE_QUORUM
         ), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
       })
     })
@@ -130,6 +142,8 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
         SHARE_VOTE_DURATION, 
         BOARD_SUPPORT_REQUIRED,
         SHARE_SUPPORT_REQUIRED,
+        BOARD_MIN_ACCEPTANCE_QUORUM,
+        SHARE_MIN_ACCEPTANCE_QUORUM,
         { from: owner }
       )
 
@@ -139,24 +153,30 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
     })
 
     before('load apps', async () => {
-      const installedApps = getInstalledAppsById(setupReceipt)
-      assert.equal(installedApps.agent.length, 1, 'should have installed 1 agent app')
-      assert.equal(installedApps.voting.length, 2, 'should have installed 2 voting apps')
-      assert.equal(installedApps.finance.length, 1, 'should have installed 1 finance app')
-      assert.equal(installedApps['token-manager'].length, 2, 'should have installed 2 token manager apps')
 
-      acl = ACL.at(await dao.acl())
+      let installedApps = getInstalledAppsById(prepareReceipt);
+      assert.equal(installedApps.agent.length, 1, 'should have installed 1 agent app')
+      assert.equal(installedApps.finance.length, 1, 'should have installed 1 finance app')
       agent = Agent.at(installedApps.agent[0])
+      finance = Finance.at(installedApps.finance[0])
+
+      installedApps = getInstalledAppsById(setupReceipt)
+      acl = ACL.at(await dao.acl())
       boardVoting = Voting.at(installedApps.voting[0])
       shareVoting = Voting.at(installedApps.voting[1])
-      finance = Finance.at(installedApps.finance[0])
       boardTokenManager = TokenManager.at(installedApps['token-manager'][0])
       shareTokenManager = TokenManager.at(installedApps['token-manager'][1])
+      assert.equal(installedApps.voting.length, 2, 'should have installed 2 voting apps')
+      assert.equal(installedApps['token-manager'].length, 2, 'should have installed 2 token manager apps')
     })
 
     it('costs ~10.4e6 gas', async () => {
-      assert.isAtMost(prepareReceipt.receipt.gasUsed, 5e6, 'prepare script should cost almost 5e6 gas')
-      assert.isAtMost(setupReceipt.receipt.gasUsed, 5.4e6, 'setup script should cost almost 5.4e6 gas')
+      const prepareGas = prepareReceipt.receipt.gasUsed;
+      const setupGas = setupReceipt.receipt.gasUsed;
+      const totalGas = prepareGas + setupGas;
+      assert.isAtMost(prepareGas, 6.01e6, 'prepare script should cost almost 6.01e6 gas')
+      assert.isAtMost(setupGas, 4.4e6, 'setup script should cost almost 4.4e6 gas')
+      assert.isAtMost(totalGas, 10.4e6, 'prepare + setup scripts should cost almost 10.4e6 gas');
     })
 
     it('registers a new DAO on ENS', async () => {
@@ -191,7 +211,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
     it('should have board voting app correctly setup', async () => {
       assert.isTrue(await boardVoting.hasInitialized(), 'voting not initialized')
       assert.equal((await boardVoting.supportRequiredPct()).toString(), BOARD_SUPPORT_REQUIRED)
-      assert.equal((await boardVoting.minAcceptQuorumPct()).toString(), 40e16)
+      assert.equal((await boardVoting.minAcceptQuorumPct()).toString(), BOARD_MIN_ACCEPTANCE_QUORUM)
       assert.equal((await boardVoting.voteTime()).toString(), BOARD_VOTE_DURATION)
 
       await assertRole(acl, boardVoting, shareVoting, 'CREATE_VOTES_ROLE', boardTokenManager)
@@ -202,7 +222,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
     it('should have share voting app correctly setup', async () => {
       assert.isTrue(await shareVoting.hasInitialized(), 'voting not initialized')
       assert.equal((await shareVoting.supportRequiredPct()).toString(), SHARE_SUPPORT_REQUIRED)
-      assert.equal((await shareVoting.minAcceptQuorumPct()).toString(), 5e16)
+      assert.equal((await shareVoting.minAcceptQuorumPct()).toString(), SHARE_MIN_ACCEPTANCE_QUORUM)
       assert.equal((await shareVoting.voteTime()).toString(), SHARE_VOTE_DURATION)
 
       await assertRole(acl, shareVoting, shareVoting, 'CREATE_VOTES_ROLE', boardTokenManager)
