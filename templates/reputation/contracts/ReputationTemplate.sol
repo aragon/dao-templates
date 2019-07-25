@@ -12,8 +12,6 @@ contract ReputationTemplate is BaseTemplate {
     uint8 constant private TOKEN_DECIMALS = uint8(18);
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(0);
 
-    uint64 constant private FINANCE_PERIOD = uint64(30 days);               // 30 days
-
     mapping (address => address) internal tokenCache;
 
     constructor(DAOFactory _daoFactory, ENS _ens, MiniMeTokenFactory _miniMeFactory, IFIFSResolvingRegistrar _aragonID)
@@ -32,12 +30,13 @@ contract ReputationTemplate is BaseTemplate {
         string _tokenSymbol,
         uint64 _voteDuration,
         uint64 _supportRequired,
-        uint64 _minAcceptanceQuorum
+        uint64 _minAcceptanceQuorum,
+        uint64 _financePeriod
     ) 
         public 
     {
         newToken(_tokenName, _tokenSymbol);
-        newInstance(_id, _holders, _stakes, _voteDuration, _supportRequired, _minAcceptanceQuorum);
+        newInstance(_id, _holders, _stakes, _voteDuration, _supportRequired, _minAcceptanceQuorum, _financePeriod);
     }
 
     function newToken(string _name, string _symbol) public returns (MiniMeToken) {
@@ -52,7 +51,8 @@ contract ReputationTemplate is BaseTemplate {
         uint256[] _stakes, 
         uint64 _voteDuration, 
         uint64 _supportRequired,
-        uint64 _minAcceptanceQuorum
+        uint64 _minAcceptanceQuorum,
+        uint64 _financePeriod
     ) 
         public 
     {
@@ -63,7 +63,7 @@ contract ReputationTemplate is BaseTemplate {
         // Create DAO and install apps
         (Kernel dao, ACL acl) = _createDAO();
         Agent agent = _installDefaultAgentApp(dao);
-        Finance finance = _installFinanceApp(dao, Vault(agent), FINANCE_PERIOD);
+        Finance finance = _installFinanceApp(dao, Vault(agent), _financePeriod);
         TokenManager tokenManager = _installTokenManagerApp(dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
         Voting voting = _installVotingApp(dao, token, _supportRequired, _minAcceptanceQuorum, _voteDuration);
 
