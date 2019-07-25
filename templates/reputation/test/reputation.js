@@ -28,6 +28,8 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
 
   const HOLDERS = [holder1, holder2]
   const STAKES = [1e18, 2e18]
+  const TOKEN_NAME = 'Reputation Token'
+  const TOKEN_SYMBOL = 'REP'
 
   before('fetch reputation template and ENS', async () => {
     const { registry, address } = await deployedAddresses()
@@ -47,12 +49,12 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
       context('when the creation fails', () => {
         if (creationStyle === 'single') {
           it('reverts when no holders were given', async () => {
-            await assertRevert(template.newTokenAndInstance.request(daoID, [], []), 'REPUTATION_EMPTY_HOLDERS')
+            await assertRevert(template.newTokenAndInstance.request(daoID, [], [], TOKEN_NAME, TOKEN_SYMBOL), 'REPUTATION_EMPTY_HOLDERS')
           })
 
           it('reverts when holders and stakes length do not match', async () => {
-            await assertRevert(template.newTokenAndInstance.request(daoID, [holder1], STAKES), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
-            await assertRevert(template.newTokenAndInstance.request(daoID, HOLDERS, [1e18]), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
+            await assertRevert(template.newTokenAndInstance.request(daoID, [holder1], STAKES, TOKEN_NAME, TOKEN_SYMBOL), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
+            await assertRevert(template.newTokenAndInstance.request(daoID, HOLDERS, [1e18], TOKEN_NAME, TOKEN_SYMBOL), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
           })
         } else if (creationStyle === 'separate') {
           context('when there was no token created before', () => {
@@ -63,7 +65,7 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
 
           context('when there was a token created', () => {
             before('create token', async () => {
-              await template.newToken()
+              await template.newToken(TOKEN_NAME, TOKEN_SYMBOL)
             })
 
             it('reverts when no holders were given', async () => {
@@ -81,10 +83,10 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
       context('when the creation succeeds', () => {
         before('create reputation entity', async () => {
           if (creationStyle === 'single') {
-            instanceReceipt = await template.newTokenAndInstance(daoID, HOLDERS, STAKES, { from: owner })
+            instanceReceipt = await template.newTokenAndInstance(daoID, HOLDERS, STAKES, TOKEN_NAME, TOKEN_SYMBOL, { from: owner })
             tokenReceipt = instanceReceipt
           } else if (creationStyle === 'separate') {
-            tokenReceipt = await template.newToken({ from: owner })
+            tokenReceipt = await template.newToken(TOKEN_NAME, TOKEN_SYMBOL, { from: owner })
             instanceReceipt = await template.newInstance(daoID, HOLDERS, STAKES, { from: owner })
           }
 
@@ -122,8 +124,8 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
         })
 
         it('creates a new token', async () => {
-          assert.equal(await token.name(), 'Reputation Token')
-          assert.equal(await token.symbol(), 'REP')
+          assert.equal(await token.name(), TOKEN_NAME)
+          assert.equal(await token.symbol(), TOKEN_SYMBOL)
           assert.equal(await token.transfersEnabled(), false)
           assert.equal((await token.decimals()).toString(), 18)
         })
