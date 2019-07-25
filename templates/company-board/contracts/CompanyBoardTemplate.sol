@@ -58,7 +58,9 @@ contract CompanyBoardTemplate is BaseTemplate {
         uint64 _shareVoteDuration,
         uint64 _boardSupportRequired,
         uint64 _shareSupportRequired
-    ) public {
+    ) 
+        public 
+    {
         (Agent agent, Finance finance) = _setupCommon();
         (TokenManager boardTokenManager, Voting boardVoting) = _setupBoard(_boardMembers, _boardVoteDuration, _boardSupportRequired);
         (TokenManager shareTokenManager, Voting shareVoting) = _setupShare(_shareHolders, _shareStakes, _shareVoteDuration, _shareSupportRequired);
@@ -109,7 +111,9 @@ contract CompanyBoardTemplate is BaseTemplate {
         TokenManager _boardTokenManager,
         Voting _shareVoting,
         TokenManager _shareTokenManager
-    ) internal {
+    ) 
+        internal 
+    {
         (Kernel dao,,) = _getCache(msg.sender);
         ACL acl = ACL(dao.acl());
         _createVaultPermissions(acl, Vault(_agent), _finance, _shareVoting);
