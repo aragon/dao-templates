@@ -11,6 +11,8 @@ contract MembershipTemplate is BaseTemplate {
     uint8 constant private TOKEN_DECIMALS = uint8(0);
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(1);
 
+    uint64 constant private DEFAULT_FINANCE_PERIOD = uint64(30 days);
+
     mapping (address => address) internal tokenCache;
 
     constructor(DAOFactory _daoFactory, ENS _ens, MiniMeTokenFactory _miniMeFactory, IFIFSResolvingRegistrar _aragonID)
@@ -50,7 +52,7 @@ contract MembershipTemplate is BaseTemplate {
         // Create DAO and install apps
         (Kernel dao, ACL acl) = _createDAO();
         Agent agent = _installDefaultAgentApp(dao);
-        Finance finance = _installFinanceApp(dao, Vault(agent), _financePeriod);
+        Finance finance = _installFinanceApp(dao, Vault(agent), _financePeriod == 0 ? DEFAULT_FINANCE_PERIOD : _financePeriod);
         TokenManager tokenManager = _installTokenManagerApp(dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
         Voting voting = _installVotingApp(dao, token, _supportRequired, _minAcceptanceQuorum, _voteDuration);
 
