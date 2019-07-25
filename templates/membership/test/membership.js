@@ -31,6 +31,7 @@ contract('Membership', ([_, owner, member1, member2]) => {
   const TOKEN_SYMBOL = 'MEMBER'
   const VOTE_DURATION = 60 * 60 * 24 * 7
   const SUPPORT_REQUIRED = 50e16
+  const MIN_ACCEPTANCE_QUORUM = 20e16
 
   before('fetch membership template and ENS', async () => {
     const { registry, address } = await deployedAddresses()
@@ -50,12 +51,12 @@ contract('Membership', ([_, owner, member1, member2]) => {
       context('when the creation fails', () => {
         if (creationStyle === 'single') {
           it('reverts when no members were given', async () => {
-            await assertRevert(template.newTokenAndInstance.request(daoID, [], TOKEN_NAME, TOKEN_SYMBOL, VOTE_DURATION, SUPPORT_REQUIRED), 'MEMBERSHIP_MISSING_MEMBERS')
+            await assertRevert(template.newTokenAndInstance.request(daoID, [], TOKEN_NAME, TOKEN_SYMBOL, VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM), 'MEMBERSHIP_MISSING_MEMBERS')
           })
         } else if (creationStyle === 'separate') {
           context('when there was no token created before', () => {
             it('reverts', async () => {
-              await assertRevert(template.newInstance.request(daoID, MEMBERS, VOTE_DURATION, SUPPORT_REQUIRED), 'MEMBERSHIP_MISSING_TOKEN_CACHE')
+              await assertRevert(template.newInstance.request(daoID, MEMBERS, VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM), 'MEMBERSHIP_MISSING_TOKEN_CACHE')
             })
           })
 
@@ -65,7 +66,7 @@ contract('Membership', ([_, owner, member1, member2]) => {
             })
 
             it('reverts when no members were given', async () => {
-              await assertRevert(template.newInstance.request(daoID, [], VOTE_DURATION, SUPPORT_REQUIRED), 'MEMBERSHIP_MISSING_MEMBERS')
+              await assertRevert(template.newInstance.request(daoID, [], VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM), 'MEMBERSHIP_MISSING_MEMBERS')
             })
           })
         }
@@ -74,11 +75,11 @@ contract('Membership', ([_, owner, member1, member2]) => {
       context('when the creation succeeds', () => {
         before('create membership entity', async () => {
           if (creationStyle === 'single') {
-            instanceReceipt = await template.newTokenAndInstance(daoID, MEMBERS, TOKEN_NAME, TOKEN_SYMBOL, VOTE_DURATION, SUPPORT_REQUIRED, { from: owner })
+            instanceReceipt = await template.newTokenAndInstance(daoID, MEMBERS, TOKEN_NAME, TOKEN_SYMBOL, VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, { from: owner })
             tokenReceipt = instanceReceipt
           } else if (creationStyle === 'separate') {
             tokenReceipt = await template.newToken(TOKEN_NAME, TOKEN_SYMBOL, { from: owner })
-            instanceReceipt = await template.newInstance(daoID, MEMBERS, VOTE_DURATION, SUPPORT_REQUIRED, { from: owner })
+            instanceReceipt = await template.newInstance(daoID, MEMBERS, VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, { from: owner })
           }
 
           dao = Kernel.at(getEventArgument(instanceReceipt, 'DeployDao', 'dao'))
@@ -129,7 +130,7 @@ contract('Membership', ([_, owner, member1, member2]) => {
         it('should have voting app correctly setup', async () => {
           assert.isTrue(await voting.hasInitialized(), 'voting not initialized')
           assert.equal((await voting.supportRequiredPct()).toString(), SUPPORT_REQUIRED)
-          assert.equal((await voting.minAcceptQuorumPct()).toString(), 20e16)
+          assert.equal((await voting.minAcceptQuorumPct()).toString(), MIN_ACCEPTANCE_QUORUM)
           assert.equal((await voting.voteTime()).toString(), VOTE_DURATION)
 
           await assertRole(acl, voting, voting, 'CREATE_VOTES_ROLE', tokenManager)

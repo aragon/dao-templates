@@ -11,9 +11,7 @@ contract MembershipTemplate is BaseTemplate {
     uint8 constant private TOKEN_DECIMALS = uint8(0);
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(1);
 
-    uint64 constant private ONE_PCT = uint64(1e16);                         // 1%
     uint64 constant private FINANCE_PERIOD = uint64(30 days);               // 30 days
-    uint64 constant private MIN_ACCEPTANCE_QUORUM = uint64(20 * ONE_PCT);   // 20%
 
     mapping (address => address) internal tokenCache;
 
@@ -31,10 +29,13 @@ contract MembershipTemplate is BaseTemplate {
         string _tokenName, 
         string _tokenSymbol, 
         uint64 _voteDuration,
-        uint64 _supportRequired
-    ) public {
+        uint64 _supportRequired,
+        uint64 _minAcceptanceQuorum
+    ) 
+        public 
+    {
         newToken(_tokenName, _tokenSymbol);
-        newInstance(_id, _members, _voteDuration, _supportRequired);
+        newInstance(_id, _members, _voteDuration, _supportRequired, _minAcceptanceQuorum);
     }
 
     function newToken(string _name, string _symbol) public returns (MiniMeToken) {
@@ -43,7 +44,7 @@ contract MembershipTemplate is BaseTemplate {
         return token;
     }
 
-    function newInstance(string _id, address[] _members, uint64 _voteDuration, uint64 _supportRequired) public {
+    function newInstance(string _id, address[] _members, uint64 _voteDuration, uint64 _supportRequired, uint64 _minAcceptanceQuorum) public {
         require(_members.length > 0, ERROR_MISSING_MEMBERS);
         MiniMeToken token = _popTokenCache(msg.sender);
 
@@ -52,7 +53,7 @@ contract MembershipTemplate is BaseTemplate {
         Agent agent = _installDefaultAgentApp(dao);
         Finance finance = _installFinanceApp(dao, Vault(agent), FINANCE_PERIOD);
         TokenManager tokenManager = _installTokenManagerApp(dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
-        Voting voting = _installVotingApp(dao, token, _supportRequired, MIN_ACCEPTANCE_QUORUM, _voteDuration);
+        Voting voting = _installVotingApp(dao, token, _supportRequired, _minAcceptanceQuorum, _voteDuration);
 
         // Mint tokens
         _mintTokens(acl, tokenManager, _members);
