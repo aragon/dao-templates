@@ -8,8 +8,6 @@ contract MembershipTemplate is BaseTemplate {
     string constant private ERROR_MISSING_TOKEN_CACHE = "MEMBERSHIP_MISSING_TOKEN_CACHE";
 
     bool constant private TOKEN_TRANSFERABLE = false;
-    string constant private TOKEN_NAME = "Member Token";
-    string constant private TOKEN_SYMBOL = "MEMBER";
     uint8 constant private TOKEN_DECIMALS = uint8(0);
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(1);
 
@@ -29,13 +27,13 @@ contract MembershipTemplate is BaseTemplate {
         _ensureMiniMeFactoryIsValid(_miniMeFactory);
     }
 
-    function newTokenAndInstance(string _id, address[] _members) public {
-        newToken();
+    function newTokenAndInstance(string _id, address[] _members, string _tokenName, string _tokenSymbol) public {
+        newToken(_tokenName, _tokenSymbol);
         newInstance(_id, _members);
     }
 
-    function newToken() public returns (MiniMeToken) {
-        MiniMeToken token = _createToken(TOKEN_NAME, TOKEN_SYMBOL, TOKEN_DECIMALS);
+    function newToken(string _name, string _symbol) public returns (MiniMeToken) {
+        MiniMeToken token = _createToken(_name, _symbol, TOKEN_DECIMALS);
         _cacheToken(token, msg.sender);
         return token;
     }

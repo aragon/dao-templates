@@ -27,6 +27,8 @@ contract('Membership', ([_, owner, member1, member2]) => {
   let voting, tokenManager, token, finance, agent
 
   const MEMBERS = [member1, member2]
+  const TOKEN_NAME = 'Member Token'
+  const TOKEN_SYMBOL = 'MEMBER'
 
   before('fetch membership template and ENS', async () => {
     const { registry, address } = await deployedAddresses()
@@ -46,7 +48,7 @@ contract('Membership', ([_, owner, member1, member2]) => {
       context('when the creation fails', () => {
         if (creationStyle === 'single') {
           it('reverts when no members were given', async () => {
-            await assertRevert(template.newTokenAndInstance.request(daoID, []), 'MEMBERSHIP_MISSING_MEMBERS')
+            await assertRevert(template.newTokenAndInstance.request(daoID, [], TOKEN_NAME, TOKEN_SYMBOL), 'MEMBERSHIP_MISSING_MEMBERS')
           })
         } else if (creationStyle === 'separate') {
           context('when there was no token created before', () => {
@@ -57,7 +59,7 @@ contract('Membership', ([_, owner, member1, member2]) => {
 
           context('when there was a token created', () => {
             before('create token', async () => {
-              await template.newToken()
+              await template.newToken(TOKEN_NAME, TOKEN_SYMBOL)
             })
 
             it('reverts when no members were given', async () => {
@@ -70,10 +72,10 @@ contract('Membership', ([_, owner, member1, member2]) => {
       context('when the creation succeeds', () => {
         before('create membership entity', async () => {
           if (creationStyle === 'single') {
-            instanceReceipt = await template.newTokenAndInstance(daoID, MEMBERS, { from: owner })
+            instanceReceipt = await template.newTokenAndInstance(daoID, MEMBERS, TOKEN_NAME, TOKEN_SYMBOL, { from: owner })
             tokenReceipt = instanceReceipt
           } else if (creationStyle === 'separate') {
-            tokenReceipt = await template.newToken({ from: owner })
+            tokenReceipt = await template.newToken(TOKEN_NAME, TOKEN_SYMBOL, { from: owner })
             instanceReceipt = await template.newInstance(daoID, MEMBERS, { from: owner })
           }
 
@@ -111,8 +113,8 @@ contract('Membership', ([_, owner, member1, member2]) => {
         })
 
         it('creates a new token', async () => {
-          assert.equal(await token.name(), 'Member Token')
-          assert.equal(await token.symbol(), 'MEMBER')
+          assert.equal(await token.name(), TOKEN_NAME)
+          assert.equal(await token.symbol(), TOKEN_SYMBOL)
           assert.equal(await token.transfersEnabled(), false)
           assert.equal((await token.decimals()).toString(), 0)
         })
