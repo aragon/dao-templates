@@ -31,6 +31,8 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
   const SHARE_STAKES = SHARE_HOLDERS.map(() => 1e18)
   const SHARE_TOKEN_NAME = 'Share Token'
   const SHARE_TOKEN_SYMBOL = 'SHARE'
+  const BOARD_VOTE_DURATION = 60 * 60 * 24 * 7
+  const SHARE_VOTE_DURATION = 60 * 60 * 24 * 7
 
   before('fetch company board template and ENS', async () => {
     const { registry, address } = await deployedAddresses()
@@ -45,7 +47,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
   context('when the creation fails', () => {
     context('when there was no instance prepared before', () => {
       it('reverts', async () => {
-        await assertRevert(template.setupInstance.request(daoID, BOARD_MEMBERS, SHARE_HOLDERS, SHARE_STAKES), 'COMPANY_MISSING_DAO_CACHE')
+        await assertRevert(template.setupInstance.request(daoID, BOARD_MEMBERS, SHARE_HOLDERS, SHARE_STAKES, BOARD_VOTE_DURATION, SHARE_VOTE_DURATION), 'COMPANY_MISSING_DAO_CACHE')
       })
     })
 
@@ -55,16 +57,16 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
       })
 
       it('reverts when no board members were given', async () => {
-        await assertRevert(template.setupInstance.request(daoID, [], SHARE_HOLDERS, SHARE_STAKES), 'COMPANY_MISSING_BOARD_MEMBERS')
+        await assertRevert(template.setupInstance.request(daoID, [], SHARE_HOLDERS, SHARE_STAKES, BOARD_VOTE_DURATION, SHARE_VOTE_DURATION), 'COMPANY_MISSING_BOARD_MEMBERS')
       })
 
       it('reverts when no share members were given', async () => {
-        await assertRevert(template.setupInstance.request(daoID, BOARD_MEMBERS, [], SHARE_STAKES), 'COMPANY_MISSING_SHARE_MEMBERS')
+        await assertRevert(template.setupInstance.request(daoID, BOARD_MEMBERS, [], SHARE_STAKES, BOARD_VOTE_DURATION, SHARE_VOTE_DURATION), 'COMPANY_MISSING_SHARE_MEMBERS')
       })
 
       it('reverts when number of shared members and stakes do not match', async () => {
-        await assertRevert(template.setupInstance.request(daoID, BOARD_MEMBERS, [shareHolder1], SHARE_STAKES), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
-        await assertRevert(template.setupInstance.request(daoID, BOARD_MEMBERS, SHARE_HOLDERS, [1e18]), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
+        await assertRevert(template.setupInstance.request(daoID, BOARD_MEMBERS, [shareHolder1], SHARE_STAKES, BOARD_VOTE_DURATION, SHARE_VOTE_DURATION), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
+        await assertRevert(template.setupInstance.request(daoID, BOARD_MEMBERS, SHARE_HOLDERS, [1e18], BOARD_VOTE_DURATION, SHARE_VOTE_DURATION), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
       })
     })
   })
@@ -72,7 +74,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
   context('when the creation succeeds', () => {
     before('create company entity', async () => {
       prepareReceipt = await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL, { from: owner })
-      setupReceipt = await template.setupInstance(daoID, BOARD_MEMBERS, SHARE_HOLDERS, SHARE_STAKES, { from: owner })
+      setupReceipt = await template.setupInstance(daoID, BOARD_MEMBERS, SHARE_HOLDERS, SHARE_STAKES, BOARD_VOTE_DURATION, SHARE_VOTE_DURATION, { from: owner })
 
       dao = Kernel.at(getEventArgument(prepareReceipt, 'DeployDao', 'dao'))
       boardToken = MiniMeToken.at(getEventArgument(prepareReceipt, 'DeployToken', 'token', 0))
@@ -133,7 +135,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
       assert.isTrue(await boardVoting.hasInitialized(), 'voting not initialized')
       assert.equal((await boardVoting.supportRequiredPct()).toString(), 50e16)
       assert.equal((await boardVoting.minAcceptQuorumPct()).toString(), 40e16)
-      assert.equal((await boardVoting.voteTime()).toString(), 60 * 60 * 24 * 7)
+      assert.equal((await boardVoting.voteTime()).toString(), BOARD_VOTE_DURATION)
 
       await assertRole(acl, boardVoting, shareVoting, 'CREATE_VOTES_ROLE', boardTokenManager)
       await assertRole(acl, boardVoting, shareVoting, 'MODIFY_QUORUM_ROLE')
@@ -144,7 +146,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
       assert.isTrue(await shareVoting.hasInitialized(), 'voting not initialized')
       assert.equal((await shareVoting.supportRequiredPct()).toString(), 50e16)
       assert.equal((await shareVoting.minAcceptQuorumPct()).toString(), 5e16)
-      assert.equal((await shareVoting.voteTime()).toString(), 60 * 60 * 24 * 7)
+      assert.equal((await shareVoting.voteTime()).toString(), SHARE_VOTE_DURATION)
 
       await assertRole(acl, shareVoting, shareVoting, 'CREATE_VOTES_ROLE', boardTokenManager)
       await assertRole(acl, shareVoting, shareVoting, 'MODIFY_QUORUM_ROLE')
