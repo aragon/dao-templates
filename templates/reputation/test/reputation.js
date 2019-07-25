@@ -33,6 +33,7 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
   const VOTE_DURATION = 60 * 60 * 24 * 7
   const SUPPORT_REQUIRED = 50e16
   const MIN_ACCEPTANCE_QUORUM = 20e16
+  const DEFAULT_FINANCE_PERIOD = 0 // When passed to template, will set 30 days as default
   const FINANCE_PERIOD = 60 * 60 * 24 * 30
 
   before('fetch reputation template and ENS', async () => {
@@ -53,17 +54,17 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
       context('when the creation fails', () => {
         if (creationStyle === 'single') {
           it('reverts when no holders were given', async () => {
-            await assertRevert(template.newTokenAndInstance.request(daoID, [], [], TOKEN_NAME, TOKEN_SYMBOL, VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, FINANCE_PERIOD), 'REPUTATION_EMPTY_HOLDERS')
+            await assertRevert(template.newTokenAndInstance.request(daoID, [], [], TOKEN_NAME, TOKEN_SYMBOL, VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, DEFAULT_FINANCE_PERIOD), 'REPUTATION_EMPTY_HOLDERS')
           })
 
           it('reverts when holders and stakes length do not match', async () => {
-            await assertRevert(template.newTokenAndInstance.request(daoID, [holder1], STAKES, TOKEN_NAME, TOKEN_SYMBOL, VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, FINANCE_PERIOD), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
-            await assertRevert(template.newTokenAndInstance.request(daoID, HOLDERS, [1e18], TOKEN_NAME, TOKEN_SYMBOL, VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, FINANCE_PERIOD), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
+            await assertRevert(template.newTokenAndInstance.request(daoID, [holder1], STAKES, TOKEN_NAME, TOKEN_SYMBOL, VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, DEFAULT_FINANCE_PERIOD), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
+            await assertRevert(template.newTokenAndInstance.request(daoID, HOLDERS, [1e18], TOKEN_NAME, TOKEN_SYMBOL, VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, DEFAULT_FINANCE_PERIOD), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
           })
         } else if (creationStyle === 'separate') {
           context('when there was no token created before', () => {
             it('reverts', async () => {
-              await assertRevert(template.newInstance.request(daoID, HOLDERS, STAKES, VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, FINANCE_PERIOD), 'REPUTATION_MISSING_TOKEN_CACHE')
+              await assertRevert(template.newInstance.request(daoID, HOLDERS, STAKES, VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, DEFAULT_FINANCE_PERIOD), 'REPUTATION_MISSING_TOKEN_CACHE')
             })
           })
 
@@ -73,12 +74,12 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
             })
 
             it('reverts when no holders were given', async () => {
-              await assertRevert(template.newInstance.request(daoID, [], [], VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, FINANCE_PERIOD), 'REPUTATION_EMPTY_HOLDERS')
+              await assertRevert(template.newInstance.request(daoID, [], [], VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, DEFAULT_FINANCE_PERIOD), 'REPUTATION_EMPTY_HOLDERS')
             })
 
             it('reverts when holders and stakes length do not match', async () => {
-              await assertRevert(template.newInstance.request(daoID, [holder1], STAKES, VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, FINANCE_PERIOD), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
-              await assertRevert(template.newInstance.request(daoID, HOLDERS, [1e18], VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, FINANCE_PERIOD), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
+              await assertRevert(template.newInstance.request(daoID, [holder1], STAKES, VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, DEFAULT_FINANCE_PERIOD), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
+              await assertRevert(template.newInstance.request(daoID, HOLDERS, [1e18], VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, DEFAULT_FINANCE_PERIOD), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
             })
           })
         }
@@ -87,11 +88,11 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
       context('when the creation succeeds', () => {
         before('create reputation entity', async () => {
           if (creationStyle === 'single') {
-            instanceReceipt = await template.newTokenAndInstance(daoID, HOLDERS, STAKES, TOKEN_NAME, TOKEN_SYMBOL, VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, FINANCE_PERIOD, { from: owner })
+            instanceReceipt = await template.newTokenAndInstance(daoID, HOLDERS, STAKES, TOKEN_NAME, TOKEN_SYMBOL, VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, DEFAULT_FINANCE_PERIOD, { from: owner })
             tokenReceipt = instanceReceipt
           } else if (creationStyle === 'separate') {
             tokenReceipt = await template.newToken(TOKEN_NAME, TOKEN_SYMBOL, { from: owner })
-            instanceReceipt = await template.newInstance(daoID, HOLDERS, STAKES, VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, FINANCE_PERIOD, { from: owner })
+            instanceReceipt = await template.newInstance(daoID, HOLDERS, STAKES, VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, DEFAULT_FINANCE_PERIOD, { from: owner })
           }
 
           dao = Kernel.at(getEventArgument(instanceReceipt, 'DeployDao', 'dao'))
