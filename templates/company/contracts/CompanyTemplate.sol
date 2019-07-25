@@ -15,7 +15,6 @@ contract CompanyTemplate is BaseTemplate {
     uint64 constant private ONE_PCT = uint64(1e16);                         // 1%
     uint64 constant private SUPPORT_REQUIRED = uint64(50 * ONE_PCT);        // 50%
     uint64 constant private MIN_ACCEPTANCE_QUORUM = uint64(5 * ONE_PCT);    // 5%
-    uint64 constant private VOTE_DURATION = uint64(7 days);                 // 1 week
     uint64 constant private FINANCE_PERIOD = uint64(30 days);               // 30 days
 
     mapping (address => address) internal tokenCache;
@@ -28,9 +27,16 @@ contract CompanyTemplate is BaseTemplate {
         _ensureMiniMeFactoryIsValid(_miniMeFactory);
     }
 
-    function newTokenAndInstance(string _id, address[] _holders, uint256[] _stakes, string _tokenName, string _tokenSymbol) public {
+    function newTokenAndInstance(
+        string _id, 
+        address[] _holders, 
+        uint256[] _stakes, 
+        string _tokenName, 
+        string _tokenSymbol,
+        uint64 _voteDuration
+    ) public {
         newToken(_tokenName, _tokenSymbol);
-        newInstance(_id, _holders, _stakes);
+        newInstance(_id, _holders, _stakes, _voteDuration);
     }
 
     function newToken(string _name, string _symbol) public returns (MiniMeToken) {
@@ -39,7 +45,7 @@ contract CompanyTemplate is BaseTemplate {
         return token;
     }
 
-    function newInstance(string _id, address[] _holders, uint256[] _stakes) public {
+    function newInstance(string _id, address[] _holders, uint256[] _stakes, uint64 _voteDuration) public {
         require(_holders.length > 0, ERROR_EMPTY_HOLDERS);
         require(_holders.length == _stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         MiniMeToken token = _popTokenCache(msg.sender);
@@ -49,7 +55,7 @@ contract CompanyTemplate is BaseTemplate {
         Agent agent = _installDefaultAgentApp(dao);
         Finance finance = _installFinanceApp(dao, Vault(agent), FINANCE_PERIOD);
         TokenManager tokenManager = _installTokenManagerApp(dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
-        Voting voting = _installVotingApp(dao, token, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION);
+        Voting voting = _installVotingApp(dao, token, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, _voteDuration);
 
         // Mint tokens
         _createPermissionForTemplate(acl, tokenManager, tokenManager.MINT_ROLE());
