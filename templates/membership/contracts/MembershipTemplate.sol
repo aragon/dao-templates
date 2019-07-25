@@ -13,7 +13,6 @@ contract MembershipTemplate is BaseTemplate {
 
     uint64 constant private ONE_PCT = uint64(1e16);                         // 1%
     uint64 constant private FINANCE_PERIOD = uint64(30 days);               // 30 days
-    uint64 constant private VOTE_DURATION = uint64(7 days);                 // 1 week
     uint64 constant private SUPPORT_REQUIRED = uint64(50 * ONE_PCT);        // 50%
     uint64 constant private MIN_ACCEPTANCE_QUORUM = uint64(20 * ONE_PCT);   // 20%
 
@@ -27,9 +26,15 @@ contract MembershipTemplate is BaseTemplate {
         _ensureMiniMeFactoryIsValid(_miniMeFactory);
     }
 
-    function newTokenAndInstance(string _id, address[] _members, string _tokenName, string _tokenSymbol) public {
+    function newTokenAndInstance(
+        string _id, 
+        address[] _members, 
+        string _tokenName, 
+        string _tokenSymbol, 
+        uint64 _voteDuration
+    ) public {
         newToken(_tokenName, _tokenSymbol);
-        newInstance(_id, _members);
+        newInstance(_id, _members, _voteDuration);
     }
 
     function newToken(string _name, string _symbol) public returns (MiniMeToken) {
@@ -38,7 +43,7 @@ contract MembershipTemplate is BaseTemplate {
         return token;
     }
 
-    function newInstance(string _id, address[] _members) public {
+    function newInstance(string _id, address[] _members, uint64 _voteDuration) public {
         require(_members.length > 0, ERROR_MISSING_MEMBERS);
         MiniMeToken token = _popTokenCache(msg.sender);
 
@@ -47,7 +52,7 @@ contract MembershipTemplate is BaseTemplate {
         Agent agent = _installDefaultAgentApp(dao);
         Finance finance = _installFinanceApp(dao, Vault(agent), FINANCE_PERIOD);
         TokenManager tokenManager = _installTokenManagerApp(dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
-        Voting voting = _installVotingApp(dao, token, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION);
+        Voting voting = _installVotingApp(dao, token, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, _voteDuration);
 
         // Mint tokens
         _mintTokens(acl, tokenManager, _members);
