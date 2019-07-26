@@ -60,6 +60,7 @@ contract CompanyTemplate is BaseTemplate {
         TokenManager tokenManager = _installTokenManagerApp(dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
         Voting voting = _installVotingApp(dao, token, _voteSettings[1], _voteSettings[2], _voteSettings[0]);
 
+        // Mint tokens
         _mintTokens(acl, tokenManager, _holders, _stakes);
 
         _setupPermissions(dao, acl, agentOrVault, voting, finance, tokenManager, _useAgentAsVault);

@@ -58,7 +58,7 @@ contract MembershipTemplate is BaseTemplate {
         Voting voting = _installVotingApp(dao, token, _voteSettings[1], _voteSettings[2], _voteSettings[0]);
 
         // Mint tokens
-        _mintTokens(acl, tokenManager, _members);
+        _mintTokens(acl, tokenManager, _members, 1);
 
         // Set up permissions
         if (_useAgentAsVault) {
@@ -72,14 +72,6 @@ contract MembershipTemplate is BaseTemplate {
         _transferRootPermissionsFromTemplate(dao, voting);
 
         _registerID(_id, dao);
-    }
-
-    function _mintTokens(ACL _acl, TokenManager _tokenManager, address[] _members) internal {
-        _createPermissionForTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
-        for (uint256 i = 0; i < _members.length; i++) {
-            _tokenManager.mint(_members[i], 1);
-        }
-        _removePermissionFromTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
     }
 
     function _createCustomVotingPermissions(ACL _acl, Voting _voting, TokenManager _tokenManager) internal {
