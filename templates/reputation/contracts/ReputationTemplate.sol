@@ -68,14 +68,6 @@ contract ReputationTemplate is BaseTemplate {
         _registerID(_id, dao);
     }
 
-    function _mintTokens(ACL _acl, TokenManager _tokenManager, address[] _holders, uint256[] _stakes) internal {
-        _createPermissionForTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
-        for (uint256 i = 0; i < _holders.length; i++) {
-            _tokenManager.mint(_holders[i], _stakes[i]);
-        }
-        _removePermissionFromTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
-    }
-
     function _createCustomVotingPermissions(ACL _acl, Voting _voting, TokenManager _tokenManager) internal {
         _acl.createPermission(_tokenManager, _voting, _voting.CREATE_VOTES_ROLE(), _voting);
         _createVotingPermissions(_acl, _voting, _voting, _voting);

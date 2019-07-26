@@ -108,15 +108,20 @@ contract TrustTemplate is BaseTemplate {
     }
 
     function _setupApps(Kernel _dao, address[] _beneficiaryKeys, address[] _heirs, uint256[] _heirsStakes, uint256 _blockedHeirsSupply) internal {
+
+        // Install apps
         ACL acl = ACL(_dao.acl());
         Vault vault = _installVaultApp(_dao);
         Agent agent = _installNonDefaultAgentApp(_dao);
         Finance finance = _installFinanceApp(_dao, vault, 30 days);
         (Voting holdVoting, Voting heirsVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager) = _installTokenApps(_dao);
 
-        _mintHoldTokens(acl, holdTokenManager, _beneficiaryKeys);
-        _mintHeirsTokens(acl, heirsTokenManager, _heirs, _heirsStakes, _blockedHeirsSupply);
+        // Mint tokens
+        _mintTokens(acl, holdTokenManager, _beneficiaryKeys, 1e18);
+        _mintTokens(acl, heirsTokenManager, _heirs, _heirsStakes);
+        _mintTokens(acl, heirsTokenManager, address(0), _blockedHeirsSupply);
 
+        // Set up permissions
         _createVaultPermissions(acl, vault, finance, holdVoting);
         _createFinancePermissions(acl, finance, holdVoting, holdVoting);
         _createEvmScriptsRegistryPermissions(acl, holdVoting, holdVoting);
@@ -158,24 +163,6 @@ contract TrustTemplate is BaseTemplate {
         heirsVoting = _installVotingApp(_dao, heirsToken, HEIRS_SUPPORT_REQUIRED, HEIRS_MIN_ACCEPTANCE_QUORUM, HEIRS_VOTE_DURATION);
         holdTokenManager = _installTokenManagerApp(_dao, holdToken, HOLD_TOKEN_TRANSFERABLE, HOLD_TOKEN_MAX_PER_ACCOUNT);
         heirsTokenManager = _installTokenManagerApp(_dao, heirsToken, HEIRS_TOKEN_TRANSFERABLE, HEIRS_TOKEN_MAX_PER_ACCOUNT);
-    }
-
-    function _mintHoldTokens(ACL _acl, TokenManager _holdTokenManager, address[] _beneficiaryKeys) internal {
-        _createPermissionForTemplate(_acl, _holdTokenManager, _holdTokenManager.MINT_ROLE());
-        _holdTokenManager.mint(_beneficiaryKeys[0], 1e18);
-        _holdTokenManager.mint(_beneficiaryKeys[1], 1e18);
-        _removePermissionFromTemplate(_acl, _holdTokenManager, _holdTokenManager.MINT_ROLE());
-    }
-
-    function _mintHeirsTokens(ACL _acl, TokenManager _heirsTokenManager, address[] _heirs, uint256[] _heirsStakes, uint256 _blockedHeirsSupply)
-        internal
-    {
-        _createPermissionForTemplate(_acl, _heirsTokenManager, _heirsTokenManager.MINT_ROLE());
-        _heirsTokenManager.mint(address(0), _blockedHeirsSupply);
-        for (uint256 i = 0; i < _heirs.length; i++) {
-            _heirsTokenManager.mint(_heirs[i], _heirsStakes[i]);
-        }
-        _removePermissionFromTemplate(_acl, _heirsTokenManager, _heirsTokenManager.MINT_ROLE());
     }
 
     function _createCustomAgentPermissions(ACL _acl, Agent _agent, Voting _holdVoting, Voting _heirsVoting) internal {

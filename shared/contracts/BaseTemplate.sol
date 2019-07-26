@@ -225,6 +225,28 @@ contract BaseTemplate is APMNamehash, IsContract {
         require(isContract(address(_miniMeFactory)), ERROR_MINIME_FACTORY_NOT_CONTRACT);
     }
 
+    function _mintTokens(ACL _acl, TokenManager _tokenManager, address[] _holders, uint256[] _stakes) internal {
+        _createPermissionForTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
+        for (uint256 i = 0; i < _holders.length; i++) {
+            _tokenManager.mint(_holders[i], _stakes[i]);
+        }
+        _removePermissionFromTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
+    }
+
+    function _mintTokens(ACL _acl, TokenManager _tokenManager, address[] _holders, uint256 _stake) internal {
+        _createPermissionForTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
+        for (uint256 i = 0; i < _holders.length; i++) {
+            _tokenManager.mint(_holders[i], _stake);
+        }
+        _removePermissionFromTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
+    }
+
+    function _mintTokens(ACL _acl, TokenManager _tokenManager, address _holder, uint256 _stake) internal {
+        _createPermissionForTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
+        _tokenManager.mint(_holder, _stake);
+        _removePermissionFromTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
+    }
+
     /* IDS */
 
     function _registerID(string _name, address _owner) internal {

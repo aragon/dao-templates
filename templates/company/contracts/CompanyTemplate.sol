@@ -54,11 +54,7 @@ contract CompanyTemplate is BaseTemplate {
         Voting voting = _installVotingApp(dao, token, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION);
 
         // Mint tokens
-        _createPermissionForTemplate(acl, tokenManager, tokenManager.MINT_ROLE());
-        for (uint256 i = 0; i < _holders.length; i++) {
-            tokenManager.mint(_holders[i], _stakes[i]);
-        }
-        _removePermissionFromTemplate(acl, tokenManager, tokenManager.MINT_ROLE());
+        _mintTokens(acl, tokenManager, _holders, _stakes);
 
         // Set up permissions
         _createAgentPermissions(acl, agent, voting, voting);

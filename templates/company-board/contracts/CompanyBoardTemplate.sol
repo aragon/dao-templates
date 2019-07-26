@@ -71,8 +71,8 @@ contract CompanyBoardTemplate is BaseTemplate {
         Voting shareVoting = _installVotingApp(dao, shareToken, SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM, SHARE_VOTE_DURATION);
 
         // Mint tokens
-        _mintBoardTokens(acl, boardTokenManager, _boardMembers);
-        _mintShareTokens(acl, shareTokenManager, _shareHolders, _shareStakes);
+        _mintTokens(acl, boardTokenManager, _boardMembers, 1);
+        _mintTokens(acl, shareTokenManager, _shareHolders, _shareStakes);
 
         // Set up permissions
         _createVaultPermissions(acl, Vault(agent), finance, shareVoting);
@@ -85,22 +85,6 @@ contract CompanyBoardTemplate is BaseTemplate {
         _transferRootPermissionsFromTemplate(dao, boardVoting, shareVoting);
 
         _registerID(_id, dao);
-    }
-
-    function _mintShareTokens(ACL _acl, TokenManager _shareTokenManager, address[] _shareHolders, uint256[] _shareStakes) internal {
-        _createPermissionForTemplate(_acl, _shareTokenManager, _shareTokenManager.MINT_ROLE());
-        for (uint256 i = 0; i < _shareHolders.length; i++) {
-            _shareTokenManager.mint(_shareHolders[i], _shareStakes[i]);
-        }
-        _removePermissionFromTemplate(_acl, _shareTokenManager, _shareTokenManager.MINT_ROLE());
-    }
-
-    function _mintBoardTokens(ACL _acl, TokenManager _boardTokenManager, address[] _boardMembers) internal {
-        _createPermissionForTemplate(_acl, _boardTokenManager, _boardTokenManager.MINT_ROLE());
-        for (uint256 i = 0; i < _boardMembers.length; i++) {
-            _boardTokenManager.mint(_boardMembers[i], 1);
-        }
-        _removePermissionFromTemplate(_acl, _boardTokenManager, _boardTokenManager.MINT_ROLE());
     }
 
     function _createCustomAgentPermissions(ACL _acl, Agent _agent, Voting _boardVoting, Voting _shareVoting) internal {
