@@ -6,18 +6,13 @@ import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 contract MembershipTemplate is BaseTemplate {
     string constant private ERROR_MISSING_MEMBERS = "MEMBERSHIP_MISSING_MEMBERS";
     string constant private ERROR_MISSING_TOKEN_CACHE = "MEMBERSHIP_MISSING_TOKEN_CACHE";
+    string constant private ERROR_BAD_VOTE_SETTINGS = "MEMBERSHIP_BAD_VOTE_SETTINGS";
 
     bool constant private TOKEN_TRANSFERABLE = false;
-    string constant private TOKEN_NAME = "Member Token";
-    string constant private TOKEN_SYMBOL = "MEMBER";
     uint8 constant private TOKEN_DECIMALS = uint8(0);
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(1);
 
-    uint64 constant private ONE_PCT = uint64(1e16);                         // 1%
-    uint64 constant private FINANCE_PERIOD = uint64(30 days);               // 30 days
-    uint64 constant private VOTE_DURATION = uint64(7 days);                 // 1 week
-    uint64 constant private SUPPORT_REQUIRED = uint64(50 * ONE_PCT);        // 50%
-    uint64 constant private MIN_ACCEPTANCE_QUORUM = uint64(20 * ONE_PCT);   // 20%
+    uint64 constant private DEFAULT_FINANCE_PERIOD = uint64(30 days);
 
     mapping (address => address) internal tokenCache;
 
@@ -29,27 +24,38 @@ contract MembershipTemplate is BaseTemplate {
         _ensureMiniMeFactoryIsValid(_miniMeFactory);
     }
 
-    function newTokenAndInstance(string _id, address[] _members, bool _useAgentAsVault) public {
-        newToken();
-        newInstance(_id, _members, _useAgentAsVault);
+    function newTokenAndInstance(
+        string _id, 
+        address[] _members, 
+        string _tokenName, 
+        string _tokenSymbol, 
+        uint64[] _voteSettings, /* voteDuration, supportRequired, minAcceptanceQuorum */
+        uint64 _financePeriod,
+        bool _useAgentAsVault
+    ) 
+        external 
+    {
+        newToken(_tokenName, _tokenSymbol);
+        newInstance(_id, _members, _voteSettings, _financePeriod, _useAgentAsVault);
     }
 
-    function newToken() public returns (MiniMeToken) {
-        MiniMeToken token = _createToken(TOKEN_NAME, TOKEN_SYMBOL, TOKEN_DECIMALS);
+    function newToken(string _name, string _symbol) public returns (MiniMeToken) {
+        MiniMeToken token = _createToken(_name, _symbol, TOKEN_DECIMALS);
         _cacheToken(token, msg.sender);
         return token;
     }
 
-    function newInstance(string _id, address[] _members, bool _useAgentAsVault) public {
+    function newInstance(string _id, address[] _members, uint64[] _voteSettings, uint64 _financePeriod, bool _useAgentAsVault) public {
         require(_members.length > 0, ERROR_MISSING_MEMBERS);
+        require(_voteSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
         MiniMeToken token = _popTokenCache(msg.sender);
 
         // Create DAO and install apps
         (Kernel dao, ACL acl) = _createDAO();
         Vault agentOrVault = _useAgentAsVault ? _installDefaultAgentApp(dao) : _installVaultApp(dao);
-        Finance finance = _installFinanceApp(dao, agentOrVault, FINANCE_PERIOD);
+        Finance finance = _installFinanceApp(dao, agentOrVault, _financePeriod == 0 ? DEFAULT_FINANCE_PERIOD : _financePeriod);
         TokenManager tokenManager = _installTokenManagerApp(dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
-        Voting voting = _installVotingApp(dao, token, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION);
+        Voting voting = _installVotingApp(dao, token, _voteSettings[1], _voteSettings[2], _voteSettings[0]);
 
         // Mint tokens
         _mintTokens(acl, tokenManager, _members);

@@ -30,6 +30,16 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
   const BOARD_MEMBERS = [boardMember1, boardMember2]
   const SHARE_HOLDERS = [shareHolder1, shareHolder2, shareHolder3]
   const SHARE_STAKES = SHARE_HOLDERS.map(() => 1e18)
+  const SHARE_TOKEN_NAME = 'Share Token'
+  const SHARE_TOKEN_SYMBOL = 'SHARE'
+  const BOARD_VOTE_DURATION = 60 * 60 * 24 * 7
+  const SHARE_VOTE_DURATION = 60 * 60 * 24 * 7
+  const BOARD_SUPPORT_REQUIRED = 50e16
+  const SHARE_SUPPORT_REQUIRED = 50e16
+  const BOARD_MIN_ACCEPTANCE_QUORUM = 40e16
+  const SHARE_MIN_ACCEPTANCE_QUORUM = 5e16
+  const DEFAULT_FINANCE_PERIOD = 0 // When passed to template, will set 30 days as default
+  const FINANCE_PERIOD = 60 * 60 * 24 * 30
 
   before('fetch company board template and ENS', async () => {
     const { registry, address } = await deployedAddresses()
@@ -44,26 +54,71 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
     context('when there was no instance prepared before', () => {
       it('reverts', async () => {
-        await assertRevert(template.setupInstance.request(daoID, BOARD_MEMBERS, SHARE_HOLDERS, SHARE_STAKES, true), 'COMPANY_MISSING_DAO_CACHE')
+        await assertRevert(template.setupInstance.request(
+          daoID, 
+          BOARD_MEMBERS, 
+          SHARE_HOLDERS, 
+          SHARE_STAKES, 
+          [BOARD_VOTE_DURATION, BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM],
+          [SHARE_VOTE_DURATION, SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM],
+          DEFAULT_FINANCE_PERIOD,
+          true
+        ), 'COMPANY_MISSING_DAO_CACHE')
       })
     })
 
     context('when there was an instance prepared before', () => {
       before('prepare instance', async () => {
-        await template.prepareInstance()
+        await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL)
       })
 
       it('reverts when no board members were given', async () => {
-        await assertRevert(template.setupInstance.request(daoID, [], SHARE_HOLDERS, SHARE_STAKES, true), 'COMPANY_MISSING_BOARD_MEMBERS')
+        await assertRevert(template.setupInstance.request(
+          daoID, 
+          [], 
+          SHARE_HOLDERS, 
+          SHARE_STAKES, 
+          [BOARD_VOTE_DURATION, BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM],
+          [SHARE_VOTE_DURATION, SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM],
+          DEFAULT_FINANCE_PERIOD,
+          true
+        ), 'COMPANY_MISSING_BOARD_MEMBERS')
       })
 
       it('reverts when no share members were given', async () => {
-        await assertRevert(template.setupInstance.request(daoID, BOARD_MEMBERS, [], SHARE_STAKES, true), 'COMPANY_MISSING_SHARE_MEMBERS')
+        await assertRevert(template.setupInstance.request(
+          daoID, 
+          BOARD_MEMBERS, 
+          [], 
+          SHARE_STAKES, 
+          [BOARD_VOTE_DURATION, BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM],
+          [SHARE_VOTE_DURATION, SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM],
+          DEFAULT_FINANCE_PERIOD,
+          true
+        ), 'COMPANY_MISSING_SHARE_MEMBERS')
       })
 
       it('reverts when number of shared members and stakes do not match', async () => {
-        await assertRevert(template.setupInstance.request(daoID, BOARD_MEMBERS, [shareHolder1], SHARE_STAKES, true), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
-        await assertRevert(template.setupInstance.request(daoID, BOARD_MEMBERS, SHARE_HOLDERS, [1e18], true), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
+        await assertRevert(template.setupInstance.request(
+          daoID, 
+          BOARD_MEMBERS, 
+          [shareHolder1], 
+          SHARE_STAKES, 
+          [BOARD_VOTE_DURATION, BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM],
+          [SHARE_VOTE_DURATION, SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM],
+          DEFAULT_FINANCE_PERIOD,
+          true
+        ), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
+        await assertRevert(template.setupInstance.request(
+          daoID, 
+          BOARD_MEMBERS, 
+          SHARE_HOLDERS, 
+          [1e18], 
+          [BOARD_VOTE_DURATION, BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM],
+          [SHARE_VOTE_DURATION, SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM],
+          DEFAULT_FINANCE_PERIOD,
+          true
+        ), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
       })
     })
   })
@@ -78,8 +133,18 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
       })
 
       before('create company entity', async () => {
-        prepareReceipt = await template.prepareInstance({ from: owner })
-        setupReceipt = await template.setupInstance(daoID, BOARD_MEMBERS, SHARE_HOLDERS, SHARE_STAKES, useAgentAsVault, { from: owner })
+        prepareReceipt = await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL, { from: owner })
+        setupReceipt = await template.setupInstance(
+          daoID, 
+          BOARD_MEMBERS, 
+          SHARE_HOLDERS, 
+          SHARE_STAKES, 
+          [BOARD_VOTE_DURATION, BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM],
+          [SHARE_VOTE_DURATION, SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM],
+          DEFAULT_FINANCE_PERIOD,
+          useAgentAsVault,
+          { from: owner }
+        )
 
         dao = Kernel.at(getEventArgument(prepareReceipt, 'DeployDao', 'dao'))
         boardToken = MiniMeToken.at(getEventArgument(prepareReceipt, 'DeployToken', 'token', 0))
@@ -105,8 +170,12 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
       })
 
       it('costs ~10.4e6 gas', async () => {
-        assert.isAtMost(prepareReceipt.receipt.gasUsed, 5e6, 'prepare script should cost almost 5e6 gas')
-        assert.isAtMost(setupReceipt.receipt.gasUsed, 5.4e6, 'setup script should cost almost 5.4e6 gas')
+        const prepareGas = prepareReceipt.receipt.gasUsed;
+        const setupGas = setupReceipt.receipt.gasUsed;
+        const totalGas = prepareGas + setupGas;
+        assert.isAtMost(prepareGas, 5.0e6, 'prepare script should cost almost 5.0e6 gas')
+        assert.isAtMost(setupGas, 5.4e6, 'setup script should cost almost 5.4e6 gas')
+        assert.isAtMost(totalGas, 10.4e6, 'prepare + setup scripts should cost almost 10.4e6 gas');
       })
 
       it('registers a new DAO on ENS', async () => {
@@ -128,8 +197,8 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
       })
 
       it('creates a new share token', async () => {
-        assert.equal(await shareToken.name(), 'Share Token')
-        assert.equal(await shareToken.symbol(), 'SHARE')
+        assert.equal(await shareToken.name(), SHARE_TOKEN_NAME)
+        assert.equal(await shareToken.symbol(), SHARE_TOKEN_SYMBOL)
         assert.equal((await shareToken.decimals()).toString(), 18)
       })
 
@@ -140,9 +209,9 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
       it('should have board voting app correctly setup', async () => {
         assert.isTrue(await boardVoting.hasInitialized(), 'voting not initialized')
-        assert.equal((await boardVoting.supportRequiredPct()).toString(), 50e16)
-        assert.equal((await boardVoting.minAcceptQuorumPct()).toString(), 40e16)
-        assert.equal((await boardVoting.voteTime()).toString(), 60 * 60 * 24 * 7)
+        assert.equal((await boardVoting.supportRequiredPct()).toString(), BOARD_SUPPORT_REQUIRED)
+        assert.equal((await boardVoting.minAcceptQuorumPct()).toString(), BOARD_MIN_ACCEPTANCE_QUORUM)
+        assert.equal((await boardVoting.voteTime()).toString(), BOARD_VOTE_DURATION)
 
         await assertRole(acl, boardVoting, shareVoting, 'CREATE_VOTES_ROLE', boardTokenManager)
         await assertRole(acl, boardVoting, shareVoting, 'MODIFY_QUORUM_ROLE')
@@ -151,9 +220,9 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
       it('should have share voting app correctly setup', async () => {
         assert.isTrue(await shareVoting.hasInitialized(), 'voting not initialized')
-        assert.equal((await shareVoting.supportRequiredPct()).toString(), 50e16)
-        assert.equal((await shareVoting.minAcceptQuorumPct()).toString(), 5e16)
-        assert.equal((await shareVoting.voteTime()).toString(), 60 * 60 * 24 * 7)
+        assert.equal((await shareVoting.supportRequiredPct()).toString(), SHARE_SUPPORT_REQUIRED)
+        assert.equal((await shareVoting.minAcceptQuorumPct()).toString(), SHARE_MIN_ACCEPTANCE_QUORUM)
+        assert.equal((await shareVoting.voteTime()).toString(), SHARE_VOTE_DURATION)
 
         await assertRole(acl, shareVoting, shareVoting, 'CREATE_VOTES_ROLE', boardTokenManager)
         await assertRole(acl, shareVoting, shareVoting, 'MODIFY_QUORUM_ROLE')
@@ -186,7 +255,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
       it('should have finance app correctly setup', async () => {
         assert.isTrue(await finance.hasInitialized(), 'finance not initialized')
-        assert.equal((await finance.getPeriodDuration()).toString(), 60 * 60 * 24 * 30, 'finance period should be 30 days')
+        assert.equal((await finance.getPeriodDuration()).toString(), FINANCE_PERIOD, 'finance period should be 30 days')
         assert.equal(web3.toChecksumAddress(await finance.vault()), useAgentAsVault ? agent.address : vault.address)
 
         await assertRole(acl, finance, shareVoting, 'CREATE_PAYMENTS_ROLE', boardVoting)
@@ -209,40 +278,41 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
         await assertRole(acl, reg, shareVoting, 'REGISTRY_MANAGER_ROLE')
       })
 
-      context('when using an agent as vault', () => {
-        itHandlesInstanceCreationsProperly(true)
-
-        it('should have agent app correctly setup', async () => {
-          assert.isTrue(await agent.hasInitialized(), 'agent not initialized')
-          assert.equal(await agent.designatedSigner(), ZERO_ADDRESS)
-
-          assert.equal(await dao.recoveryVaultAppId(), APP_IDS.agent, 'agent app is not being used as the vault app of the DAO')
-          assert.equal(web3.toChecksumAddress(await dao.getRecoveryVault()), agent.address, 'agent app is not being used as the vault app of the DAO')
-
-          await assertRole(acl, agent, shareVoting, 'EXECUTE_ROLE')
-          await assertRole(acl, agent, shareVoting, 'RUN_SCRIPT_ROLE')
-          await assertRole(acl, agent, shareVoting, 'EXECUTE_ROLE', boardVoting)
-          await assertRole(acl, agent, shareVoting, 'RUN_SCRIPT_ROLE', boardVoting)
-          await assertRole(acl, agent, shareVoting, 'TRANSFER_ROLE', finance)
-
-          await assertMissingRole(acl, agent, 'DESIGNATE_SIGNER_ROLE')
-          await assertMissingRole(acl, agent, 'ADD_PRESIGNED_HASH_ROLE')
-        })
-      })
-
-      context('when using a regular vault', () => {
-        itHandlesInstanceCreationsProperly(false)
-
-        it('should have vault app correctly setup', async () => {
-          assert.isTrue(await vault.hasInitialized(), 'vault not initialized')
-
-          assert.equal(await dao.recoveryVaultAppId(), APP_IDS.vault, 'vault app is not being used as the vault app of the DAO')
-          assert.equal(web3.toChecksumAddress(await dao.getRecoveryVault()), vault.address, 'vault app is not being used as the vault app of the DAO')
-
-          await assertRole(acl, vault, voting, 'TRANSFER_ROLE', finance)
-        })
-      })
-      
     }
+
+    context('when using an agent as vault', () => {
+      itHandlesInstanceCreationsProperly(true)
+
+      it('should have agent app correctly setup', async () => {
+        assert.isTrue(await agent.hasInitialized(), 'agent not initialized')
+        assert.equal(await agent.designatedSigner(), ZERO_ADDRESS)
+
+        assert.equal(await dao.recoveryVaultAppId(), APP_IDS.agent, 'agent app is not being used as the vault app of the DAO')
+        assert.equal(web3.toChecksumAddress(await dao.getRecoveryVault()), agent.address, 'agent app is not being used as the vault app of the DAO')
+
+        await assertRole(acl, agent, shareVoting, 'EXECUTE_ROLE')
+        await assertRole(acl, agent, shareVoting, 'RUN_SCRIPT_ROLE')
+        await assertRole(acl, agent, shareVoting, 'EXECUTE_ROLE', boardVoting)
+        await assertRole(acl, agent, shareVoting, 'RUN_SCRIPT_ROLE', boardVoting)
+        await assertRole(acl, agent, shareVoting, 'TRANSFER_ROLE', finance)
+
+        await assertMissingRole(acl, agent, 'DESIGNATE_SIGNER_ROLE')
+        await assertMissingRole(acl, agent, 'ADD_PRESIGNED_HASH_ROLE')
+      })
+    })
+
+    context('when using a regular vault', () => {
+      itHandlesInstanceCreationsProperly(false)
+
+      it('should have vault app correctly setup', async () => {
+        assert.isTrue(await vault.hasInitialized(), 'vault not initialized')
+
+        assert.equal(await dao.recoveryVaultAppId(), APP_IDS.vault, 'vault app is not being used as the vault app of the DAO')
+        assert.equal(web3.toChecksumAddress(await dao.getRecoveryVault()), vault.address, 'vault app is not being used as the vault app of the DAO')
+
+        await assertRole(acl, vault, shareVoting, 'TRANSFER_ROLE', finance)
+      })
+    })
+    
   })
 })
