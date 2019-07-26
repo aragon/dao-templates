@@ -43,7 +43,6 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
     context(`creating entity through a ${creationStyle} transaction`, () => {
 
       context('when the creation fails', () => {
-
         before('build dao ID', () => {
           daoID = randomId()
         })
