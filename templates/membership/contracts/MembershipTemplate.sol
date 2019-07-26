@@ -29,9 +29,9 @@ contract MembershipTemplate is BaseTemplate {
         _ensureMiniMeFactoryIsValid(_miniMeFactory);
     }
 
-    function newTokenAndInstance(string _id, address[] _members) public {
+    function newTokenAndInstance(string _id, address[] _members, bool _useAgentAsVault) public {
         newToken();
-        newInstance(_id, _members);
+        newInstance(_id, _members, _useAgentAsVault);
     }
 
     function newToken() public returns (MiniMeToken) {
@@ -40,14 +40,14 @@ contract MembershipTemplate is BaseTemplate {
         return token;
     }
 
-    function newInstance(string _id, address[] _members) public {
+    function newInstance(string _id, address[] _members, bool _useAgentAsVault) public {
         require(_members.length > 0, ERROR_MISSING_MEMBERS);
         MiniMeToken token = _popTokenCache(msg.sender);
 
         // Create DAO and install apps
         (Kernel dao, ACL acl) = _createDAO();
-        Agent agent = _installDefaultAgentApp(dao);
-        Finance finance = _installFinanceApp(dao, Vault(agent), FINANCE_PERIOD);
+        Vault agentOrVault = _useAgentAsVault ? _installDefaultAgentApp(dao) : _installVaultApp(dao);
+        Finance finance = _installFinanceApp(dao, agentOrVault, FINANCE_PERIOD);
         TokenManager tokenManager = _installTokenManagerApp(dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
         Voting voting = _installVotingApp(dao, token, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION);
 
@@ -55,8 +55,8 @@ contract MembershipTemplate is BaseTemplate {
         _mintTokens(acl, tokenManager, _members);
 
         // Set up permissions
-        _createAgentPermissions(acl, agent, voting, voting);
-        _createVaultPermissions(acl, Vault(agent), finance, voting);
+        if(_useAgentAsVault) _createAgentPermissions(acl, Agent(agentOrVault), voting, voting);
+        _createVaultPermissions(acl, agentOrVault, finance, voting);
         _createFinancePermissions(acl, finance, voting, voting);
         _createEvmScriptsRegistryPermissions(acl, voting, voting);
         _createCustomVotingPermissions(acl, voting, tokenManager);
