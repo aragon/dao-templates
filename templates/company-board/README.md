@@ -5,19 +5,26 @@
 Create new tokens and initialize DAO for the company-board entity:
 
 ```
-template.prepareInstance()
+template.prepareInstance(tokenName, tokenSymbol)
 ```
+
+- `tokenName`: Name for the token used by share holders in the organization
+- `tokenSymbol`: Symbol for the token used by share holders in the organization
 
 Setup company-board DAO:
 
 ```
-template.setupInstance(name, boardHolders, shareHolders, shareStakes)
+template.setupInstance(name, boardHolders, shareHolders, shareStakes, boardVoteSettings, shareVoteSettings, financePeriod, useAgentAsVault)
 ```
 
 - `name`: Name for org, will assign `[name].aragonid.eth`
 - `boardMembers`: Array of board member addresses (1 token will be minted for each board member)
 - `shareHolders`: Array of share holder addresses
 - `shareStakes`: Array of token stakes for share holders (token has 18 decimals, multiply token amount `* 10^18`)
+- `boardVoteSettings`: Array of [voteDuration, supportRequired, minAcceptanceQuorum] for votes by the organization's board members
+- `shareVoteSettings`: Array of [voteDuration, supportRequired, minAcceptanceQuorum] for votes by the organization's share holders
+- `financePeriod`: Initial duration for accounting periods
+- `useAgentAsVault`: Use an Agent app as a more advanced form of Vault app
 
 ## Deploying templates
 
