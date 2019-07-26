@@ -11,11 +11,12 @@ template.newToken()
 Create a new membership entity:
 
 ```
-template.newInstance(name, members)
+template.newInstance(name, members, useAgentAsVault)
 ```
 
 - `name`: Name for org, will assign `[name].aragonid.eth`
 - `members`: Array of member addresses (1 token will be minted for each member)
+- `useAgentAsVault`: Use an Agent app as a more advanced form of Vault app
 
 ## Deploying templates
 

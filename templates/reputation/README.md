@@ -11,12 +11,13 @@ template.newToken()
 Create a new reputation entity:
 
 ```
-template.newInstance(id, holders, stakes)
+template.newInstance(id, holders, stakes, useAgentAsVault)
 ```
 
 - `name`: Name for org, will assign `[name].aragonid.eth`
 - `holders`: Array of token holder addresses
 - `stakes`: Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`)
+- `useAgentAsVault`: Use an Agent app as a more advanced form of Vault app
 
 ## Deploying templates
 

@@ -11,13 +11,14 @@ template.prepareInstance()
 Setup company-board DAO:
 
 ```
-template.setupInstance(name, boardHolders, shareHolders, shareStakes)
+template.setupInstance(name, boardHolders, shareHolders, shareStakes, useAgentAsVault)
 ```
 
 - `name`: Name for org, will assign `[name].aragonid.eth`
 - `boardMembers`: Array of board member addresses (1 token will be minted for each board member)
 - `shareHolders`: Array of share holder addresses
 - `shareStakes`: Array of token stakes for share holders (token has 18 decimals, multiply token amount `* 10^18`)
+- `useAgentAsVault`: Use an Agent app as a more advanced form of Vault app
 
 ## Deploying templates
 
