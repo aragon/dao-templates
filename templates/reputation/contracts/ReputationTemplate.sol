@@ -30,9 +30,9 @@ contract ReputationTemplate is BaseTemplate {
         _ensureMiniMeFactoryIsValid(_miniMeFactory);
     }
 
-    function newTokenAndInstance(string _id, address[] _holders, uint256[] _stakes) public {
+    function newTokenAndInstance(string _id, address[] _holders, uint256[] _stakes, bool _useAgentAsVault) public {
         newToken();
-        newInstance(_id, _holders, _stakes);
+        newInstance(_id, _holders, _stakes, _useAgentAsVault);
     }
 
     function newToken() public returns (MiniMeToken) {
@@ -41,15 +41,15 @@ contract ReputationTemplate is BaseTemplate {
         return token;
     }
 
-    function newInstance(string _id, address[] _holders, uint256[] _stakes) public {
+    function newInstance(string _id, address[] _holders, uint256[] _stakes, bool _useAgentAsVault) public {
         require(_holders.length > 0, ERROR_EMPTY_HOLDERS);
         require(_holders.length == _stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         MiniMeToken token = _popTokenCache(msg.sender);
 
         // Create DAO and install apps
         (Kernel dao, ACL acl) = _createDAO();
-        Agent agent = _installDefaultAgentApp(dao);
-        Finance finance = _installFinanceApp(dao, Vault(agent), FINANCE_PERIOD);
+        Vault agentOrVault = _useAgentAsVault ? _installDefaultAgentApp(dao) : _installVaultApp(dao);
+        Finance finance = _installFinanceApp(dao, agentOrVault, FINANCE_PERIOD);
         TokenManager tokenManager = _installTokenManagerApp(dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
         Voting voting = _installVotingApp(dao, token, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION);
 
@@ -57,8 +57,8 @@ contract ReputationTemplate is BaseTemplate {
         _mintTokens(acl, tokenManager, _holders, _stakes);
 
         // Set up permissions
-        _createAgentPermissions(acl, agent, voting, voting);
-        _createVaultPermissions(acl, Vault(agent), finance, voting);
+        if(_useAgentAsVault) _createAgentPermissions(acl, Agent(agentOrVault), voting, voting);
+        _createVaultPermissions(acl, agentOrVault, finance, voting);
         _createFinancePermissions(acl, finance, voting, voting);
         _createEvmScriptsRegistryPermissions(acl, voting, voting);
         _createCustomVotingPermissions(acl, voting, tokenManager);
