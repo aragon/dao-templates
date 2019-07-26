@@ -40,50 +40,56 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
     // Test when organization is created in one call with `newTokenAndInstance()` and in
     // two calls with `newToken()` and `newInstance()`
 
-    for (const useAgentAsVault of [true, false]) {
-      // Test when the organization is created with an Agent app or a Vault app
+    context(`creating entity through a ${creationStyle} transaction`, () => {
 
-      context(`creating entity through a ${creationStyle} transaction`, () => {
+      context('when the creation fails', () => {
+
         before('build dao ID', () => {
           daoID = randomId()
         })
 
-        context('when the creation fails', () => {
+        if (creationStyle === 'single') {
+          it('reverts when no holders were given', async () => {
+            await assertRevert(template.newTokenAndInstance.request(daoID, [], [], true), 'REPUTATION_EMPTY_HOLDERS')
+          })
 
-          if (creationStyle === 'single') {
+          it('reverts when holders and stakes length do not match', async () => {
+            await assertRevert(template.newTokenAndInstance.request(daoID, [holder1], STAKES, true), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
+            await assertRevert(template.newTokenAndInstance.request(daoID, HOLDERS, [1e18], true), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
+          })
+        } else if (creationStyle === 'separate') {
+          context('when there was no token created before', () => {
+            it('reverts', async () => {
+              await assertRevert(template.newInstance.request(daoID, HOLDERS, STAKES, true), 'REPUTATION_MISSING_TOKEN_CACHE')
+            })
+          })
+
+          context('when there was a token created', () => {
+            before('create token', async () => {
+              await template.newToken()
+            })
+
             it('reverts when no holders were given', async () => {
-              await assertRevert(template.newTokenAndInstance.request(daoID, [], [], useAgentAsVault), 'REPUTATION_EMPTY_HOLDERS')
+              await assertRevert(template.newInstance.request(daoID, [], [], true), 'REPUTATION_EMPTY_HOLDERS')
             })
 
             it('reverts when holders and stakes length do not match', async () => {
-              await assertRevert(template.newTokenAndInstance.request(daoID, [holder1], STAKES, useAgentAsVault), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
-              await assertRevert(template.newTokenAndInstance.request(daoID, HOLDERS, [1e18], useAgentAsVault), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
+              await assertRevert(template.newInstance.request(daoID, [holder1], STAKES, true), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
+              await assertRevert(template.newInstance.request(daoID, HOLDERS, [1e18], true), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
             })
-          } else if (creationStyle === 'separate') {
-            context('when there was no token created before', () => {
-              it('reverts', async () => {
-                await assertRevert(template.newInstance.request(daoID, HOLDERS, STAKES, useAgentAsVault), 'REPUTATION_MISSING_TOKEN_CACHE')
-              })
-            })
+          })
+        }
+      })
 
-            context('when there was a token created', () => {
-              before('create token', async () => {
-                await template.newToken()
-              })
+      context('when the creation succeeds', () => {
 
-              it('reverts when no holders were given', async () => {
-                await assertRevert(template.newInstance.request(daoID, [], [], useAgentAsVault), 'REPUTATION_EMPTY_HOLDERS')
-              })
+        const itHandlesInstanceCreationsProperly = (useAgentAsVault) => {
+          // Test when the organization is created with an Agent app or a Vault app
 
-              it('reverts when holders and stakes length do not match', async () => {
-                await assertRevert(template.newInstance.request(daoID, [holder1], STAKES, useAgentAsVault), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
-                await assertRevert(template.newInstance.request(daoID, HOLDERS, [1e18], useAgentAsVault), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
-              })
-            })
-          }
-        })
+          before('build dao ID', () => {
+            daoID = randomId()
+          })
 
-        context(`when the creation succeeds using ${useAgentAsVault ? 'an Agent' : 'a Vault'} app`, () => {
           before('create reputation entity', async () => {
             if (creationStyle === 'single') {
               instanceReceipt = await template.newTokenAndInstance(daoID, HOLDERS, STAKES, useAgentAsVault, { from: owner })
@@ -176,33 +182,6 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
             await assertMissingRole(acl, finance, 'CHANGE_BUDGETS_ROLE')
           })
 
-          if(useAgentAsVault) {
-            it('should have agent app correctly setup', async () => {
-              assert.isTrue(await agent.hasInitialized(), 'agent not initialized')
-              assert.equal(await agent.designatedSigner(), ZERO_ADDRESS)
-
-              assert.equal(await dao.recoveryVaultAppId(), APP_IDS.agent, 'agent app is not being used as the vault app of the DAO')
-              assert.equal(web3.toChecksumAddress(await dao.getRecoveryVault()), agent.address, 'agent app is not being used as the vault app of the DAO')
-
-              await assertRole(acl, agent, voting, 'EXECUTE_ROLE')
-              await assertRole(acl, agent, voting, 'RUN_SCRIPT_ROLE')
-              await assertRole(acl, agent, voting, 'TRANSFER_ROLE', finance)
-
-              await assertMissingRole(acl, agent, 'DESIGNATE_SIGNER_ROLE')
-              await assertMissingRole(acl, agent, 'ADD_PRESIGNED_HASH_ROLE')
-            })
-          }
-          else {
-            it('should have vault app correctly setup', async () => {
-              assert.isTrue(await vault.hasInitialized(), 'vault not initialized')
-
-              assert.equal(await dao.recoveryVaultAppId(), APP_IDS.vault, 'vault app is not being used as the vault app of the DAO')
-              assert.equal(web3.toChecksumAddress(await dao.getRecoveryVault()), vault.address, 'vault app is not being used as the vault app of the DAO')
-
-              await assertRole(acl, vault, voting, 'TRANSFER_ROLE', finance)
-            })
-          }
-
           it('sets up DAO and ACL permissions correctly', async () => {
             await assertRole(acl, dao, voting, 'APP_MANAGER_ROLE')
             await assertRole(acl, acl, voting, 'CREATE_PERMISSIONS_ROLE')
@@ -213,8 +192,41 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
             await assertRole(acl, reg, voting, 'REGISTRY_ADD_EXECUTOR_ROLE')
             await assertRole(acl, reg, voting, 'REGISTRY_MANAGER_ROLE')
           })
+        }
+
+        context('when using an agent as vault', () => {
+          itHandlesInstanceCreationsProperly(true)
+
+          it('should have agent app correctly setup', async () => {
+            assert.isTrue(await agent.hasInitialized(), 'agent not initialized')
+            assert.equal(await agent.designatedSigner(), ZERO_ADDRESS)
+
+            assert.equal(await dao.recoveryVaultAppId(), APP_IDS.agent, 'agent app is not being used as the vault app of the DAO')
+            assert.equal(web3.toChecksumAddress(await dao.getRecoveryVault()), agent.address, 'agent app is not being used as the vault app of the DAO')
+
+            await assertRole(acl, agent, voting, 'EXECUTE_ROLE')
+            await assertRole(acl, agent, voting, 'RUN_SCRIPT_ROLE')
+            await assertRole(acl, agent, voting, 'TRANSFER_ROLE', finance)
+
+            await assertMissingRole(acl, agent, 'DESIGNATE_SIGNER_ROLE')
+            await assertMissingRole(acl, agent, 'ADD_PRESIGNED_HASH_ROLE')
+          })
         })
+
+        context('when using a regular vault', () => {
+          itHandlesInstanceCreationsProperly(false)
+
+          it('should have vault app correctly setup', async () => {
+            assert.isTrue(await vault.hasInitialized(), 'vault not initialized')
+
+            assert.equal(await dao.recoveryVaultAppId(), APP_IDS.vault, 'vault app is not being used as the vault app of the DAO')
+            assert.equal(web3.toChecksumAddress(await dao.getRecoveryVault()), vault.address, 'vault app is not being used as the vault app of the DAO')
+
+            await assertRole(acl, vault, voting, 'TRANSFER_ROLE', finance)
+          })
+        })
+
       })
-    }
+    })
   }
 })
