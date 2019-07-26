@@ -33,7 +33,7 @@ contract MembershipTemplate is BaseTemplate {
         uint64 _minAcceptanceQuorum,
         uint64 _financePeriod
     ) 
-        public 
+        external 
     {
         newToken(_tokenName, _tokenSymbol);
         newInstance(_id, _members, _voteDuration, _supportRequired, _minAcceptanceQuorum, _financePeriod);

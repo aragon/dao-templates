@@ -35,7 +35,7 @@ contract ReputationTemplate is BaseTemplate {
         uint64 _minAcceptanceQuorum,
         uint64 _financePeriod
     ) 
-        public 
+        external
     {
         newToken(_tokenName, _tokenSymbol);
         newInstance(_id, _holders, _stakes, _voteDuration, _supportRequired, _minAcceptanceQuorum, _financePeriod);
