@@ -55,7 +55,9 @@ contract MembershipTemplate is BaseTemplate {
         _mintTokens(acl, tokenManager, _members);
 
         // Set up permissions
-        if(_useAgentAsVault) _createAgentPermissions(acl, Agent(agentOrVault), voting, voting);
+        if (_useAgentAsVault) {
+            _createAgentPermissions(acl, Agent(agentOrVault), voting, voting);
+        }
         _createVaultPermissions(acl, agentOrVault, finance, voting);
         _createFinancePermissions(acl, finance, voting, voting);
         _createEvmScriptsRegistryPermissions(acl, voting, voting);

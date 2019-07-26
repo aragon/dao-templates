@@ -76,7 +76,9 @@ contract CompanyBoardTemplate is BaseTemplate {
 
         // Set up permissions
         _createVaultPermissions(acl, agentOrVault, finance, shareVoting);
-        if(_useAgentAsVault) _createCustomAgentPermissions(acl, Agent(agentOrVault), boardVoting, shareVoting);
+        if (_useAgentAsVault) {
+            _createCustomAgentPermissions(acl, Agent(agentOrVault), boardVoting, shareVoting);
+        }
         _createCustomFinancePermissions(acl, finance, boardVoting, shareVoting);
         _createCustomTokenManagerPermissions(acl, boardTokenManager, shareVoting);
         _createCustomTokenManagerPermissions(acl, shareTokenManager, shareVoting);
