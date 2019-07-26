@@ -58,19 +58,16 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
           BOARD_MEMBERS, 
           SHARE_HOLDERS, 
           SHARE_STAKES, 
-          BOARD_VOTE_DURATION, 
-          SHARE_VOTE_DURATION,
-          BOARD_SUPPORT_REQUIRED,
-          SHARE_SUPPORT_REQUIRED,
-          BOARD_MIN_ACCEPTANCE_QUORUM,
-          SHARE_MIN_ACCEPTANCE_QUORUM
+          [BOARD_VOTE_DURATION, BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM],
+          [SHARE_VOTE_DURATION, SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM],
+          DEFAULT_FINANCE_PERIOD
         ), 'COMPANY_MISSING_DAO_CACHE')
       })
     })
 
     context('when there was an instance prepared before', () => {
       before('prepare instance', async () => {
-        await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL, DEFAULT_FINANCE_PERIOD)
+        await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL)
       })
 
       it('reverts when no board members were given', async () => {
@@ -79,12 +76,9 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
           [], 
           SHARE_HOLDERS, 
           SHARE_STAKES, 
-          BOARD_VOTE_DURATION, 
-          SHARE_VOTE_DURATION,
-          BOARD_SUPPORT_REQUIRED,
-          SHARE_SUPPORT_REQUIRED,
-          BOARD_MIN_ACCEPTANCE_QUORUM,
-          SHARE_MIN_ACCEPTANCE_QUORUM
+          [BOARD_VOTE_DURATION, BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM],
+          [SHARE_VOTE_DURATION, SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM],
+          DEFAULT_FINANCE_PERIOD
         ), 'COMPANY_MISSING_BOARD_MEMBERS')
       })
 
@@ -94,12 +88,9 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
           BOARD_MEMBERS, 
           [], 
           SHARE_STAKES, 
-          BOARD_VOTE_DURATION, 
-          SHARE_VOTE_DURATION,
-          BOARD_SUPPORT_REQUIRED,
-          SHARE_SUPPORT_REQUIRED,
-          BOARD_MIN_ACCEPTANCE_QUORUM,
-          SHARE_MIN_ACCEPTANCE_QUORUM
+          [BOARD_VOTE_DURATION, BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM],
+          [SHARE_VOTE_DURATION, SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM],
+          DEFAULT_FINANCE_PERIOD
         ), 'COMPANY_MISSING_SHARE_MEMBERS')
       })
 
@@ -109,24 +100,18 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
           BOARD_MEMBERS, 
           [shareHolder1], 
           SHARE_STAKES, 
-          BOARD_VOTE_DURATION, 
-          SHARE_VOTE_DURATION,
-          BOARD_SUPPORT_REQUIRED,
-          SHARE_SUPPORT_REQUIRED,
-          BOARD_MIN_ACCEPTANCE_QUORUM,
-          SHARE_MIN_ACCEPTANCE_QUORUM
+          [BOARD_VOTE_DURATION, BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM],
+          [SHARE_VOTE_DURATION, SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM],
+          DEFAULT_FINANCE_PERIOD
         ), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
         await assertRevert(template.setupInstance.request(
           daoID, 
           BOARD_MEMBERS, 
           SHARE_HOLDERS, 
           [1e18], 
-          BOARD_VOTE_DURATION, 
-          SHARE_VOTE_DURATION,
-          BOARD_SUPPORT_REQUIRED,
-          SHARE_SUPPORT_REQUIRED,
-          BOARD_MIN_ACCEPTANCE_QUORUM,
-          SHARE_MIN_ACCEPTANCE_QUORUM
+          [BOARD_VOTE_DURATION, BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM],
+          [SHARE_VOTE_DURATION, SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM],
+          DEFAULT_FINANCE_PERIOD
         ), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
       })
     })
@@ -134,18 +119,15 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
   context('when the creation succeeds', () => {
     before('create company entity', async () => {
-      prepareReceipt = await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL, DEFAULT_FINANCE_PERIOD, { from: owner })
+      prepareReceipt = await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL, { from: owner })
       setupReceipt = await template.setupInstance(
         daoID, 
         BOARD_MEMBERS, 
         SHARE_HOLDERS, 
         SHARE_STAKES, 
-        BOARD_VOTE_DURATION, 
-        SHARE_VOTE_DURATION, 
-        BOARD_SUPPORT_REQUIRED,
-        SHARE_SUPPORT_REQUIRED,
-        BOARD_MIN_ACCEPTANCE_QUORUM,
-        SHARE_MIN_ACCEPTANCE_QUORUM,
+        [BOARD_VOTE_DURATION, BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM],
+        [SHARE_VOTE_DURATION, SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM],
+        DEFAULT_FINANCE_PERIOD,
         { from: owner }
       )
 
@@ -155,29 +137,26 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
     })
 
     before('load apps', async () => {
-
-      let installedApps = getInstalledAppsById(prepareReceipt);
+      const installedApps = getInstalledAppsById(setupReceipt);
       assert.equal(installedApps.agent.length, 1, 'should have installed 1 agent app')
       assert.equal(installedApps.finance.length, 1, 'should have installed 1 finance app')
+      assert.equal(installedApps.voting.length, 2, 'should have installed 2 voting apps')
+      assert.equal(installedApps['token-manager'].length, 2, 'should have installed 2 token manager apps')
+      acl = ACL.at(await dao.acl())
       agent = Agent.at(installedApps.agent[0])
       finance = Finance.at(installedApps.finance[0])
-
-      installedApps = getInstalledAppsById(setupReceipt)
-      acl = ACL.at(await dao.acl())
       boardVoting = Voting.at(installedApps.voting[0])
       shareVoting = Voting.at(installedApps.voting[1])
       boardTokenManager = TokenManager.at(installedApps['token-manager'][0])
       shareTokenManager = TokenManager.at(installedApps['token-manager'][1])
-      assert.equal(installedApps.voting.length, 2, 'should have installed 2 voting apps')
-      assert.equal(installedApps['token-manager'].length, 2, 'should have installed 2 token manager apps')
     })
 
     it('costs ~10.4e6 gas', async () => {
       const prepareGas = prepareReceipt.receipt.gasUsed;
       const setupGas = setupReceipt.receipt.gasUsed;
       const totalGas = prepareGas + setupGas;
-      assert.isAtMost(prepareGas, 6.01e6, 'prepare script should cost almost 6.01e6 gas')
-      assert.isAtMost(setupGas, 4.4e6, 'setup script should cost almost 4.4e6 gas')
+      assert.isAtMost(prepareGas, 5.0e6, 'prepare script should cost almost 5.0e6 gas')
+      assert.isAtMost(setupGas, 5.4e6, 'setup script should cost almost 5.4e6 gas')
       assert.isAtMost(totalGas, 10.4e6, 'prepare + setup scripts should cost almost 10.4e6 gas');
     })
 
