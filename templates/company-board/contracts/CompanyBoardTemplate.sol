@@ -55,7 +55,7 @@ contract CompanyBoardTemplate is BaseTemplate {
         _storeCache(dao, boardToken, shareToken, msg.sender);
     }
 
-    function setupInstance(string _id, address[] _boardMembers, address[] _shareHolders, uint256[] _shareStakes) public {
+    function setupInstance(string _id, address[] _boardMembers, address[] _shareHolders, uint256[] _shareStakes, bool _useAgentAsVault) public {
         require(_boardMembers.length > 0, ERROR_MISSING_BOARD_MEMBERS);
         require(_shareHolders.length > 0, ERROR_MISSING_SHARE_MEMBERS);
         require(_shareHolders.length == _shareStakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
@@ -63,8 +63,8 @@ contract CompanyBoardTemplate is BaseTemplate {
 
         // Install apps
         ACL acl = ACL(dao.acl());
-        Agent agent = _installDefaultAgentApp(dao);
-        Finance finance = _installFinanceApp(dao, Vault(agent), FINANCE_PERIOD);
+        Vault agentOrVault = _useAgentAsVault ? _installDefaultAgentApp(dao) : _installVaultApp(dao);
+        Finance finance = _installFinanceApp(dao, agentOrVault, FINANCE_PERIOD);
         TokenManager boardTokenManager = _installTokenManagerApp(dao, boardToken, BOARD_TRANSFERABLE, BOARD_MAX_PER_ACCOUNT);
         TokenManager shareTokenManager = _installTokenManagerApp(dao, shareToken, SHARE_TRANSFERABLE, SHARE_MAX_PER_ACCOUNT);
         Voting boardVoting = _installVotingApp(dao, boardToken, BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM, BOARD_VOTE_DURATION);
@@ -75,8 +75,8 @@ contract CompanyBoardTemplate is BaseTemplate {
         _mintShareTokens(acl, shareTokenManager, _shareHolders, _shareStakes);
 
         // Set up permissions
-        _createVaultPermissions(acl, Vault(agent), finance, shareVoting);
-        _createCustomAgentPermissions(acl, agent, boardVoting, shareVoting);
+        _createVaultPermissions(acl, agentOrVault, finance, shareVoting);
+        if(_useAgentAsVault) _createCustomAgentPermissions(acl, Agent(agentOrVault), boardVoting, shareVoting);
         _createCustomFinancePermissions(acl, finance, boardVoting, shareVoting);
         _createCustomTokenManagerPermissions(acl, boardTokenManager, shareVoting);
         _createCustomTokenManagerPermissions(acl, shareTokenManager, shareVoting);
