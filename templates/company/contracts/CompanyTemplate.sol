@@ -9,16 +9,10 @@ contract CompanyTemplate is BaseTemplate {
     string constant private ERROR_BAD_HOLDERS_STAKES_LEN = "COMPANY_BAD_HOLDERS_STAKES_LEN";
 
     bool constant private TOKEN_TRANSFERABLE = true;
-    string constant private TOKEN_NAME = "Share Token";
-    string constant private TOKEN_SYMBOL = "SHARE";
     uint8 constant private TOKEN_DECIMALS = uint8(18);
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(0);            // no limit of tokens per account
 
-    uint64 constant private ONE_PCT = uint64(1e16);                         // 1%
-    uint64 constant private SUPPORT_REQUIRED = uint64(50 * ONE_PCT);        // 50%
-    uint64 constant private MIN_ACCEPTANCE_QUORUM = uint64(5 * ONE_PCT);    // 5%
-    uint64 constant private VOTE_DURATION = uint64(7 days);                 // 1 week
-    uint64 constant private FINANCE_PERIOD = uint64(30 days);               // 30 days
+    uint64 constant private DEFAULT_FINANCE_PERIOD = uint64(30 days);
 
     mapping (address => address) internal tokenCache;
 
@@ -30,18 +24,30 @@ contract CompanyTemplate is BaseTemplate {
         _ensureMiniMeFactoryIsValid(_miniMeFactory);
     }
 
-    function newTokenAndInstance(string _id, address[] _holders, uint256[] _stakes) public {
-        newToken();
-        newInstance(_id, _holders, _stakes);
+    function newTokenAndInstance(
+        string _id, 
+        address[] _holders, 
+        uint256[] _stakes, 
+        string _tokenName, 
+        string _tokenSymbol,
+        uint64 _voteDuration,
+        uint64 _supportRequired,
+        uint64 _minAcceptanceQuorum,
+        uint64 _financePeriod
+    ) 
+        external
+    {
+        newToken(_tokenName, _tokenSymbol);
+        newInstance(_id, _holders, _stakes, _voteDuration, _supportRequired, _minAcceptanceQuorum, _financePeriod);
     }
 
-    function newToken() public returns (MiniMeToken) {
-        MiniMeToken token = _createToken(TOKEN_NAME, TOKEN_SYMBOL, TOKEN_DECIMALS);
+    function newToken(string _name, string _symbol) public returns (MiniMeToken) {
+        MiniMeToken token = _createToken(_name, _symbol, TOKEN_DECIMALS);
         _cacheToken(token, msg.sender);
         return token;
     }
 
-    function newInstance(string _id, address[] _holders, uint256[] _stakes) public {
+    function newInstance(string _id, address[] _holders, uint256[] _stakes, uint64 _voteDuration, uint64 _supportRequired, uint64 _minAcceptanceQuorum, uint64 _financePeriod) public {
         require(_holders.length > 0, ERROR_EMPTY_HOLDERS);
         require(_holders.length == _stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         MiniMeToken token = _popTokenCache(msg.sender);
@@ -49,27 +55,33 @@ contract CompanyTemplate is BaseTemplate {
         // Create DAO and install apps
         (Kernel dao, ACL acl) = _createDAO();
         Agent agent = _installDefaultAgentApp(dao);
-        Finance finance = _installFinanceApp(dao, Vault(agent), FINANCE_PERIOD);
+        Finance finance = _installFinanceApp(dao, Vault(agent), _financePeriod == 0 ? DEFAULT_FINANCE_PERIOD : _financePeriod);
         TokenManager tokenManager = _installTokenManagerApp(dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
-        Voting voting = _installVotingApp(dao, token, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION);
+        Voting voting = _installVotingApp(dao, token, _supportRequired, _minAcceptanceQuorum, _voteDuration);
 
-        // Mint tokens
-        _createPermissionForTemplate(acl, tokenManager, tokenManager.MINT_ROLE());
-        for (uint256 i = 0; i < _holders.length; i++) {
-            tokenManager.mint(_holders[i], _stakes[i]);
-        }
-        _removePermissionFromTemplate(acl, tokenManager, tokenManager.MINT_ROLE());
+        _mintTokens(acl, tokenManager, _holders, _stakes);
 
-        // Set up permissions
-        _createAgentPermissions(acl, agent, voting, voting);
-        _createVaultPermissions(acl, Vault(agent), finance, voting);
-        _createFinancePermissions(acl, finance, voting, voting);
-        _createEvmScriptsRegistryPermissions(acl, voting, voting);
-        _createCustomVotingPermissions(acl, voting, tokenManager);
-        _createCustomTokenManagerPermissions(acl, tokenManager, voting);
-        _transferRootPermissionsFromTemplate(dao, voting);
+        _setupPermissions(dao, acl, agent, voting, finance, tokenManager);
 
         _registerID(_id, dao);
+    }
+
+    function _mintTokens(ACL _acl, TokenManager _tokenManager, address[] _holders, uint256[] _stakes) internal {
+        _createPermissionForTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
+        for (uint256 i = 0; i < _holders.length; i++) {
+            _tokenManager.mint(_holders[i], _stakes[i]);
+        }
+        _removePermissionFromTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
+    }
+
+    function _setupPermissions(Kernel _dao, ACL _acl, Agent _agent, Voting _voting, Finance _finance, TokenManager _tokenManager) internal {
+        _createAgentPermissions(_acl, _agent, _voting, _voting);
+        _createVaultPermissions(_acl, Vault(_agent), _finance, _voting);
+        _createFinancePermissions(_acl, _finance, _voting, _voting);
+        _createEvmScriptsRegistryPermissions(_acl, _voting, _voting);
+        _createCustomVotingPermissions(_acl, _voting, _tokenManager);
+        _createCustomTokenManagerPermissions(_acl, _tokenManager, _voting);
+        _transferRootPermissionsFromTemplate(_dao, _voting);
     }
 
     function _createCustomVotingPermissions(ACL _acl, Voting _voting, TokenManager _tokenManager) internal {
