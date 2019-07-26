@@ -7,6 +7,7 @@ contract ReputationTemplate is BaseTemplate {
     string constant private ERROR_MISSING_TOKEN_CACHE = "REPUTATION_MISSING_TOKEN_CACHE";
     string constant private ERROR_EMPTY_HOLDERS = "REPUTATION_EMPTY_HOLDERS";
     string constant private ERROR_BAD_HOLDERS_STAKES_LEN = "REPUTATION_BAD_HOLDERS_STAKES_LEN";
+    string constant private ERROR_BAD_VOTE_SETTINGS = "REPUTATION_BAD_VOTE_SETTINGS";
 
     bool constant private TOKEN_TRANSFERABLE = false;
     uint8 constant private TOKEN_DECIMALS = uint8(18);
@@ -30,15 +31,14 @@ contract ReputationTemplate is BaseTemplate {
         uint256[] _stakes, 
         string _tokenName, 
         string _tokenSymbol,
-        uint64 _voteDuration,
-        uint64 _supportRequired,
-        uint64 _minAcceptanceQuorum,
-        uint64 _financePeriod
+        uint64[] _voteSettings, /* voteDuration, supportRequired, minAcceptanceQuorum */
+        uint64 _financePeriod,
+        bool _useAgentAsVault
     ) 
         external
     {
         newToken(_tokenName, _tokenSymbol);
-        newInstance(_id, _holders, _stakes, _voteDuration, _supportRequired, _minAcceptanceQuorum, _financePeriod);
+        newInstance(_id, _holders, _stakes, _voteSettings, _financePeriod, _useAgentAsVault);
     }
 
     function newToken(string _name, string _symbol) public returns (MiniMeToken) {
@@ -51,30 +51,32 @@ contract ReputationTemplate is BaseTemplate {
         string _id, 
         address[] _holders, 
         uint256[] _stakes, 
-        uint64 _voteDuration, 
-        uint64 _supportRequired,
-        uint64 _minAcceptanceQuorum,
-        uint64 _financePeriod
+        uint64[] _voteSettings, /* voteDuration, supportRequired, minAcceptanceQuorum */
+        uint64 _financePeriod,
+        bool _useAgentAsVault
     ) 
         public 
     {
         require(_holders.length > 0, ERROR_EMPTY_HOLDERS);
         require(_holders.length == _stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
+        require(_voteSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
         MiniMeToken token = _popTokenCache(msg.sender);
 
         // Create DAO and install apps
         (Kernel dao, ACL acl) = _createDAO();
-        Agent agent = _installDefaultAgentApp(dao);
-        Finance finance = _installFinanceApp(dao, Vault(agent), _financePeriod == 0 ? DEFAULT_FINANCE_PERIOD : _financePeriod);
+        Vault agentOrVault = _useAgentAsVault ? _installDefaultAgentApp(dao) : _installVaultApp(dao);
+        Finance finance = _installFinanceApp(dao, agentOrVault, _financePeriod == 0 ? DEFAULT_FINANCE_PERIOD : _financePeriod);
         TokenManager tokenManager = _installTokenManagerApp(dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
-        Voting voting = _installVotingApp(dao, token, _supportRequired, _minAcceptanceQuorum, _voteDuration);
+        Voting voting = _installVotingApp(dao, token, _voteSettings[1], _voteSettings[2], _voteSettings[0]);
 
         // Mint tokens
         _mintTokens(acl, tokenManager, _holders, _stakes);
 
         // Set up permissions
-        _createAgentPermissions(acl, agent, voting, voting);
-        _createVaultPermissions(acl, Vault(agent), finance, voting);
+        if (_useAgentAsVault) {
+            _createAgentPermissions(acl, Agent(agentOrVault), voting, voting);
+        }
+        _createVaultPermissions(acl, agentOrVault, finance, voting);
         _createFinancePermissions(acl, finance, voting, voting);
         _createEvmScriptsRegistryPermissions(acl, voting, voting);
         _createCustomVotingPermissions(acl, voting, tokenManager);

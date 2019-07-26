@@ -14,16 +14,15 @@ template.newToken()
 Create a new company entity:
 
 ```
-template.newInstance(name, holders, stakes, voteDuration, supportRequired, minAcceptanceQuorum, financePeriod)
+template.newInstance(name, holders, stakes, voteSettings, financePeriod, useAgentAsVault)
 ```
 
 - `name`: Name for org, will assign `[name].aragonid.eth`
 - `holders`: Array of token holder addresses
 - `stakes`: Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`)
-- `voteDuration`: Time period in which a vote can be resolved
-- `supportRequired`: Percentage of total voting power or minimum quorum that a vote needs to be approved/executed
-- `minAcceptanceQuorum`: Percentage of the total voting power to consider when calculating support
+- `voteSettings`: Array of [voteDuration, supportRequired, minAcceptanceQuorum] for votes by the organization's members
 - `financePeriod`: Initial duration for accounting periods
+- `useAgentAsVault`: Use an Agent app as a more advanced form of Vault app
 
 ## Deploying templates
 

@@ -52,25 +52,26 @@ contract CompanyBoardTemplate is BaseTemplate {
         uint256[] _shareStakes,
         uint64[] _boardVoteSettings, /* [voteDuration, supportRequired, minAcceptanceQuorum] */
         uint64[] _shareVoteSettings, /* idem */
-        uint64 _financePeriod
+        uint64 _financePeriod,
+        bool _useAgentAsVault
     ) 
         public 
     {
         require(_boardVoteSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
         require(_shareVoteSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
-        (Agent agent, Finance finance) = _setupCommon(_financePeriod);
+        (Vault agentOrVault, Finance finance) = _setupCommon(_financePeriod, _useAgentAsVault);
         (TokenManager boardTokenManager, Voting boardVoting) = _setupBoard(_boardMembers, _boardVoteSettings[0], _boardVoteSettings[1], _boardVoteSettings[2]);
         (TokenManager shareTokenManager, Voting shareVoting) = _setupShare(_shareHolders, _shareStakes, _shareVoteSettings[0], _shareVoteSettings[1], _shareVoteSettings[2]);
-        _setupPermissions(boardVoting, boardTokenManager, shareVoting, shareTokenManager, agent, finance);
+        _setupPermissions(boardVoting, boardTokenManager, shareVoting, shareTokenManager, agentOrVault, finance, _useAgentAsVault);
         _registerDAO(_id);
     }
 
-    function _setupCommon(uint64 _financePeriod) internal returns (Agent _agent, Finance _finance) {
+    function _setupCommon(uint64 _financePeriod, bool _useAgentAsVault) internal returns (Vault _agentOrVault, Finance _finance) {
         (Kernel dao,,) = _getCache(msg.sender);
 
         // Install apps
-        _agent = _installDefaultAgentApp(dao);
-        _finance = _installFinanceApp(dao, Vault(_agent), _financePeriod == 0 ? DEFAULT_FINANCE_PERIOD : _financePeriod); 
+        _agentOrVault = _useAgentAsVault ? _installDefaultAgentApp(dao) : _installVaultApp(dao);
+        _finance = _installFinanceApp(dao, _agentOrVault, _financePeriod == 0 ? DEFAULT_FINANCE_PERIOD : _financePeriod); 
     }
 
     function _setupBoard(address[] _boardMembers, uint64 _boardVoteDuration, uint64 _boardSupportRequired, uint64 _boardMinAcceptanceQuorum) internal returns(TokenManager _boardTokenManager, Voting _boardVoting) {
@@ -105,16 +106,19 @@ contract CompanyBoardTemplate is BaseTemplate {
         TokenManager _boardTokenManager,
         Voting _shareVoting,
         TokenManager _shareTokenManager,
-        Agent agent,
-        Finance finance
+        Vault _agentOrVault,
+        Finance _finance,
+        bool _useAgentAsVault
     ) 
         internal 
     {
         (Kernel dao,,) = _getCache(msg.sender);
         ACL acl = ACL(dao.acl());
-        _createVaultPermissions(acl, Vault(agent), finance, _shareVoting);
-        _createCustomAgentPermissions(acl, agent, _boardVoting, _shareVoting);
-        _createCustomFinancePermissions(acl, finance, _boardVoting, _shareVoting);
+        _createVaultPermissions(acl, _agentOrVault, _finance, _shareVoting);
+        if (_useAgentAsVault) {
+            _createCustomAgentPermissions(acl, Agent(_agentOrVault), _boardVoting, _shareVoting);
+        }
+        _createCustomFinancePermissions(acl, _finance, _boardVoting, _shareVoting);
         _createCustomTokenManagerPermissions(acl, _boardTokenManager, _shareVoting);
         _createCustomTokenManagerPermissions(acl, _shareTokenManager, _shareVoting);
         _createEvmScriptsRegistryPermissions(acl, _shareVoting, _shareVoting);

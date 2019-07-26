@@ -14,15 +14,14 @@ template.newToken()
 Create a new membership entity:
 
 ```
-template.newInstance(name, members, voteDuration, supportRequired, minAcceptanceQuorum, financePeriod)
+template.newInstance(name, members, voteSettings, financePeriod, useAgentAsVault)
 ```
 
 - `name`: Name for org, will assign `[name].aragonid.eth`
 - `members`: Array of member addresses (1 token will be minted for each member)
-- `voteDuration`: Time period in which a vote can be resolved
-- `supportRequired`: Percentage of total voting power or minimum quorum that a vote needs to be approved/executed
-- `minAcceptanceQuorum`: Percentage of the total voting power to consider when calculating support
+- `voteSettings`: Array of [voteDuration, supportRequired, minAcceptanceQuorum] for votes by the organization's members
 - `financePeriod`: Initial duration for accounting periods
+- `useAgentAsVault`: Use an Agent app as a more advanced form of Vault app
 
 ## Deploying templates
 

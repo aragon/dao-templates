@@ -14,7 +14,7 @@ template.prepareInstance(tokenName, tokenSymbol)
 Setup company-board DAO:
 
 ```
-template.setupInstance(name, boardHolders, shareHolders, shareStakes, boardVoteSettings, shareVoteSettings, financePeriod)
+template.setupInstance(name, boardHolders, shareHolders, shareStakes, boardVoteSettings, shareVoteSettings, financePeriod, useAgentAsVault)
 ```
 
 - `name`: Name for org, will assign `[name].aragonid.eth`
@@ -24,6 +24,7 @@ template.setupInstance(name, boardHolders, shareHolders, shareStakes, boardVoteS
 - `boardVoteSettings`: Array of [voteDuration, supportRequired, minAcceptanceQuorum] for votes by the organization's board members
 - `shareVoteSettings`: Array of [voteDuration, supportRequired, minAcceptanceQuorum] for votes by the organization's share holders
 - `financePeriod`: Initial duration for accounting periods
+- `useAgentAsVault`: Use an Agent app as a more advanced form of Vault app
 
 ## Deploying templates
 
