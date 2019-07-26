@@ -8,8 +8,8 @@ Create a new token for the membership entity:
 template.newToken()
 ```
 
-- `name`: Name for the token
-- `symbol`: Symbol for the token
+- `name`: Name for the token used in the organization
+- `symbol`: Symbol for the token used in the organization
 
 Create a new membership entity:
 
