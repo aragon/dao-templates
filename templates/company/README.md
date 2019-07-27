@@ -5,7 +5,7 @@
 Create a new token for the company entity:
 
 ```
-template.newToken()
+template.newToken(name, symbol)
 ```
 
 - `name`: Name for the token used in the organization
