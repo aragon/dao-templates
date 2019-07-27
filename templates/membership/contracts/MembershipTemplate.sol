@@ -29,14 +29,14 @@ contract MembershipTemplate is BaseTemplate {
         address[] _members, 
         string _tokenName, 
         string _tokenSymbol, 
-        uint64[] _voteSettings, /* voteDuration, supportRequired, minAcceptanceQuorum */
+        uint64[3] _votingSettings, /* supportRequired, minAcceptanceQuorum, voteDuration */
         uint64 _financePeriod,
         bool _useAgentAsVault
     ) 
         external 
     {
         newToken(_tokenName, _tokenSymbol);
-        newInstance(_id, _members, _voteSettings, _financePeriod, _useAgentAsVault);
+        newInstance(_id, _members, _votingSettings, _financePeriod, _useAgentAsVault);
     }
 
     function newToken(string _name, string _symbol) public returns (MiniMeToken) {
@@ -45,9 +45,9 @@ contract MembershipTemplate is BaseTemplate {
         return token;
     }
 
-    function newInstance(string _id, address[] _members, uint64[] _voteSettings, uint64 _financePeriod, bool _useAgentAsVault) public {
+    function newInstance(string _id, address[] _members, uint64[3] _votingSettings, uint64 _financePeriod, bool _useAgentAsVault) public {
         require(_members.length > 0, ERROR_MISSING_MEMBERS);
-        require(_voteSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
+        require(_votingSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
         MiniMeToken token = _popTokenCache(msg.sender);
 
         // Create DAO and install apps
@@ -55,7 +55,7 @@ contract MembershipTemplate is BaseTemplate {
         Vault agentOrVault = _useAgentAsVault ? _installDefaultAgentApp(dao) : _installVaultApp(dao);
         Finance finance = _installFinanceApp(dao, agentOrVault, _financePeriod == 0 ? DEFAULT_FINANCE_PERIOD : _financePeriod);
         TokenManager tokenManager = _installTokenManagerApp(dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
-        Voting voting = _installVotingApp(dao, token, _voteSettings[1], _voteSettings[2], _voteSettings[0]);
+        Voting voting = _installVotingApp(dao, token, _votingSettings[0], _votingSettings[1], _votingSettings[2]);
 
         // Mint tokens
         _mintTokens(acl, tokenManager, _members, 1);
