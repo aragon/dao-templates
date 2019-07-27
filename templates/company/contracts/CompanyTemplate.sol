@@ -68,14 +68,6 @@ contract CompanyTemplate is BaseTemplate {
         _registerID(_id, dao);
     }
 
-    function _mintTokens(ACL _acl, TokenManager _tokenManager, address[] _holders, uint256[] _stakes) internal {
-        _createPermissionForTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
-        for (uint256 i = 0; i < _holders.length; i++) {
-            _tokenManager.mint(_holders[i], _stakes[i]);
-        }
-        _removePermissionFromTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
-    }
-
     function _setupPermissions(Kernel _dao, ACL _acl, Vault _agentOrVault, Voting _voting, Finance _finance, TokenManager _tokenManager, bool _useAgentAsVault) internal {
         if (_useAgentAsVault) {
             _createAgentPermissions(_acl, Agent(_agentOrVault), _voting, _voting);
