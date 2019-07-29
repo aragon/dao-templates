@@ -19,7 +19,7 @@ template.newInstance(name, members, voteSettings, financePeriod, useAgentAsVault
 
 - `name`: Name for org, will assign `[name].aragonid.eth`
 - `members`: Array of member addresses (1 token will be minted for each member)
-- `voteSettings`: Array of [voteDuration, supportRequired, minAcceptanceQuorum] for votes by the organization's members
+- `voteSettings`: Array of [supportRequired, minAcceptanceQuorum, voteDuration] for votes by the organization's members
 - `financePeriod`: Initial duration for accounting periods
 - `useAgentAsVault`: Use an Agent app as a more advanced form of Vault app
 

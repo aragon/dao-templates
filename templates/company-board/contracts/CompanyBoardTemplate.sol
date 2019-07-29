@@ -50,8 +50,8 @@ contract CompanyBoardTemplate is BaseTemplate {
         address[] _boardMembers,
         address[] _shareHolders,
         uint256[] _shareStakes,
-        uint64[3] _boardVotingSettings, /* [voteDuration, supportRequired, minAcceptanceQuorum] */
-        uint64[3] _shareVotingSettings, /* [voteDuration, supportRequired, minAcceptanceQuorum] */
+        uint64[3] _boardVotingSettings, /* [supportRequired, minAcceptanceQuorum, voteDuration] */
+        uint64[3] _shareVotingSettings, /* [supportRequired, minAcceptanceQuorum, voteDuration] */
         uint64 _financePeriod,
         bool _useAgentAsVault
     )
@@ -67,8 +67,8 @@ contract CompanyBoardTemplate is BaseTemplate {
         address[] _boardMembers,
         address[] _shareHolders,
         uint256[] _shareStakes,
-        uint64[3] _boardVotingSettings, /* [voteDuration, supportRequired, minAcceptanceQuorum] */
-        uint64[3] _shareVotingSettings, /* [voteDuration, supportRequired, minAcceptanceQuorum] */
+        uint64[3] _boardVotingSettings, /* [supportRequired, minAcceptanceQuorum, voteDuration] */
+        uint64[3] _shareVotingSettings, /* [supportRequired, minAcceptanceQuorum, voteDuration] */
         uint64 _financePeriod,
         bool _useAgentAsVault
     )

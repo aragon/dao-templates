@@ -20,7 +20,7 @@ template.newInstance(id, holders, stakes, voteSettings, financePeriod, useAgentA
 - `name`: Name for org, will assign `[name].aragonid.eth`
 - `holders`: Array of token holder addresses
 - `stakes`: Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`)
-- `voteSettings`: Array of [voteDuration, supportRequired, minAcceptanceQuorum] for votes by the organization's members
+- `voteSettings`: Array of [supportRequired, minAcceptanceQuorum, voteDuration] for votes by the organization's members
 - `financePeriod`: Initial duration for accounting periods
 - `useAgentAsVault`: Use an Agent app as a more advanced form of Vault app
 
