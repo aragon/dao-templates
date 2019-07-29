@@ -121,7 +121,7 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
 
             acl = ACL.at(await dao.acl())
             if(useAgentAsVault) agent = Agent.at(installedApps.agent[0])
-            else vault = Vault.at(installedApps.vault[0]);
+            else vault = Vault.at(installedApps.vault[0])
             voting = Voting.at(installedApps.voting[0])
             finance = Finance.at(installedApps.finance[0])
             tokenManager = TokenManager.at(installedApps['token-manager'][0])

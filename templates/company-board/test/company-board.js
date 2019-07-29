@@ -167,7 +167,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
         acl = ACL.at(await dao.acl())
         if(useAgentAsVault) agent = Agent.at(installedApps.agent[0])
-        else vault = Vault.at(installedApps.vault[0]);
+        else vault = Vault.at(installedApps.vault[0])
         boardVoting = Voting.at(installedApps.voting[0])
         shareVoting = Voting.at(installedApps.voting[1])
         finance = Finance.at(installedApps.finance[0])
@@ -176,12 +176,12 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
       })
 
       it('costs ~10.4e6 gas', async () => {
-        const prepareGas = prepareReceipt.receipt.gasUsed;
-        const setupGas = setupReceipt.receipt.gasUsed;
-        const totalGas = prepareGas + setupGas;
+        const prepareGas = prepareReceipt.receipt.gasUsed
+        const setupGas = setupReceipt.receipt.gasUsed
+        const totalGas = prepareGas + setupGas
         assert.isAtMost(prepareGas, 5.0e6, 'prepare script should cost almost 5.0e6 gas')
         assert.isAtMost(setupGas, 5.4e6, 'setup script should cost almost 5.4e6 gas')
-        assert.isAtMost(totalGas, 10.4e6, 'prepare + setup scripts should cost almost 10.4e6 gas');
+        assert.isAtMost(totalGas, 10.4e6, 'prepare + setup scripts should cost almost 10.4e6 gas')
       })
 
       it('registers a new DAO on ENS', async () => {
