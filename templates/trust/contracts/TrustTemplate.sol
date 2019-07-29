@@ -108,7 +108,6 @@ contract TrustTemplate is BaseTemplate {
     }
 
     function _setupApps(Kernel _dao, address[] _beneficiaryKeys, address[] _heirs, uint256[] _heirsStakes, uint256 _blockedHeirsSupply) internal {
-
         // Install apps
         ACL acl = ACL(_dao.acl());
         Vault vault = _installVaultApp(_dao);

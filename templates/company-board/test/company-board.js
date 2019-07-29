@@ -32,14 +32,19 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
   const SHARE_STAKES = SHARE_HOLDERS.map(() => 1e18)
   const SHARE_TOKEN_NAME = 'Share Token'
   const SHARE_TOKEN_SYMBOL = 'SHARE'
-  const BOARD_VOTE_DURATION = 60 * 60 * 24 * 7
-  const SHARE_VOTE_DURATION = 60 * 60 * 24 * 7
-  const BOARD_SUPPORT_REQUIRED = 50e16
-  const SHARE_SUPPORT_REQUIRED = 50e16
-  const BOARD_MIN_ACCEPTANCE_QUORUM = 40e16
-  const SHARE_MIN_ACCEPTANCE_QUORUM = 5e16
+
   const DEFAULT_FINANCE_PERIOD = 0 // When passed to template, will set 30 days as default
   const FINANCE_PERIOD = 60 * 60 * 24 * 30
+
+  const BOARD_VOTE_DURATION = 60 * 60 * 24 * 7
+  const BOARD_SUPPORT_REQUIRED = 50e16
+  const BOARD_MIN_ACCEPTANCE_QUORUM = 40e16
+  const BOARD_VOTING_SETTINGS = [BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM, BOARD_VOTE_DURATION]
+
+  const SHARE_VOTE_DURATION = 60 * 60 * 24 * 7
+  const SHARE_SUPPORT_REQUIRED = 50e16
+  const SHARE_MIN_ACCEPTANCE_QUORUM = 5e16
+  const SHARE_VOTING_SETTINGS = [SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM, SHARE_VOTE_DURATION]
 
   before('fetch company board template and ENS', async () => {
     const { registry, address } = await deployedAddresses()
@@ -55,15 +60,15 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
     context('when there was no instance prepared before', () => {
       it('reverts', async () => {
         await assertRevert(template.setupInstance.request(
-          daoID, 
-          BOARD_MEMBERS, 
-          SHARE_HOLDERS, 
-          SHARE_STAKES, 
-          [BOARD_VOTE_DURATION, BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM],
-          [SHARE_VOTE_DURATION, SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM],
+          daoID,
+          BOARD_MEMBERS,
+          SHARE_HOLDERS,
+          SHARE_STAKES,
+          BOARD_VOTING_SETTINGS,
+          SHARE_VOTING_SETTINGS,
           DEFAULT_FINANCE_PERIOD,
           true
-        ), 'COMPANY_MISSING_DAO_CACHE')
+        ), 'COMPANY_MISSING_CACHE')
       })
     })
 
@@ -74,12 +79,12 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
       it('reverts when no board members were given', async () => {
         await assertRevert(template.setupInstance.request(
-          daoID, 
-          [], 
-          SHARE_HOLDERS, 
-          SHARE_STAKES, 
-          [BOARD_VOTE_DURATION, BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM],
-          [SHARE_VOTE_DURATION, SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM],
+          daoID,
+          [],
+          SHARE_HOLDERS,
+          SHARE_STAKES,
+          BOARD_VOTING_SETTINGS,
+          SHARE_VOTING_SETTINGS,
           DEFAULT_FINANCE_PERIOD,
           true
         ), 'COMPANY_MISSING_BOARD_MEMBERS')
@@ -87,12 +92,12 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
       it('reverts when no share members were given', async () => {
         await assertRevert(template.setupInstance.request(
-          daoID, 
-          BOARD_MEMBERS, 
-          [], 
-          SHARE_STAKES, 
-          [BOARD_VOTE_DURATION, BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM],
-          [SHARE_VOTE_DURATION, SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM],
+          daoID,
+          BOARD_MEMBERS,
+          [],
+          SHARE_STAKES,
+          BOARD_VOTING_SETTINGS,
+          SHARE_VOTING_SETTINGS,
           DEFAULT_FINANCE_PERIOD,
           true
         ), 'COMPANY_MISSING_SHARE_MEMBERS')
@@ -100,22 +105,23 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
       it('reverts when number of shared members and stakes do not match', async () => {
         await assertRevert(template.setupInstance.request(
-          daoID, 
-          BOARD_MEMBERS, 
-          [shareHolder1], 
-          SHARE_STAKES, 
-          [BOARD_VOTE_DURATION, BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM],
-          [SHARE_VOTE_DURATION, SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM],
+          daoID,
+          BOARD_MEMBERS,
+          [shareHolder1],
+          SHARE_STAKES,
+          BOARD_VOTING_SETTINGS,
+          SHARE_VOTING_SETTINGS,
           DEFAULT_FINANCE_PERIOD,
           true
         ), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
+
         await assertRevert(template.setupInstance.request(
-          daoID, 
-          BOARD_MEMBERS, 
-          SHARE_HOLDERS, 
-          [1e18], 
-          [BOARD_VOTE_DURATION, BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM],
-          [SHARE_VOTE_DURATION, SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM],
+          daoID,
+          BOARD_MEMBERS,
+          SHARE_HOLDERS,
+          [1e18],
+          BOARD_VOTING_SETTINGS,
+          SHARE_VOTING_SETTINGS,
           DEFAULT_FINANCE_PERIOD,
           true
         ), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
@@ -127,7 +133,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
     const itHandlesInstanceCreationsProperly = (useAgentAsVault) => {
       // Test when the organization is created with an Agent app or a Vault app
-      
+
       before('build dao ID', () => {
         daoID = randomId()
       })
@@ -135,12 +141,12 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
       before('create company entity', async () => {
         prepareReceipt = await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL, { from: owner })
         setupReceipt = await template.setupInstance(
-          daoID, 
-          BOARD_MEMBERS, 
-          SHARE_HOLDERS, 
-          SHARE_STAKES, 
-          [BOARD_VOTE_DURATION, BOARD_SUPPORT_REQUIRED, BOARD_MIN_ACCEPTANCE_QUORUM],
-          [SHARE_VOTE_DURATION, SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM],
+          daoID,
+          BOARD_MEMBERS,
+          SHARE_HOLDERS,
+          SHARE_STAKES,
+          BOARD_VOTING_SETTINGS,
+          SHARE_VOTING_SETTINGS,
           DEFAULT_FINANCE_PERIOD,
           useAgentAsVault,
           { from: owner }
@@ -153,15 +159,23 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
       before('load apps', async () => {
         const installedApps = getInstalledAppsById(setupReceipt)
-        if(useAgentAsVault) assert.equal(installedApps.agent.length, 1, 'should have installed 1 agent app')
-        else assert.equal(installedApps.vault.length, 1, 'should have installed 1 vault app')
+        if(useAgentAsVault) {
+          assert.equal(installedApps.agent.length, 1, 'should have installed 1 agent app')
+        }
+        else {
+          assert.equal(installedApps.vault.length, 1, 'should have installed 1 vault app')
+        }
         assert.equal(installedApps.voting.length, 2, 'should have installed 2 voting apps')
         assert.equal(installedApps.finance.length, 1, 'should have installed 1 finance app')
         assert.equal(installedApps['token-manager'].length, 2, 'should have installed 2 token manager apps')
 
         acl = ACL.at(await dao.acl())
-        if(useAgentAsVault) agent = Agent.at(installedApps.agent[0])
-        else vault = Vault.at(installedApps.vault[0]);
+        if(useAgentAsVault) {
+          agent = Agent.at(installedApps.agent[0])
+        }
+        else {
+          vault = Vault.at(installedApps.vault[0])
+        }
         boardVoting = Voting.at(installedApps.voting[0])
         shareVoting = Voting.at(installedApps.voting[1])
         finance = Finance.at(installedApps.finance[0])
@@ -170,12 +184,12 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
       })
 
       it('costs ~10.4e6 gas', async () => {
-        const prepareGas = prepareReceipt.receipt.gasUsed;
-        const setupGas = setupReceipt.receipt.gasUsed;
-        const totalGas = prepareGas + setupGas;
+        const prepareGas = prepareReceipt.receipt.gasUsed
+        const setupGas = setupReceipt.receipt.gasUsed
+        const totalGas = prepareGas + setupGas
         assert.isAtMost(prepareGas, 5.0e6, 'prepare script should cost almost 5.0e6 gas')
         assert.isAtMost(setupGas, 5.4e6, 'setup script should cost almost 5.4e6 gas')
-        assert.isAtMost(totalGas, 10.4e6, 'prepare + setup scripts should cost almost 10.4e6 gas');
+        assert.isAtMost(totalGas, 10.4e6, 'prepare + setup scripts should cost almost 10.4e6 gas')
       })
 
       it('registers a new DAO on ENS', async () => {
@@ -313,6 +327,5 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
         await assertRole(acl, vault, shareVoting, 'TRANSFER_ROLE', finance)
       })
     })
-    
   })
 })

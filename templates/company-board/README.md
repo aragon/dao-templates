@@ -21,8 +21,8 @@ template.setupInstance(name, boardHolders, shareHolders, shareStakes, boardVoteS
 - `boardMembers`: Array of board member addresses (1 token will be minted for each board member)
 - `shareHolders`: Array of share holder addresses
 - `shareStakes`: Array of token stakes for share holders (token has 18 decimals, multiply token amount `* 10^18`)
-- `boardVoteSettings`: Array of [voteDuration, supportRequired, minAcceptanceQuorum] for votes by the organization's board members
-- `shareVoteSettings`: Array of [voteDuration, supportRequired, minAcceptanceQuorum] for votes by the organization's share holders
+- `boardVoteSettings`: Array of [supportRequired, minAcceptanceQuorum, voteDuration] for votes by the organization's board members
+- `shareVoteSettings`: Array of [supportRequired, minAcceptanceQuorum, voteDuration] for votes by the organization's share holders
 - `financePeriod`: Initial duration for accounting periods
 - `useAgentAsVault`: Use an Agent app as a more advanced form of Vault app
 

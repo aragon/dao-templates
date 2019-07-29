@@ -30,9 +30,12 @@ contract('Membership', ([_, owner, member1, member2]) => {
   const MEMBERS = [member1, member2]
   const TOKEN_NAME = 'Member Token'
   const TOKEN_SYMBOL = 'MEMBER'
+
   const VOTE_DURATION = 60 * 60 * 24 * 7
   const SUPPORT_REQUIRED = 50e16
   const MIN_ACCEPTANCE_QUORUM = 20e16
+  const VOTING_SETTINGS = [SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION]
+
   const DEFAULT_FINANCE_PERIOD = 0 // When passed to template, will set 30 days as default
   const FINANCE_PERIOD = 60 * 60 * 24 * 30
 
@@ -55,12 +58,12 @@ contract('Membership', ([_, owner, member1, member2]) => {
 
         if (creationStyle === 'single') {
           it('reverts when no members were given', async () => {
-            await assertRevert(template.newTokenAndInstance.request(daoID, [], TOKEN_NAME, TOKEN_SYMBOL, [VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM], DEFAULT_FINANCE_PERIOD, true), 'MEMBERSHIP_MISSING_MEMBERS')
+            await assertRevert(template.newTokenAndInstance.request(TOKEN_NAME, TOKEN_SYMBOL, daoID, [], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'MEMBERSHIP_MISSING_MEMBERS')
           })
         } else if (creationStyle === 'separate') {
           context('when there was no token created before', () => {
             it('reverts', async () => {
-              await assertRevert(template.newInstance.request(daoID, MEMBERS, [VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM], DEFAULT_FINANCE_PERIOD, true), 'MEMBERSHIP_MISSING_TOKEN_CACHE')
+              await assertRevert(template.newInstance.request(daoID, MEMBERS, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'MEMBERSHIP_MISSING_TOKEN_CACHE')
             })
           })
 
@@ -70,7 +73,7 @@ contract('Membership', ([_, owner, member1, member2]) => {
             })
 
             it('reverts when no members were given', async () => {
-              await assertRevert(template.newInstance.request(daoID, [], [VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM], DEFAULT_FINANCE_PERIOD, true), 'MEMBERSHIP_MISSING_MEMBERS')
+              await assertRevert(template.newInstance.request(daoID, [], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'MEMBERSHIP_MISSING_MEMBERS')
             })
           })
         }
@@ -87,11 +90,11 @@ contract('Membership', ([_, owner, member1, member2]) => {
 
           before('create membership entity', async () => {
             if (creationStyle === 'single') {
-              instanceReceipt = await template.newTokenAndInstance(daoID, MEMBERS, TOKEN_NAME, TOKEN_SYMBOL, [VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM], DEFAULT_FINANCE_PERIOD, useAgentAsVault, { from: owner })
+              instanceReceipt = await template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, daoID, MEMBERS, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, { from: owner })
               tokenReceipt = instanceReceipt
             } else if (creationStyle === 'separate') {
               tokenReceipt = await template.newToken(TOKEN_NAME, TOKEN_SYMBOL, { from: owner })
-              instanceReceipt = await template.newInstance(daoID, MEMBERS, [VOTE_DURATION, SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM], DEFAULT_FINANCE_PERIOD, useAgentAsVault, { from: owner })
+              instanceReceipt = await template.newInstance(daoID, MEMBERS, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, { from: owner })
             }
 
             dao = Kernel.at(getEventArgument(instanceReceipt, 'DeployDao', 'dao'))
@@ -100,15 +103,23 @@ contract('Membership', ([_, owner, member1, member2]) => {
 
           before('load apps', async () => {
             const installedApps = getInstalledAppsById(instanceReceipt)
-            if(useAgentAsVault) assert.equal(installedApps.agent.length, 1, 'should have installed 1 agent app')
-            else assert.equal(installedApps.vault.length, 1, 'should have installed 1 vault app')
+            if(useAgentAsVault) {
+              assert.equal(installedApps.agent.length, 1, 'should have installed 1 agent app')
+            }
+            else {
+              assert.equal(installedApps.vault.length, 1, 'should have installed 1 vault app')
+            }
             assert.equal(installedApps.voting.length, 1, 'should have installed 1 voting app')
             assert.equal(installedApps.finance.length, 1, 'should have installed 1 finance app')
             assert.equal(installedApps['token-manager'].length, 1, 'should have installed 1 token manager app')
 
             acl = ACL.at(await dao.acl())
-            if(useAgentAsVault) agent = Agent.at(installedApps.agent[0])
-            else vault = Vault.at(installedApps.vault[0]);
+            if(useAgentAsVault) {
+              agent = Agent.at(installedApps.agent[0])
+            }
+            else {
+              vault = Vault.at(installedApps.vault[0])
+            }
             voting = Voting.at(installedApps.voting[0])
             finance = Finance.at(installedApps.finance[0])
             tokenManager = TokenManager.at(installedApps['token-manager'][0])
