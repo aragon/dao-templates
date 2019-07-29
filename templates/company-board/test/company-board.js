@@ -159,15 +159,23 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
       before('load apps', async () => {
         const installedApps = getInstalledAppsById(setupReceipt)
-        if(useAgentAsVault) assert.equal(installedApps.agent.length, 1, 'should have installed 1 agent app')
-        else assert.equal(installedApps.vault.length, 1, 'should have installed 1 vault app')
+        if(useAgentAsVault) {
+          assert.equal(installedApps.agent.length, 1, 'should have installed 1 agent app')
+        }
+        else {
+          assert.equal(installedApps.vault.length, 1, 'should have installed 1 vault app')
+        }
         assert.equal(installedApps.voting.length, 2, 'should have installed 2 voting apps')
         assert.equal(installedApps.finance.length, 1, 'should have installed 1 finance app')
         assert.equal(installedApps['token-manager'].length, 2, 'should have installed 2 token manager apps')
 
         acl = ACL.at(await dao.acl())
-        if(useAgentAsVault) agent = Agent.at(installedApps.agent[0])
-        else vault = Vault.at(installedApps.vault[0])
+        if(useAgentAsVault) {
+          agent = Agent.at(installedApps.agent[0])
+        }
+        else {
+          vault = Vault.at(installedApps.vault[0])
+        }
         boardVoting = Voting.at(installedApps.voting[0])
         shareVoting = Voting.at(installedApps.voting[1])
         finance = Finance.at(installedApps.finance[0])
