@@ -36,6 +36,10 @@ contract('Company', ([_, owner, holder1, holder2]) => {
   const SUPPORT_REQUIRED = 50e16
   const MIN_ACCEPTANCE_QUORUM = 5e16
   const VOTING_SETTINGS = [SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION]
+  const PAYROLL_DENOMINATION_TOKEN = '0x0000000000000000000000000000000000000000'
+  const PAYROLL_PRICE_FEED = '0x0000000000000000000000000000000000000000';
+  const PAYROLL_RATE_EXPIRY_TIME = 2 * 31 * 24 * 60 * 60;
+  const PAYROLL_SETTINGS = [PAYROLL_DENOMINATION_TOKEN, PAYROLL_PRICE_FEED, PAYROLL_RATE_EXPIRY_TIME]
 
   const DEFAULT_FINANCE_PERIOD = 0 // When passed to template, will set 30 days as default
   const FINANCE_PERIOD = 60 * 60 * 24 * 30
@@ -90,7 +94,7 @@ contract('Company', ([_, owner, holder1, holder2]) => {
         }
       })
 
-      context('when the creation succeeds', () => {
+      context.only('when the creation succeeds', () => {
 
         const itHandlesInstanceCreationsProperly = (useAgentAsVault, installPayroll) => {
           // Test when the organization is created with an Agent app or a Vault app
@@ -102,18 +106,19 @@ contract('Company', ([_, owner, holder1, holder2]) => {
           before('create company entity', async () => {
             if (creationStyle === 'single') {
               if (installPayroll) {
-                // TODO
+                instanceReceipt = await template.newTokenAndInstanceWithPayroll(TOKEN_NAME, TOKEN_SYMBOL, daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, PAYROLL_SETTINGS, { from: owner })
+                tokenReceipt = instanceReceipt
               }
               else {
                 instanceReceipt = await template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, { from: owner })
                 tokenReceipt = instanceReceipt
               }
             } else if (creationStyle === 'separate') {
+              tokenReceipt = await template.newToken(TOKEN_NAME, TOKEN_SYMBOL, { from: owner })
               if (installPayroll) {
-                // TODO
+                instanceReceipt = await template.newInstanceWithPayroll(daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, PAYROLL_SETTINGS, { from: owner })
               }
               else {
-                tokenReceipt = await template.newToken(TOKEN_NAME, TOKEN_SYMBOL, { from: owner })
                 instanceReceipt = await template.newInstance(daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, { from: owner })
               }
             }
@@ -251,6 +256,14 @@ contract('Company', ([_, owner, holder1, holder2]) => {
 
             await assertRole(acl, vault, voting, 'TRANSFER_ROLE', finance)
           })
+        })
+
+        context('when installing the payroll app', () => {
+          itHandlesInstanceCreationsProperly(false, true)
+
+          it.only('description', async () => {
+            console.log(`here`);
+          });
         })
 
       })
