@@ -48,7 +48,7 @@ contract ReputationTemplate is BaseTemplate {
     }
 
     function newInstance(string _id, address[] _holders, uint256[] _stakes, uint64[3] _votingSettings, uint64 _financePeriod, bool _useAgentAsVault)
-        public 
+        public
     {
         require(_holders.length > 0, ERROR_EMPTY_HOLDERS);
         require(_holders.length == _stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);

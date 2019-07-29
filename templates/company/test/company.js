@@ -94,7 +94,7 @@ contract('Company', ([_, owner, holder1, holder2]) => {
 
         const itHandlesInstanceCreationsProperly = (useAgentAsVault) => {
           // Test when the organization is created with an Agent app or a Vault app
-          
+
           before('build dao ID', () => {
             daoID = randomId()
           })
