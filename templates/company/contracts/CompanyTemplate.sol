@@ -1,13 +1,17 @@
 pragma solidity 0.4.24;
 
 import "@aragon/templates-shared/contracts/BaseTemplate.sol";
+import "@aragon/os/contracts/common/Uint256Helpers.sol";
 
 
 contract CompanyTemplate is BaseTemplate {
+    using Uint256Helpers for uint256;
+
     string constant private ERROR_MISSING_TOKEN_CACHE = "COMPANY_MISSING_TOKEN_CACHE";
     string constant private ERROR_EMPTY_HOLDERS = "COMPANY_EMPTY_HOLDERS";
     string constant private ERROR_BAD_HOLDERS_STAKES_LEN = "COMPANY_BAD_HOLDERS_STAKES_LEN";
     string constant private ERROR_BAD_VOTE_SETTINGS = "COMPANY_BAD_VOTE_SETTINGS";
+    string constant private ERROR_BAD_PAYROLL_SETTINGS = "COMPANY_BAD_PAYROLL_SETTINGS";
 
     bool constant private TOKEN_TRANSFERABLE = true;
     uint8 constant private TOKEN_DECIMALS = uint8(18);
@@ -41,6 +45,23 @@ contract CompanyTemplate is BaseTemplate {
         newInstance(_id, _holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault);
     }
 
+    function newTokenAndInstance(
+        string _tokenName,
+        string _tokenSymbol,
+        string _id,
+        address[] _holders,
+        uint256[] _stakes,
+        uint64[3] _votingSettings, /* supportRequired, minAcceptanceQuorum, voteDuration */
+        uint64 _financePeriod,
+        bool _useAgentAsVault,
+        uint256[3] _payrollSettings /* address denominationToken , IFeed priceFeed, uint64 rateExpiryTime */
+    )
+        external
+    {
+        newToken(_tokenName, _tokenSymbol);
+        newInstance(_id, _holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault, _payrollSettings);
+    }
+
     function newToken(string _name, string _symbol) public returns (MiniMeToken) {
         MiniMeToken token = _createToken(_name, _symbol, TOKEN_DECIMALS);
         _cacheToken(token, msg.sender);
@@ -48,32 +69,58 @@ contract CompanyTemplate is BaseTemplate {
     }
 
     function newInstance(string _id, address[] _holders, uint256[] _stakes, uint64[3] _votingSettings, uint64 _financePeriod, bool _useAgentAsVault) public {
-        require(_holders.length > 0, ERROR_EMPTY_HOLDERS);
-        require(_holders.length == _stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
-        require(_votingSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
-        MiniMeToken token = _popTokenCache(msg.sender);
-
-        // Create DAO and install apps
+        _verifyCompanyParameters(_holders, _stakes, _votingSettings);
         (Kernel dao, ACL acl) = _createDAO();
-        Vault agentOrVault = _useAgentAsVault ? _installDefaultAgentApp(dao) : _installVaultApp(dao);
-        Finance finance = _installFinanceApp(dao, agentOrVault, _financePeriod == 0 ? DEFAULT_FINANCE_PERIOD : _financePeriod);
-        TokenManager tokenManager = _installTokenManagerApp(dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
-        Voting voting = _installVotingApp(dao, token, _votingSettings[0], _votingSettings[1], _votingSettings[2]);
-
-        // Mint tokens
-        _mintTokens(acl, tokenManager, _holders, _stakes);
-
-        _setupPermissions(dao, acl, agentOrVault, voting, finance, tokenManager, _useAgentAsVault);
-
+        _setupApps(dao, acl, _holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault);
         _registerID(_id, dao);
     }
 
-    function _mintTokens(ACL _acl, TokenManager _tokenManager, address[] _holders, uint256[] _stakes) internal {
-        _createPermissionForTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
-        for (uint256 i = 0; i < _holders.length; i++) {
-            _tokenManager.mint(_holders[i], _stakes[i]);
-        }
-        _removePermissionFromTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
+    function newInstance(
+        string _id,
+        address[] _holders,
+        uint256[] _stakes,
+        uint64[3] _votingSettings,
+        uint64 _financePeriod,
+        bool _useAgentAsVault,
+        uint256[3] _payrollSettings /* address denominationToken , IFeed priceFeed, uint64 rateExpiryTime */
+    )
+        public
+    {
+        _verifyCompanyParameters(_holders, _stakes, _votingSettings);
+        require(_payrollSettings.length == 3, ERROR_BAD_PAYROLL_SETTINGS);
+
+        (Kernel dao, ACL acl) = _createDAO();
+        (Finance finance, Voting voting) = _setupApps(dao, acl, _holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault);
+        _setupPayrollApp(dao, acl, _payrollSettings, finance, voting);
+        _registerID(_id, dao);
+    }
+
+    function _verifyCompanyParameters(address[] _holders, uint256[] _stakes, uint64[3] _votingSettings) internal {
+        require(_holders.length > 0, ERROR_EMPTY_HOLDERS);
+        require(_holders.length == _stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
+        require(_votingSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
+    }
+
+    function _setupApps(Kernel _dao, ACL _acl, address[] _holders, uint256[] _stakes, uint64[3] _votingSettings, uint64 _financePeriod, bool _useAgentAsVault) internal returns(Finance, Voting) {
+        MiniMeToken token = _popTokenCache(msg.sender);
+        Vault agentOrVault = _useAgentAsVault ? _installDefaultAgentApp(_dao) : _installVaultApp(_dao);
+        Finance finance = _installFinanceApp(_dao, agentOrVault, _financePeriod == 0 ? DEFAULT_FINANCE_PERIOD : _financePeriod);
+        TokenManager tokenManager = _installTokenManagerApp(_dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
+        Voting voting = _installVotingApp(_dao, token, _votingSettings[0], _votingSettings[1], _votingSettings[2]);
+
+        _mintTokens(_acl, tokenManager, _holders, _stakes);
+        _setupPermissions(_dao, _acl, agentOrVault, voting, finance, tokenManager, _useAgentAsVault);
+
+        return (finance, voting);
+    }
+
+    function _setupPayrollApp(Kernel _dao, ACL _acl, uint256[3] _payrollSettings, Finance _finance, Voting _voting) internal {
+        address denominationToken = _toAddress(_payrollSettings[0]);
+        IFeed priceFeed = IFeed(_toAddress(_payrollSettings[1]));
+        uint64 rateExpiryTime = _payrollSettings[2].toUint64();
+
+        Payroll payroll = _installPayrollApp(_dao, _finance, denominationToken, priceFeed, rateExpiryTime);
+        _createPayrollPermissions(_acl, payroll, _voting, _voting);
     }
 
     function _setupPermissions(Kernel _dao, ACL _acl, Vault _agentOrVault, Voting _voting, Finance _finance, TokenManager _tokenManager, bool _useAgentAsVault) internal {

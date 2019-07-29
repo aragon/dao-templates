@@ -92,7 +92,7 @@ contract('Company', ([_, owner, holder1, holder2]) => {
 
       context('when the creation succeeds', () => {
 
-        const itHandlesInstanceCreationsProperly = (useAgentAsVault) => {
+        const itHandlesInstanceCreationsProperly = (useAgentAsVault, installPayroll) => {
           // Test when the organization is created with an Agent app or a Vault app
 
           before('build dao ID', () => {
@@ -101,11 +101,21 @@ contract('Company', ([_, owner, holder1, holder2]) => {
 
           before('create company entity', async () => {
             if (creationStyle === 'single') {
-              instanceReceipt = await template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, { from: owner })
-              tokenReceipt = instanceReceipt
+              if (installPayroll) {
+                // TODO
+              }
+              else {
+                instanceReceipt = await template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, { from: owner })
+                tokenReceipt = instanceReceipt
+              }
             } else if (creationStyle === 'separate') {
-              tokenReceipt = await template.newToken(TOKEN_NAME, TOKEN_SYMBOL, { from: owner })
-              instanceReceipt = await template.newInstance(daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, { from: owner })
+              if (installPayroll) {
+                // TODO
+              }
+              else {
+                tokenReceipt = await template.newToken(TOKEN_NAME, TOKEN_SYMBOL, { from: owner })
+                instanceReceipt = await template.newInstance(daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, { from: owner })
+              }
             }
 
             dao = Kernel.at(getEventArgument(instanceReceipt, 'DeployDao', 'dao'))
