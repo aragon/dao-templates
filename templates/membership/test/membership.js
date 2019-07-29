@@ -58,7 +58,7 @@ contract('Membership', ([_, owner, member1, member2]) => {
 
         if (creationStyle === 'single') {
           it('reverts when no members were given', async () => {
-            await assertRevert(template.newTokenAndInstance.request(daoID, [], TOKEN_NAME, TOKEN_SYMBOL, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'MEMBERSHIP_MISSING_MEMBERS')
+            await assertRevert(template.newTokenAndInstance.request(TOKEN_NAME, TOKEN_SYMBOL, daoID, [], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'MEMBERSHIP_MISSING_MEMBERS')
           })
         } else if (creationStyle === 'separate') {
           context('when there was no token created before', () => {
@@ -90,7 +90,7 @@ contract('Membership', ([_, owner, member1, member2]) => {
 
           before('create membership entity', async () => {
             if (creationStyle === 'single') {
-              instanceReceipt = await template.newTokenAndInstance(daoID, MEMBERS, TOKEN_NAME, TOKEN_SYMBOL, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, { from: owner })
+              instanceReceipt = await template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, daoID, MEMBERS, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, { from: owner })
               tokenReceipt = instanceReceipt
             } else if (creationStyle === 'separate') {
               tokenReceipt = await template.newToken(TOKEN_NAME, TOKEN_SYMBOL, { from: owner })

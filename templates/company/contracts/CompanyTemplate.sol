@@ -26,15 +26,15 @@ contract CompanyTemplate is BaseTemplate {
     }
 
     function newTokenAndInstance(
-        string _id, 
-        address[] _holders, 
-        uint256[] _stakes, 
-        string _tokenName, 
+        string _tokenName,
         string _tokenSymbol,
+        string _id,
+        address[] _holders,
+        uint256[] _stakes,
         uint64[3] _votingSettings, /* supportRequired, minAcceptanceQuorum, voteDuration */
         uint64 _financePeriod,
         bool _useAgentAsVault
-    ) 
+    )
         external
     {
         newToken(_tokenName, _tokenSymbol);

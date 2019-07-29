@@ -25,15 +25,15 @@ contract MembershipTemplate is BaseTemplate {
     }
 
     function newTokenAndInstance(
-        string _id, 
-        address[] _members, 
-        string _tokenName, 
-        string _tokenSymbol, 
+        string _tokenName,
+        string _tokenSymbol,
+        string _id,
+        address[] _members,
         uint64[3] _votingSettings, /* supportRequired, minAcceptanceQuorum, voteDuration */
         uint64 _financePeriod,
         bool _useAgentAsVault
-    ) 
-        external 
+    )
+        external
     {
         newToken(_tokenName, _tokenSymbol);
         newInstance(_id, _members, _votingSettings, _financePeriod, _useAgentAsVault);

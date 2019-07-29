@@ -59,12 +59,12 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
 
         if (creationStyle === 'single') {
           it('reverts when no holders were given', async () => {
-            await assertRevert(template.newTokenAndInstance.request(daoID, [], [], TOKEN_NAME, TOKEN_SYMBOL, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'REPUTATION_EMPTY_HOLDERS')
+            await assertRevert(template.newTokenAndInstance.request(TOKEN_NAME, TOKEN_SYMBOL, daoID, [], [], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'REPUTATION_EMPTY_HOLDERS')
           })
 
           it('reverts when holders and stakes length do not match', async () => {
-            await assertRevert(template.newTokenAndInstance.request(daoID, [holder1], STAKES, TOKEN_NAME, TOKEN_SYMBOL, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
-            await assertRevert(template.newTokenAndInstance.request(daoID, HOLDERS, [1e18], TOKEN_NAME, TOKEN_SYMBOL, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
+            await assertRevert(template.newTokenAndInstance.request(TOKEN_NAME, TOKEN_SYMBOL, daoID, [holder1], STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
+            await assertRevert(template.newTokenAndInstance.request(TOKEN_NAME, TOKEN_SYMBOL, daoID, HOLDERS, [1e18], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
           })
         } else if (creationStyle === 'separate') {
           context('when there was no token created before', () => {
@@ -100,7 +100,7 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
 
           before('create reputation entity', async () => {
             if (creationStyle === 'single') {
-              instanceReceipt = await template.newTokenAndInstance(daoID, HOLDERS, STAKES, TOKEN_NAME, TOKEN_SYMBOL, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, { from: owner })
+              instanceReceipt = await template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, { from: owner })
               tokenReceipt = instanceReceipt
             } else if (creationStyle === 'separate') {
               tokenReceipt = await template.newToken(TOKEN_NAME, TOKEN_SYMBOL, { from: owner })
