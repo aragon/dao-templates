@@ -71,7 +71,8 @@ contract CompanyTemplate is BaseTemplate {
     function newInstance(string _id, address[] _holders, uint256[] _stakes, uint64[3] _votingSettings, uint64 _financePeriod, bool _useAgentAsVault) public {
         _verifyCompanyParameters(_holders, _stakes, _votingSettings);
         (Kernel dao, ACL acl) = _createDAO();
-        _setupApps(dao, acl, _holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault);
+        (, Voting voting) = _setupApps(dao, acl, _holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault);
+        _transferRootPermissionsFromTemplate(dao, voting);
         _registerID(_id, dao);
     }
 
@@ -92,6 +93,7 @@ contract CompanyTemplate is BaseTemplate {
         (Kernel dao, ACL acl) = _createDAO();
         (Finance finance, Voting voting) = _setupApps(dao, acl, _holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault);
         _setupPayrollApp(dao, acl, _payrollSettings, finance, voting);
+        _transferRootPermissionsFromTemplate(dao, voting);
         _registerID(_id, dao);
     }
 
@@ -132,7 +134,6 @@ contract CompanyTemplate is BaseTemplate {
         _createEvmScriptsRegistryPermissions(_acl, _voting, _voting);
         _createCustomVotingPermissions(_acl, _voting, _tokenManager);
         _createCustomTokenManagerPermissions(_acl, _tokenManager, _voting);
-        _transferRootPermissionsFromTemplate(_dao, _voting);
     }
 
     function _createCustomVotingPermissions(ACL _acl, Voting _voting, TokenManager _tokenManager) internal {

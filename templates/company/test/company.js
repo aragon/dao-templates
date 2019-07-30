@@ -15,6 +15,7 @@ const Kernel = artifacts.require('Kernel')
 const Agent = artifacts.require('Agent')
 const Vault = artifacts.require('Vault')
 const Voting = artifacts.require('Voting')
+const Payroll = artifacts.require('Payroll')
 const Finance = artifacts.require('Finance')
 const TokenManager = artifacts.require('TokenManager')
 const MiniMeToken = artifacts.require('MiniMeToken')
@@ -37,9 +38,7 @@ contract('Company', ([_, owner, holder1, holder2]) => {
   const MIN_ACCEPTANCE_QUORUM = 5e16
   const VOTING_SETTINGS = [SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION]
   const PAYROLL_DENOMINATION_TOKEN = '0x0000000000000000000000000000000000000000'
-  const PAYROLL_PRICE_FEED = '0x0000000000000000000000000000000000000000';
   const PAYROLL_RATE_EXPIRY_TIME = 2 * 31 * 24 * 60 * 60;
-  const PAYROLL_SETTINGS = [PAYROLL_DENOMINATION_TOKEN, PAYROLL_PRICE_FEED, PAYROLL_RATE_EXPIRY_TIME]
 
   const DEFAULT_FINANCE_PERIOD = 0 // When passed to template, will set 30 days as default
   const FINANCE_PERIOD = 60 * 60 * 24 * 30
@@ -94,7 +93,7 @@ contract('Company', ([_, owner, holder1, holder2]) => {
         }
       })
 
-      context.only('when the creation succeeds', () => {
+      context('when the creation succeeds', () => {
 
         const itHandlesInstanceCreationsProperly = (useAgentAsVault, installPayroll) => {
           // Test when the organization is created with an Agent app or a Vault app
@@ -104,9 +103,11 @@ contract('Company', ([_, owner, holder1, holder2]) => {
           })
 
           before('create company entity', async () => {
+            const dummyPayrollFeed = template.address;
+            const payrollSettings = [PAYROLL_DENOMINATION_TOKEN, dummyPayrollFeed, PAYROLL_RATE_EXPIRY_TIME];
             if (creationStyle === 'single') {
               if (installPayroll) {
-                instanceReceipt = await template.newTokenAndInstanceWithPayroll(TOKEN_NAME, TOKEN_SYMBOL, daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, PAYROLL_SETTINGS, { from: owner })
+                instanceReceipt = await template.newTokenAndInstanceWithPayroll(TOKEN_NAME, TOKEN_SYMBOL, daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, payrollSettings, { from: owner, gas: 8000000 })
                 tokenReceipt = instanceReceipt
               }
               else {
@@ -116,7 +117,7 @@ contract('Company', ([_, owner, holder1, holder2]) => {
             } else if (creationStyle === 'separate') {
               tokenReceipt = await template.newToken(TOKEN_NAME, TOKEN_SYMBOL, { from: owner })
               if (installPayroll) {
-                instanceReceipt = await template.newInstanceWithPayroll(daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, PAYROLL_SETTINGS, { from: owner })
+                instanceReceipt = await template.newInstanceWithPayroll(daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, payrollSettings, { from: owner })
               }
               else {
                 instanceReceipt = await template.newInstance(daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, { from: owner })
@@ -149,14 +150,27 @@ contract('Company', ([_, owner, holder1, holder2]) => {
             voting = Voting.at(installedApps.voting[0])
             finance = Finance.at(installedApps.finance[0])
             tokenManager = TokenManager.at(installedApps['token-manager'][0])
+            if (installPayroll) {
+              payroll = Payroll.at(installedApps.payroll[0])
+            }
           })
 
-          it('costs ~6.9e6 gas', async () => {
+          it('costs ~6.9e6 gas (+ 0.9e6 if installing payroll)', async () => {
             if (creationStyle === 'single') {
-              assert.isAtMost(instanceReceipt.receipt.gasUsed, 6.8e6, 'create script should cost almost 6.8e6 gas')
+              if (installPayroll) {
+                assert.isAtMost(instanceReceipt.receipt.gasUsed, 7.7e6, 'create script should cost almost 7.7e6 gas')
+              }
+              else {
+                assert.isAtMost(instanceReceipt.receipt.gasUsed, 6.8e6, 'create script should cost almost 6.8e6 gas')
+              }
             } else if (creationStyle === 'separate') {
               assert.isAtMost(tokenReceipt.receipt.gasUsed, 1.8e6, 'create token script should cost almost 1.8e6 gas')
-              assert.isAtMost(instanceReceipt.receipt.gasUsed, 5.1e6, 'create instance script should cost almost 5e6 gas')
+              if (installPayroll) {
+                assert.isAtMost(instanceReceipt.receipt.gasUsed, 6.0e6, 'create instance script should cost almost 6e6 gas')
+              }
+              else {
+                assert.isAtMost(instanceReceipt.receipt.gasUsed, 5.1e6, 'create instance script should cost almost 5e6 gas')
+              }
             }
           })
 
@@ -261,9 +275,22 @@ contract('Company', ([_, owner, holder1, holder2]) => {
         context('when installing the payroll app', () => {
           itHandlesInstanceCreationsProperly(false, true)
 
-          it.only('description', async () => {
-            console.log(`here`);
-          });
+          it('should have payroll app correctly setup', async () => {
+            assert.isTrue(await payroll.hasInitialized(), 'payroll not initialized')
+            assert.equal(await payroll.denominationToken(), PAYROLL_DENOMINATION_TOKEN)
+            assert.equal(await payroll.feed(), template.address)
+            assert.equal(await payroll.rateExpiryTime(), PAYROLL_RATE_EXPIRY_TIME)
+            assert.equal(web3.toChecksumAddress(await payroll.finance()), finance.address)
+
+            await assertRole(acl, payroll, voting, 'ADD_BONUS_ROLE')
+            await assertRole(acl, payroll, voting, 'ADD_EMPLOYEE_ROLE')
+            await assertRole(acl, payroll, voting, 'ADD_REIMBURSEMENT_ROLE')
+            await assertRole(acl, payroll, voting, 'MODIFY_PRICE_FEED_ROLE')
+            await assertRole(acl, payroll, voting, 'MODIFY_RATE_EXPIRY_ROLE')
+            await assertRole(acl, payroll, voting, 'TERMINATE_EMPLOYEE_ROLE')
+            await assertRole(acl, payroll, voting, 'SET_EMPLOYEE_SALARY_ROLE')
+            await assertRole(acl, payroll, voting, 'MANAGE_ALLOWED_TOKENS_ROLE')
+          })
         })
 
       })

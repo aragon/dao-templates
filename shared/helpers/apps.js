@@ -4,6 +4,7 @@ const APPS = [
   { name: 'agent', contractName: 'Agent' },
   { name: 'vault', contractName: 'Vault' },
   { name: 'voting', contractName: 'Voting' },
+  { name: 'payroll', contractName: 'Payroll' },
   { name: 'finance', contractName: 'Finance' },
   { name: 'token-manager', contractName: 'TokenManager' },
 ]
