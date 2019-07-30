@@ -6,6 +6,7 @@ const APPS = [
   { name: 'voting', contractName: 'Voting' },
   { name: 'finance', contractName: 'Finance' },
   { name: 'token-manager', contractName: 'TokenManager' },
+  { name: 'survey', contractName: 'Survey' },
 ]
 
 const APP_IDS = APPS.reduce((ids, { name }) => {
