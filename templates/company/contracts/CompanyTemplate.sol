@@ -45,23 +45,6 @@ contract CompanyTemplate is BaseTemplate {
         newInstance(_id, _holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault);
     }
 
-    function newTokenAndInstance(
-        string _tokenName,
-        string _tokenSymbol,
-        string _id,
-        address[] _holders,
-        uint256[] _stakes,
-        uint64[3] _votingSettings, /* supportRequired, minAcceptanceQuorum, voteDuration */
-        uint64 _financePeriod,
-        bool _useAgentAsVault,
-        uint256[3] _payrollSettings /* address denominationToken , IFeed priceFeed, uint64 rateExpiryTime */
-    )
-        external
-    {
-        newToken(_tokenName, _tokenSymbol);
-        newInstance(_id, _holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault, _payrollSettings);
-    }
-
     function newToken(string _name, string _symbol) public returns (MiniMeToken) {
         MiniMeToken token = _createToken(_name, _symbol, TOKEN_DECIMALS);
         _cacheToken(token, msg.sender);
