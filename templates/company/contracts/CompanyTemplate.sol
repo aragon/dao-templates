@@ -45,7 +45,7 @@ contract CompanyTemplate is BaseTemplate {
         newInstance(_id, _holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault);
     }
 
-    function newTokenAndInstanceWithPayroll(
+    function newTokenAndInstance(
         string _tokenName,
         string _tokenSymbol,
         string _id,
@@ -59,7 +59,7 @@ contract CompanyTemplate is BaseTemplate {
         external
     {
         newToken(_tokenName, _tokenSymbol);
-        newInstanceWithPayroll(_id, _holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault, _payrollSettings);
+        newInstance(_id, _holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault, _payrollSettings);
     }
 
     function newToken(string _name, string _symbol) public returns (MiniMeToken) {
@@ -76,7 +76,7 @@ contract CompanyTemplate is BaseTemplate {
         _registerID(_id, dao);
     }
 
-    function newInstanceWithPayroll(
+    function newInstance(
         string _id,
         address[] _holders,
         uint256[] _stakes,
