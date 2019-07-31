@@ -27,7 +27,7 @@ module.exports = web3 => {
     }
   }
 
-  async function assertRevertGeth(template, requestOrTx, reason) {
+  async function assertRevertGeth(truffleInstance, requestOrTx, reason) {
     const tx = requestOrTx.hasOwnProperty('method') ? requestOrTx.params[0] : requestOrTx
     assert.isTrue(await transactionWillRevert(tx), 'Transaction should revert')
 
@@ -37,11 +37,11 @@ module.exports = web3 => {
     assert.equal(reasonFound, reason, `Revert reason '${reason}' not found. Found '${reasonFound}' instead.` )
   }
 
-  async function assertRevertGanache(template, requestOrTx, reason) {
+  async function assertRevertGanache(truffleInstance, requestOrTx, reason) {
     const tx = requestOrTx.hasOwnProperty('method') ? requestOrTx.params[0] : requestOrTx
     if (!tx.from) tx.from = web3.eth.accounts[0]
     const { assertRevert } = require('@aragon/test-helpers/assertThrow')
-    await assertRevert(template.sendTransaction(tx), reason)
+    await assertRevert(truffleInstance.sendTransaction(tx), reason)
   }
 
   return isGanache() ? assertRevertGanache : assertRevertGeth

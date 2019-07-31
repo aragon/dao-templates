@@ -6,7 +6,6 @@ const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')
 const { getInstalledAppsById } = require('@aragon/templates-shared/helpers/events')(artifacts)
 const { assertRole, assertMissingRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
 const { encodeFunctionCall } = require('@aragon/templates-shared/helpers/abi')
-// const { assertRevert } = require('@aragon/test-helpers/assertThrow')
 const assertRevert = require('@aragon/templates-shared/helpers/assertRevert')(web3)
 
 const CompanyTemplate = artifacts.require('CompanyTemplate')
