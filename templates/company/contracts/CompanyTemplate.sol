@@ -104,7 +104,9 @@ contract CompanyTemplate is BaseTemplate {
         IFeed priceFeed = IFeed(_toAddress(_payrollSettings[1]));
         uint64 rateExpiryTime = _payrollSettings[2].toUint64();
         address employeeManager = _toAddress(_payrollSettings[3]);
-        if(employeeManager == 0x0) employeeManager = _voting;
+        if (employeeManager == 0x0) {
+            employeeManager = _voting;
+        }
 
         Payroll payroll = _installPayrollApp(_dao, _finance, denominationToken, priceFeed, rateExpiryTime);
         _createPayrollPermissions(_acl, payroll, employeeManager, _voting, _voting);
