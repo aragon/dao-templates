@@ -24,6 +24,14 @@ template.newInstance(id, holders, stakes, voteSettings, financePeriod, useAgentA
 - `financePeriod`: Initial duration for accounting periods
 - `useAgentAsVault`: Use an Agent app as a more advanced form of Vault app
 
+Alternatively, create a new company entity with a Payroll app:
+
+```
+template.newInstance(name, holders, stakes, voteSettings, financePeriod, useAgentAsVault, payrollSettings)
+```
+
+- `payrollSettings`: Array of [address denominationToken , IFeed priceFeed, uint64 rateExpiryTime, address employeeManager (set to voting if 0x0) ] for the Payroll app
+
 ## Deploying templates
 
 After deploying ENS, APM and AragonID, just run:

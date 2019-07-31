@@ -5,6 +5,7 @@ const { getEventArgument } = require('@aragon/test-helpers/events')
 const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
 const { getInstalledAppsById } = require('@aragon/templates-shared/helpers/events')(artifacts)
 const { assertRole, assertMissingRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
+const { encodeFunctionCall } = require('@aragon/templates-shared/helpers/abi')
 const assertRevert = require('@aragon/templates-shared/helpers/assertRevert')(web3)
 
 const ReputationTemplate = artifacts.require('ReputationTemplate')
@@ -15,6 +16,7 @@ const Kernel = artifacts.require('Kernel')
 const Agent = artifacts.require('Agent')
 const Vault = artifacts.require('Vault')
 const Voting = artifacts.require('Voting')
+const Payroll = artifacts.require('Payroll')
 const Finance = artifacts.require('Finance')
 const TokenManager = artifacts.require('TokenManager')
 const MiniMeToken = artifacts.require('MiniMeToken')
@@ -25,7 +27,7 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 contract('Reputation', ([_, owner, holder1, holder2]) => {
   let daoID, template, dao, acl, ens, tokenReceipt, instanceReceipt
-  let voting, tokenManager, token, finance, agent, vault
+  let voting, tokenManager, token, finance, agent, vault, payroll
 
   const HOLDERS = [holder1, holder2]
   const STAKES = [1e18, 2e18]
@@ -36,9 +38,25 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
   const SUPPORT_REQUIRED = 50e16
   const MIN_ACCEPTANCE_QUORUM = 20e16
   const VOTING_SETTINGS = [SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION]
+  const PAYROLL_DENOMINATION_TOKEN = '0x0000000000000000000000000000000000000abc'
+  const PAYROLL_RATE_EXPIRY_TIME = 2 * 31 * 24 * 60 * 60
 
   const DEFAULT_FINANCE_PERIOD = 0 // When passed to template, will set 30 days as default
   const FINANCE_PERIOD = 60 * 60 * 24 * 30
+
+  const NEW_INSTANCE_PARAMS = 'string,address[],uint256[],uint64[3],uint64,bool'
+  const NEW_INSTANCE_WITH_PAYROLL_PARAMS = 'string,address[],uint256[],uint64[3],uint64,bool,uint256[4]'
+
+  const newInstance = async (...params) => template.sendTransaction(newInstanceTx(...params))
+  const newInstanceTx = (...params) => {
+    const paramsSig = params.length === NEW_INSTANCE_PARAMS.split(',').length ? NEW_INSTANCE_PARAMS : NEW_INSTANCE_WITH_PAYROLL_PARAMS
+    const data = encodeFunctionCall(
+      `newInstance(${paramsSig})`,
+      paramsSig.split(','),
+      params
+    )
+    return {from: owner, to: template.address, data}
+  }
 
   before('fetch reputation template and ENS', async () => {
     const { registry, address } = await deployedAddresses()
@@ -69,7 +87,7 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
         } else if (creationStyle === 'separate') {
           context('when there was no token created before', () => {
             it('reverts', async () => {
-              await assertRevert(template, template.newInstance.request(daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'REPUTATION_MISSING_TOKEN_CACHE')
+              await assertRevert(template, newInstanceTx(daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'REPUTATION_MISSING_TOKEN_CACHE')
             })
           })
 
@@ -79,19 +97,19 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
             })
 
             it('reverts when no holders were given', async () => {
-              await assertRevert(template, template.newInstance.request(daoID, [], [], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'REPUTATION_EMPTY_HOLDERS')
+              await assertRevert(template, newInstanceTx(daoID, [], [], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'REPUTATION_EMPTY_HOLDERS')
             })
 
             it('reverts when holders and stakes length do not match', async () => {
-              await assertRevert(template, template.newInstance.request(daoID, [holder1], STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
-              await assertRevert(template, template.newInstance.request(daoID, HOLDERS, [1e18], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
+              await assertRevert(template, newInstanceTx(daoID, [holder1], STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
+              await assertRevert(template, newInstanceTx(daoID, HOLDERS, [1e18], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
             })
           })
         }
       })
 
       context('when the creation succeeds', () => {
-        const itHandlesInstanceCreationsProperly = (useAgentAsVault) => {
+        const itHandlesInstanceCreationsProperly = (useAgentAsVault, installPayroll, useOwnerAsEmployeeManager) => {
           // Test when the organization is created with an Agent app or a Vault app
 
           before('build dao ID', () => {
@@ -104,7 +122,15 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
               tokenReceipt = instanceReceipt
             } else if (creationStyle === 'separate') {
               tokenReceipt = await template.newToken(TOKEN_NAME, TOKEN_SYMBOL, { from: owner })
-              instanceReceipt = await template.newInstance(daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, { from: owner })
+              if (installPayroll) {
+                const dummyPayrollFeed = template.address
+                const employeeManager = useOwnerAsEmployeeManager ? owner : ZERO_ADDRESS
+                const payrollSettings = [PAYROLL_DENOMINATION_TOKEN, dummyPayrollFeed, PAYROLL_RATE_EXPIRY_TIME, employeeManager]
+                instanceReceipt = await newInstance(daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, payrollSettings)
+              }
+              else {
+                instanceReceipt = await newInstance(daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault)
+              }
             }
 
             dao = Kernel.at(getEventArgument(instanceReceipt, 'DeployDao', 'dao'))
@@ -133,6 +159,9 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
             voting = Voting.at(installedApps.voting[0])
             finance = Finance.at(installedApps.finance[0])
             tokenManager = TokenManager.at(installedApps['token-manager'][0])
+            if (installPayroll) {
+              payroll = Payroll.at(installedApps.payroll[0])
+            }
           })
 
           it('costs ~7e6 gas', async () => {
@@ -140,7 +169,12 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
               assert.isAtMost(instanceReceipt.receipt.gasUsed, 6.8e6, 'create script should cost almost 6.8e6 gas')
             } else if (creationStyle === 'separate') {
               assert.isAtMost(tokenReceipt.receipt.gasUsed, 1.8e6, 'create token script should cost almost 1.8e6 gas')
-              assert.isAtMost(instanceReceipt.receipt.gasUsed, 5.2e6, 'create instance script should cost almost 5.2e6 gas')
+              if (installPayroll) {
+                assert.isAtMost(instanceReceipt.receipt.gasUsed, 6.2e6, 'create instance script should cost almost 6.2e6 gas')
+              }
+              else {
+                assert.isAtMost(instanceReceipt.receipt.gasUsed, 5.1e6, 'create instance script should cost almost 5.1e6 gas')
+              }
             }
           })
 
@@ -241,6 +275,64 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
             await assertRole(acl, vault, voting, 'TRANSFER_ROLE', finance)
           })
         })
+
+        if (creationStyle === 'separate') {
+          context('when installing the payroll', () => {
+
+            context('when using the voting app for employee management', () => {
+              itHandlesInstanceCreationsProperly(true, true, false)
+
+              it('should have payroll app correctly setup', async () => {
+                assert.isTrue(await payroll.hasInitialized(), 'payroll not initialized')
+                assert.equal(await payroll.denominationToken(), PAYROLL_DENOMINATION_TOKEN)
+                assert.equal(await payroll.feed(), template.address)
+                assert.equal(await payroll.rateExpiryTime(), PAYROLL_RATE_EXPIRY_TIME)
+                assert.equal(web3.toChecksumAddress(await payroll.finance()), finance.address)
+
+                const settingsManager = voting
+                const permissionsManager = voting
+
+                await assertRole(acl, payroll, permissionsManager, 'ADD_BONUS_ROLE', settingsManager)
+                await assertRole(acl, payroll, permissionsManager, 'ADD_EMPLOYEE_ROLE', settingsManager)
+                await assertRole(acl, payroll, permissionsManager, 'ADD_REIMBURSEMENT_ROLE', settingsManager)
+                await assertRole(acl, payroll, permissionsManager, 'TERMINATE_EMPLOYEE_ROLE', settingsManager)
+                await assertRole(acl, payroll, permissionsManager, 'SET_EMPLOYEE_SALARY_ROLE', settingsManager)
+
+                await assertRole(acl, payroll, permissionsManager, 'MODIFY_PRICE_FEED_ROLE', settingsManager)
+                await assertRole(acl, payroll, permissionsManager, 'MODIFY_RATE_EXPIRY_ROLE', settingsManager)
+                await assertRole(acl, payroll, permissionsManager, 'MANAGE_ALLOWED_TOKENS_ROLE', settingsManager)
+              })
+            })
+
+            context('when using msg.sender for employee management', () => {
+              itHandlesInstanceCreationsProperly(true, true, true)
+
+              it('should have payroll app correctly setup', async () => {
+                assert.isTrue(await payroll.hasInitialized(), 'payroll not initialized')
+                assert.equal(await payroll.denominationToken(), PAYROLL_DENOMINATION_TOKEN)
+                assert.equal(await payroll.feed(), template.address)
+                assert.equal(await payroll.rateExpiryTime(), PAYROLL_RATE_EXPIRY_TIME)
+                assert.equal(web3.toChecksumAddress(await payroll.finance()), finance.address)
+
+                const employer = { address: owner }
+                const settingsManager = voting
+                const permissionsManager = voting
+
+                await assertRole(acl, payroll, permissionsManager, 'ADD_BONUS_ROLE', employer)
+                await assertRole(acl, payroll, permissionsManager, 'ADD_EMPLOYEE_ROLE', employer)
+                await assertRole(acl, payroll, permissionsManager, 'ADD_REIMBURSEMENT_ROLE', employer)
+                await assertRole(acl, payroll, permissionsManager, 'TERMINATE_EMPLOYEE_ROLE', employer)
+                await assertRole(acl, payroll, permissionsManager, 'SET_EMPLOYEE_SALARY_ROLE', employer)
+
+                await assertRole(acl, payroll, permissionsManager, 'MODIFY_PRICE_FEED_ROLE', settingsManager)
+                await assertRole(acl, payroll, permissionsManager, 'MODIFY_RATE_EXPIRY_ROLE', settingsManager)
+                await assertRole(acl, payroll, permissionsManager, 'MANAGE_ALLOWED_TOKENS_ROLE', settingsManager)
+              })
+            })
+
+          })
+        }
+
       })
     })
   }

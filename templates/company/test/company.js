@@ -27,7 +27,7 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 contract('Company', ([_, owner, holder1, holder2]) => {
   let daoID, template, dao, acl, ens, instanceReceipt, tokenReceipt
-  let voting, tokenManager, token, finance, agent, vault
+  let voting, tokenManager, token, finance, agent, vault, payroll
 
   const HOLDERS = [holder1, holder2]
   const STAKES = HOLDERS.map(() => 1e18)
@@ -57,7 +57,6 @@ contract('Company', ([_, owner, holder1, holder2]) => {
     )
     return {from: owner, to: template.address, data}
   }
-
 
   before('fetch company template and ENS', async () => {
     const { registry, address } = await deployedAddresses()
