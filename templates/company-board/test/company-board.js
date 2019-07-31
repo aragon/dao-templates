@@ -59,7 +59,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
     context('when there was no instance prepared before', () => {
       it('reverts', async () => {
-        await assertRevert(template.setupInstance.request(
+        await assertRevert(template, template.setupInstance.request(
           daoID,
           BOARD_MEMBERS,
           SHARE_HOLDERS,
@@ -78,7 +78,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
       })
 
       it('reverts when no board members were given', async () => {
-        await assertRevert(template.setupInstance.request(
+        await assertRevert(template, template.setupInstance.request(
           daoID,
           [],
           SHARE_HOLDERS,
@@ -91,7 +91,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
       })
 
       it('reverts when no share members were given', async () => {
-        await assertRevert(template.setupInstance.request(
+        await assertRevert(template, template.setupInstance.request(
           daoID,
           BOARD_MEMBERS,
           [],
@@ -104,7 +104,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
       })
 
       it('reverts when number of shared members and stakes do not match', async () => {
-        await assertRevert(template.setupInstance.request(
+        await assertRevert(template, template.setupInstance.request(
           daoID,
           BOARD_MEMBERS,
           [shareHolder1],
@@ -115,7 +115,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
           true
         ), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
 
-        await assertRevert(template.setupInstance.request(
+        await assertRevert(template, template.setupInstance.request(
           daoID,
           BOARD_MEMBERS,
           SHARE_HOLDERS,

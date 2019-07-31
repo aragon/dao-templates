@@ -6,7 +6,8 @@ const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')
 const { getInstalledAppsById } = require('@aragon/templates-shared/helpers/events')(artifacts)
 const { assertRole, assertMissingRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
 const { encodeFunctionCall } = require('@aragon/templates-shared/helpers/abi')
-const { assertRevert } = require('@aragon/test-helpers/assertThrow')
+// const { assertRevert } = require('@aragon/test-helpers/assertThrow')
+const assertRevert = require('@aragon/templates-shared/helpers/assertRevert')(web3)
 
 const CompanyTemplate = artifacts.require('CompanyTemplate')
 
@@ -47,15 +48,17 @@ contract('Company', ([_, owner, holder1, holder2]) => {
   const NEW_INSTANCE_PARAMS = 'string,address[],uint256[],uint64[3],uint64,bool'
   const NEW_INSTANCE_WITH_PAYROLL_PARAMS = 'string,address[],uint256[],uint64[3],uint64,bool,uint256[3]'
 
-  const newInstance = async (...params) => {
+  const newInstance = async (...params) => template.sendTransaction(newInstanceTx(...params))
+  const newInstanceTx = (...params) => {
     const paramsSig = params.length === NEW_INSTANCE_PARAMS.split(',').length ? NEW_INSTANCE_PARAMS : NEW_INSTANCE_WITH_PAYROLL_PARAMS
     const data = encodeFunctionCall(
       `newInstance(${paramsSig})`,
       paramsSig.split(','),
       params
     )
-    return template.sendTransaction({from: owner, to: template.address, data})
+    return {from: owner, to: template.address, data}
   }
+
 
   before('fetch company template and ENS', async () => {
     const { registry, address } = await deployedAddresses()
@@ -76,17 +79,17 @@ contract('Company', ([_, owner, holder1, holder2]) => {
 
         if (creationStyle === 'single') {
           it('reverts when no holders were given', async () => {
-            await assertRevert(template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, daoID, [], [], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'COMPANY_EMPTY_HOLDERS')
+            await assertRevert(template, template.newTokenAndInstance.request(TOKEN_NAME, TOKEN_SYMBOL, daoID, [], [], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'COMPANY_EMPTY_HOLDERS')
           })
 
           it('reverts when holders and stakes length do not match', async () => {
-            await assertRevert(template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, daoID, [holder1], STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
-            await assertRevert(template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, daoID, HOLDERS, [1e18], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
+            await assertRevert(template, template.newTokenAndInstance.request(TOKEN_NAME, TOKEN_SYMBOL, daoID, [holder1], STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
+            await assertRevert(template, template.newTokenAndInstance.request(TOKEN_NAME, TOKEN_SYMBOL, daoID, HOLDERS, [1e18], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
           })
         } else if (creationStyle === 'separate') {
           context('when there was no token created before', () => {
             it('reverts', async () => {
-              await assertRevert(newInstance(daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'COMPANY_MISSING_TOKEN_CACHE')
+              await assertRevert(template, newInstanceTx(daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'COMPANY_MISSING_TOKEN_CACHE')
             })
           })
 
@@ -96,12 +99,12 @@ contract('Company', ([_, owner, holder1, holder2]) => {
             })
 
             it('reverts when no holders were given', async () => {
-              await assertRevert(newInstance(daoID, [], [], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'COMPANY_EMPTY_HOLDERS')
+              await assertRevert(template, newInstanceTx(daoID, [], [], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'COMPANY_EMPTY_HOLDERS')
             })
 
             it('reverts when holders and stakes length do not match', async () => {
-              await assertRevert(newInstance(daoID, [holder1], STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
-              await assertRevert(newInstance(daoID, HOLDERS, [1e18], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
+              await assertRevert(template, newInstanceTx(daoID, [holder1], STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
+              await assertRevert(template, newInstanceTx(daoID, HOLDERS, [1e18], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
             })
           })
         }

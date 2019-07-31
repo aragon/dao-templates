@@ -58,12 +58,12 @@ contract('Membership', ([_, owner, member1, member2]) => {
 
         if (creationStyle === 'single') {
           it('reverts when no members were given', async () => {
-            await assertRevert(template.newTokenAndInstance.request(TOKEN_NAME, TOKEN_SYMBOL, daoID, [], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'MEMBERSHIP_MISSING_MEMBERS')
+            await assertRevert(template, template.newTokenAndInstance.request(TOKEN_NAME, TOKEN_SYMBOL, daoID, [], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'MEMBERSHIP_MISSING_MEMBERS')
           })
         } else if (creationStyle === 'separate') {
           context('when there was no token created before', () => {
             it('reverts', async () => {
-              await assertRevert(template.newInstance.request(daoID, MEMBERS, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'MEMBERSHIP_MISSING_TOKEN_CACHE')
+              await assertRevert(template, template.newInstance.request(daoID, MEMBERS, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'MEMBERSHIP_MISSING_TOKEN_CACHE')
             })
           })
 
@@ -73,7 +73,7 @@ contract('Membership', ([_, owner, member1, member2]) => {
             })
 
             it('reverts when no members were given', async () => {
-              await assertRevert(template.newInstance.request(daoID, [], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'MEMBERSHIP_MISSING_MEMBERS')
+              await assertRevert(template, template.newInstance.request(daoID, [], VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, true), 'MEMBERSHIP_MISSING_MEMBERS')
             })
           })
         }
