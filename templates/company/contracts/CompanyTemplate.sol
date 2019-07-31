@@ -66,12 +66,12 @@ contract CompanyTemplate is BaseTemplate {
         uint64[3] _votingSettings,
         uint64 _financePeriod,
         bool _useAgentAsVault,
-        uint256[3] _payrollSettings /* address denominationToken , IFeed priceFeed, uint64 rateExpiryTime */
+        uint256[4] _payrollSettings /* address denominationToken , IFeed priceFeed, uint64 rateExpiryTime, address employeeManager (set to voting if 0x0) */
     )
         public
     {
         _verifyCompanyParameters(_holders, _stakes, _votingSettings);
-        require(_payrollSettings.length == 3, ERROR_BAD_PAYROLL_SETTINGS);
+        require(_payrollSettings.length == 4, ERROR_BAD_PAYROLL_SETTINGS);
 
         (Kernel dao, ACL acl) = _createDAO();
         (Finance finance, Voting voting) = _setupApps(dao, acl, _holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault);
@@ -99,13 +99,15 @@ contract CompanyTemplate is BaseTemplate {
         return (finance, voting);
     }
 
-    function _setupPayrollApp(Kernel _dao, ACL _acl, uint256[3] _payrollSettings, Finance _finance, Voting _voting) internal {
+    function _setupPayrollApp(Kernel _dao, ACL _acl, uint256[4] _payrollSettings, Finance _finance, Voting _voting) internal {
         address denominationToken = _toAddress(_payrollSettings[0]);
         IFeed priceFeed = IFeed(_toAddress(_payrollSettings[1]));
         uint64 rateExpiryTime = _payrollSettings[2].toUint64();
+        address employeeManager = _toAddress(_payrollSettings[3]);
+        if(employeeManager == 0x0) employeeManager = _voting;
 
         Payroll payroll = _installPayrollApp(_dao, _finance, denominationToken, priceFeed, rateExpiryTime);
-        _createPayrollPermissions(_acl, payroll, _voting, _voting);
+        _createPayrollPermissions(_acl, payroll, employeeManager, _voting, _voting);
     }
 
     function _setupPermissions(Kernel _dao, ACL _acl, Vault _agentOrVault, Voting _voting, Finance _finance, TokenManager _tokenManager, bool _useAgentAsVault) internal {

@@ -140,15 +140,16 @@ contract BaseTemplate is APMNamehash, IsContract {
         return payroll;
     }
 
-    function _createPayrollPermissions(ACL _acl, Payroll _payroll, address _grantee, address _manager) internal {
-        _acl.createPermission(_grantee, _payroll, _payroll.ADD_BONUS_ROLE(), _manager);
-        _acl.createPermission(_grantee, _payroll, _payroll.ADD_EMPLOYEE_ROLE(), _manager);
-        _acl.createPermission(_grantee, _payroll, _payroll.ADD_REIMBURSEMENT_ROLE(), _manager);
-        _acl.createPermission(_grantee, _payroll, _payroll.MODIFY_PRICE_FEED_ROLE(), _manager);
-        _acl.createPermission(_grantee, _payroll, _payroll.MODIFY_RATE_EXPIRY_ROLE(), _manager);
-        _acl.createPermission(_grantee, _payroll, _payroll.TERMINATE_EMPLOYEE_ROLE(), _manager);
-        _acl.createPermission(_grantee, _payroll, _payroll.SET_EMPLOYEE_SALARY_ROLE(), _manager);
-        _acl.createPermission(_grantee, _payroll, _payroll.MANAGE_ALLOWED_TOKENS_ROLE(), _manager);
+    function _createPayrollPermissions(ACL _acl, Payroll _payroll, address _employeeManager, address _settingsManager, address _permissionsManager) internal {
+        _acl.createPermission(_employeeManager, _payroll, _payroll.ADD_BONUS_ROLE(), _permissionsManager);
+        _acl.createPermission(_employeeManager, _payroll, _payroll.ADD_EMPLOYEE_ROLE(), _permissionsManager);
+        _acl.createPermission(_employeeManager, _payroll, _payroll.ADD_REIMBURSEMENT_ROLE(), _permissionsManager);
+        _acl.createPermission(_employeeManager, _payroll, _payroll.TERMINATE_EMPLOYEE_ROLE(), _permissionsManager);
+        _acl.createPermission(_employeeManager, _payroll, _payroll.SET_EMPLOYEE_SALARY_ROLE(), _permissionsManager);
+
+        _acl.createPermission(_settingsManager, _payroll, _payroll.MODIFY_PRICE_FEED_ROLE(), _permissionsManager);
+        _acl.createPermission(_settingsManager, _payroll, _payroll.MODIFY_RATE_EXPIRY_ROLE(), _permissionsManager);
+        _acl.createPermission(_settingsManager, _payroll, _payroll.MANAGE_ALLOWED_TOKENS_ROLE(), _permissionsManager);
     }
 
     /* FINANCE */

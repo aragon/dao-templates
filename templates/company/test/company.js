@@ -45,7 +45,7 @@ contract('Company', ([_, owner, holder1, holder2]) => {
   const FINANCE_PERIOD = 60 * 60 * 24 * 30
 
   const NEW_INSTANCE_PARAMS = 'string,address[],uint256[],uint64[3],uint64,bool'
-  const NEW_INSTANCE_WITH_PAYROLL_PARAMS = 'string,address[],uint256[],uint64[3],uint64,bool,uint256[3]'
+  const NEW_INSTANCE_WITH_PAYROLL_PARAMS = 'string,address[],uint256[],uint64[3],uint64,bool,uint256[4]'
 
   const newInstance = async (...params) => template.sendTransaction(newInstanceTx(...params))
   const newInstanceTx = (...params) => {
@@ -111,7 +111,7 @@ contract('Company', ([_, owner, holder1, holder2]) => {
 
       context('when the creation succeeds', () => {
 
-        const itHandlesInstanceCreationsProperly = (useAgentAsVault, installPayroll) => {
+        const itHandlesInstanceCreationsProperly = (useAgentAsVault, installPayroll, useOwnerAsEmployeeManager) => {
           // Test when the organization is created with an Agent app or a Vault app
 
           before('build dao ID', () => {
@@ -126,7 +126,8 @@ contract('Company', ([_, owner, holder1, holder2]) => {
               tokenReceipt = await template.newToken(TOKEN_NAME, TOKEN_SYMBOL, { from: owner })
               if (installPayroll) {
                 const dummyPayrollFeed = template.address
-                const payrollSettings = [PAYROLL_DENOMINATION_TOKEN, dummyPayrollFeed, PAYROLL_RATE_EXPIRY_TIME]
+                const employeeManager = useOwnerAsEmployeeManager ? owner : ZERO_ADDRESS
+                const payrollSettings = [PAYROLL_DENOMINATION_TOKEN, dummyPayrollFeed, PAYROLL_RATE_EXPIRY_TIME, employeeManager]
                 instanceReceipt = await newInstance(daoID, HOLDERS, STAKES, VOTING_SETTINGS, DEFAULT_FINANCE_PERIOD, useAgentAsVault, payrollSettings)
               }
               else {
@@ -246,7 +247,7 @@ contract('Company', ([_, owner, holder1, holder2]) => {
         }
 
         context('when using an agent as vault', () => {
-          itHandlesInstanceCreationsProperly(true, false)
+          itHandlesInstanceCreationsProperly(true, false, false)
 
           it('should have agent app correctly setup', async () => {
             assert.isTrue(await agent.hasInitialized(), 'agent not initialized')
@@ -265,7 +266,7 @@ contract('Company', ([_, owner, holder1, holder2]) => {
         })
 
         context('when using a regular vault', () => {
-          itHandlesInstanceCreationsProperly(false, false)
+          itHandlesInstanceCreationsProperly(false, false, false)
 
           it('should have vault app correctly setup', async () => {
             assert.isTrue(await vault.hasInitialized(), 'vault not initialized')
@@ -278,25 +279,59 @@ contract('Company', ([_, owner, holder1, holder2]) => {
         })
 
         if (creationStyle === 'separate') {
-          context('when installing the payroll app', () => {
-            itHandlesInstanceCreationsProperly(true, true)
+          context('when installing the payroll', () => {
 
-            it('should have payroll app correctly setup', async () => {
-              assert.isTrue(await payroll.hasInitialized(), 'payroll not initialized')
-              assert.equal(await payroll.denominationToken(), PAYROLL_DENOMINATION_TOKEN)
-              assert.equal(await payroll.feed(), template.address)
-              assert.equal(await payroll.rateExpiryTime(), PAYROLL_RATE_EXPIRY_TIME)
-              assert.equal(web3.toChecksumAddress(await payroll.finance()), finance.address)
+            context('when using the voting app for employee management', () => {
+              itHandlesInstanceCreationsProperly(true, true, false)
 
-              await assertRole(acl, payroll, voting, 'ADD_BONUS_ROLE')
-              await assertRole(acl, payroll, voting, 'ADD_EMPLOYEE_ROLE')
-              await assertRole(acl, payroll, voting, 'ADD_REIMBURSEMENT_ROLE')
-              await assertRole(acl, payroll, voting, 'MODIFY_PRICE_FEED_ROLE')
-              await assertRole(acl, payroll, voting, 'MODIFY_RATE_EXPIRY_ROLE')
-              await assertRole(acl, payroll, voting, 'TERMINATE_EMPLOYEE_ROLE')
-              await assertRole(acl, payroll, voting, 'SET_EMPLOYEE_SALARY_ROLE')
-              await assertRole(acl, payroll, voting, 'MANAGE_ALLOWED_TOKENS_ROLE')
+              it('should have payroll app correctly setup', async () => {
+                assert.isTrue(await payroll.hasInitialized(), 'payroll not initialized')
+                assert.equal(await payroll.denominationToken(), PAYROLL_DENOMINATION_TOKEN)
+                assert.equal(await payroll.feed(), template.address)
+                assert.equal(await payroll.rateExpiryTime(), PAYROLL_RATE_EXPIRY_TIME)
+                assert.equal(web3.toChecksumAddress(await payroll.finance()), finance.address)
+
+                const settingsManager = voting
+                const permissionsManager = voting
+
+                await assertRole(acl, payroll, permissionsManager, 'ADD_BONUS_ROLE', settingsManager)
+                await assertRole(acl, payroll, permissionsManager, 'ADD_EMPLOYEE_ROLE', settingsManager)
+                await assertRole(acl, payroll, permissionsManager, 'ADD_REIMBURSEMENT_ROLE', settingsManager)
+                await assertRole(acl, payroll, permissionsManager, 'TERMINATE_EMPLOYEE_ROLE', settingsManager)
+                await assertRole(acl, payroll, permissionsManager, 'SET_EMPLOYEE_SALARY_ROLE', settingsManager)
+
+                await assertRole(acl, payroll, permissionsManager, 'MODIFY_PRICE_FEED_ROLE', settingsManager)
+                await assertRole(acl, payroll, permissionsManager, 'MODIFY_RATE_EXPIRY_ROLE', settingsManager)
+                await assertRole(acl, payroll, permissionsManager, 'MANAGE_ALLOWED_TOKENS_ROLE', settingsManager)
+              })
             })
+
+            context('when using msg.sender for employee management', () => {
+              itHandlesInstanceCreationsProperly(true, true, true)
+
+              it('should have payroll app correctly setup', async () => {
+                assert.isTrue(await payroll.hasInitialized(), 'payroll not initialized')
+                assert.equal(await payroll.denominationToken(), PAYROLL_DENOMINATION_TOKEN)
+                assert.equal(await payroll.feed(), template.address)
+                assert.equal(await payroll.rateExpiryTime(), PAYROLL_RATE_EXPIRY_TIME)
+                assert.equal(web3.toChecksumAddress(await payroll.finance()), finance.address)
+
+                const employer = { address: owner }
+                const settingsManager = voting
+                const permissionsManager = voting
+
+                await assertRole(acl, payroll, permissionsManager, 'ADD_BONUS_ROLE', employer)
+                await assertRole(acl, payroll, permissionsManager, 'ADD_EMPLOYEE_ROLE', employer)
+                await assertRole(acl, payroll, permissionsManager, 'ADD_REIMBURSEMENT_ROLE', employer)
+                await assertRole(acl, payroll, permissionsManager, 'TERMINATE_EMPLOYEE_ROLE', employer)
+                await assertRole(acl, payroll, permissionsManager, 'SET_EMPLOYEE_SALARY_ROLE', employer)
+
+                await assertRole(acl, payroll, permissionsManager, 'MODIFY_PRICE_FEED_ROLE', settingsManager)
+                await assertRole(acl, payroll, permissionsManager, 'MODIFY_RATE_EXPIRY_ROLE', settingsManager)
+                await assertRole(acl, payroll, permissionsManager, 'MANAGE_ALLOWED_TOKENS_ROLE', settingsManager)
+              })
+            })
+
           })
         }
 
