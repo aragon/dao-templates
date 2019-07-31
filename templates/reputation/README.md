@@ -24,7 +24,7 @@ template.newInstance(id, holders, stakes, voteSettings, financePeriod, useAgentA
 - `financePeriod`: Initial duration for accounting periods
 - `useAgentAsVault`: Use an Agent app as a more advanced form of Vault app
 
-Alternatively, create a new company entity with a Payroll app:
+Alternatively, create a new reputation entity with a Payroll app:
 
 ```
 template.newInstance(name, holders, stakes, voteSettings, financePeriod, useAgentAsVault, payrollSettings)

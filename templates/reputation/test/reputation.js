@@ -245,7 +245,7 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
         }
 
         context('when using an agent as vault', () => {
-          itHandlesInstanceCreationsProperly(true)
+          itHandlesInstanceCreationsProperly(true, false, false)
 
           it('should have agent app correctly setup', async () => {
             assert.isTrue(await agent.hasInitialized(), 'agent not initialized')
@@ -264,7 +264,7 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
         })
 
         context('when using a regular vault', () => {
-          itHandlesInstanceCreationsProperly(false)
+          itHandlesInstanceCreationsProperly(false, false, false)
 
           it('should have vault app correctly setup', async () => {
             assert.isTrue(await vault.hasInitialized(), 'vault not initialized')
