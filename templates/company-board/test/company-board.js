@@ -183,13 +183,13 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
         shareTokenManager = TokenManager.at(installedApps['token-manager'][1])
       })
 
-      it('costs ~10.4e6 gas', async () => {
+      it('costs max ~10.29e6 gas', async () => {
         const prepareGas = prepareReceipt.receipt.gasUsed
         const setupGas = setupReceipt.receipt.gasUsed
         const totalGas = prepareGas + setupGas
-        assert.isAtMost(prepareGas, 5.0e6, 'prepare script should cost almost 5.0e6 gas')
-        assert.isAtMost(setupGas, 5.4e6, 'setup script should cost almost 5.4e6 gas')
-        assert.isAtMost(totalGas, 10.4e6, 'prepare + setup scripts should cost almost 10.4e6 gas')
+        assert.isAtMost(prepareGas, 4.99e6, 'prepare script should cost almost 4.99e6 gas')
+        assert.isAtMost(setupGas, 5.30e6, 'setup script should cost almost 5.30e6 gas')
+        assert.isAtMost(totalGas, 10.29e6, 'prepare + setup scripts should cost almost 10.29e6 gas')
       })
 
       it('registers a new DAO on ENS', async () => {

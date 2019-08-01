@@ -35,6 +35,11 @@ contract BaseTemplate is APMNamehash, IsContract {
     bytes32 constant internal TOKEN_MANAGER_APP_ID = 0x6b20a3010614eeebf2138ccec99f028a61c811b3b1a3343b6ff635985c75c91f;
     bytes32 constant internal SURVEY_APP_ID = 0x030b2ab880b88e228f2da5a3d19a2a31bc10dbf91fb1143776a6de489389471e;
 
+    bytes4 constant private AGENT_INIT_SELECTOR = 0x8129fc1c;
+    bytes4 constant private VAULT_INIT_SELECTOR = 0x8129fc1c;
+    bytes4 constant private FINANCE_INIT_SELECTOR = 0x1798de81;
+    bytes4 constant private VOTING_INIT_SELECTOR = 0xdf3d3305;
+
     string constant private ERROR_ENS_NOT_CONTRACT = "TEMPLATE_ENS_NOT_CONTRACT";
     string constant private ERROR_DAO_FACTORY_NOT_CONTRACT = "TEMPLATE_DAO_FAC_NOT_CONTRACT";
     string constant private ERROR_ARAGON_ID_NOT_PROVIDED = "TEMPLATE_ARAGON_ID_NOT_PROVIDED";
@@ -112,8 +117,7 @@ contract BaseTemplate is APMNamehash, IsContract {
     /* AGENT */
 
     function _installDefaultAgentApp(Kernel _dao) internal returns (Agent) {
-        Agent agent = Agent(_installDefaultApp(_dao, AGENT_APP_ID));
-        agent.initialize();
+        Agent agent = Agent(_installDefaultApp(_dao, AGENT_APP_ID, abi.encodeWithSelector(AGENT_INIT_SELECTOR)));
         // We assume that installing the Agent app as default is in order to replace the Vault app which is
         // normally installed as default. Thus, we are setting its ID as the Vault id that the Kernel will use.
         _dao.setRecoveryVaultAppId(AGENT_APP_ID);
@@ -121,9 +125,7 @@ contract BaseTemplate is APMNamehash, IsContract {
     }
 
     function _installNonDefaultAgentApp(Kernel _dao) internal returns (Agent) {
-        Agent agent = Agent(_installNonDefaultApp(_dao, AGENT_APP_ID));
-        agent.initialize();
-        return agent;
+        return Agent(_installNonDefaultApp(_dao, AGENT_APP_ID, abi.encodeWithSelector(AGENT_INIT_SELECTOR)));
     }
 
     function _createAgentPermissions(ACL _acl, Agent _agent, address _grantee, address _manager) internal {
@@ -134,9 +136,7 @@ contract BaseTemplate is APMNamehash, IsContract {
     /* FINANCE */
 
     function _installFinanceApp(Kernel _dao, Vault _vault, uint64 _periodDuration) internal returns (Finance) {
-        Finance finance = Finance(_installNonDefaultApp(_dao, FINANCE_APP_ID));
-        finance.initialize(_vault, _periodDuration);
-        return finance;
+        return Finance(_installNonDefaultApp(_dao, FINANCE_APP_ID, abi.encodeWithSelector(FINANCE_INIT_SELECTOR, _vault, _periodDuration)));
     }
 
     function _createFinancePermissions(ACL _acl, Finance _finance, address _grantee, address _manager) internal {
@@ -199,9 +199,7 @@ contract BaseTemplate is APMNamehash, IsContract {
     /* VAULT */
 
     function _installVaultApp(Kernel _dao) internal returns (Vault) {
-        Vault vault = Vault(_installDefaultApp(_dao, VAULT_APP_ID));
-        vault.initialize();
-        return vault;
+        return Vault(_installDefaultApp(_dao, VAULT_APP_ID, abi.encodeWithSelector(VAULT_INIT_SELECTOR)));
     }
 
     function _createVaultPermissions(ACL _acl, Vault _vault, address _grantee, address _manager) internal {
@@ -211,9 +209,7 @@ contract BaseTemplate is APMNamehash, IsContract {
     /* VOTING */
 
     function _installVotingApp(Kernel _dao, MiniMeToken _token, uint64 _support, uint64 _acceptance, uint64 _duration) internal returns (Voting) {
-        Voting voting = Voting(_installNonDefaultApp(_dao, VOTING_APP_ID));
-        voting.initialize(_token, _support, _acceptance, _duration);
-        return voting;
+        return Voting(_installNonDefaultApp(_dao, VOTING_APP_ID, abi.encodeWithSelector(VOTING_INIT_SELECTOR, _token, _support, _acceptance, _duration)));
     }
 
     function _createVotingPermissions(ACL _acl, Voting _voting, address _grantee, address _manager) internal {
@@ -235,8 +231,16 @@ contract BaseTemplate is APMNamehash, IsContract {
         return _installApp(_dao, _appId, new bytes(0), false);
     }
 
+    function _installNonDefaultApp(Kernel _dao, bytes32 _appId, bytes _data) internal returns (address) {
+        return _installApp(_dao, _appId, _data, false);
+    }
+
     function _installDefaultApp(Kernel _dao, bytes32 _appId) internal returns (address) {
         return _installApp(_dao, _appId, new bytes(0), true);
+    }
+
+    function _installDefaultApp(Kernel _dao, bytes32 _appId, bytes _data) internal returns (address) {
+        return _installApp(_dao, _appId, _data, true);
     }
 
     function _installApp(Kernel _dao, bytes32 _appId, bytes _data, bool _setDefault) internal returns (address) {
