@@ -184,7 +184,7 @@ contract BaseTemplate is APMNamehash, IsContract {
 
     /* SURVEY */
 
-    function _installSurveyApp(Kernel _dao, MiniMeToken _token, uint64 _minParticipationPct, uint64 _surveyTime) internal returns (Finance) {
+    function _installSurveyApp(Kernel _dao, MiniMeToken _token, uint64 _minParticipationPct, uint64 _surveyTime) internal returns (Survey) {
         Survey survey = Survey(_installNonDefaultApp(_dao, SURVEY_APP_ID));
         survey.initialize(_token, _minParticipationPct, _surveyTime);
         return survey;
@@ -192,7 +192,7 @@ contract BaseTemplate is APMNamehash, IsContract {
 
     function _createSurveyPermissions(ACL _acl, Survey _survey, address _grantee, address _manager) internal {
         _acl.createPermission(_grantee, _survey, _survey.CREATE_SURVEYS_ROLE(), _manager);
-        _acl.createPermission(_grantee, _survey, _survey.MODIFY_PARTICIPATIONS_ROLE(), _manager);
+        _acl.createPermission(_grantee, _survey, _survey.MODIFY_PARTICIPATION_ROLE(), _manager);
     }
 
 
