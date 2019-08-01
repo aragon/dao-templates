@@ -135,12 +135,12 @@ contract('Reputation', ([_, owner, holder1, holder2]) => {
             tokenManager = TokenManager.at(installedApps['token-manager'][0])
           })
 
-          it('costs ~7e6 gas', async () => {
+          it('costs max ~6.74e6 gas', async () => {
             if (creationStyle === 'single') {
-              assert.isAtMost(instanceReceipt.receipt.gasUsed, 6.8e6, 'create script should cost almost 6.8e6 gas')
+              assert.isAtMost(instanceReceipt.receipt.gasUsed, 6.72e6, 'create script should cost almost 6.72e6 gas')
             } else if (creationStyle === 'separate') {
-              assert.isAtMost(tokenReceipt.receipt.gasUsed, 1.8e6, 'create token script should cost almost 1.8e6 gas')
-              assert.isAtMost(instanceReceipt.receipt.gasUsed, 5.2e6, 'create instance script should cost almost 5.2e6 gas')
+              assert.isAtMost(tokenReceipt.receipt.gasUsed, 1.74e6, 'create token script should cost almost 1.74e6 gas')
+              assert.isAtMost(instanceReceipt.receipt.gasUsed, 5.00e6, 'create instance script should cost almost 5.00e6 gas')
             }
           })
 

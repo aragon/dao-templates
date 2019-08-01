@@ -118,10 +118,10 @@ contract('Trust', ([_, owner, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
       heirsTokenManager = TokenManager.at(installedApps['token-manager'][1])
     })
 
-    it('costs ~13e6 gas', async () => {
-      assert.isAtMost(prepareReceipt.receipt.gasUsed, 5e6, 'prepare script should cost almost 5e6 gas')
-      assert.isAtMost(setupReceipt.receipt.gasUsed, 6e6, 'setup script should cost almost 6e6 gas')
-      assert.isAtMost(multiSigSetupReceipt.receipt.gasUsed, 2e6, 'multisig script should cost almost 2e6 gas')
+    it('costs ~12.51e6 gas', async () => {
+      assert.isAtMost(prepareReceipt.receipt.gasUsed, 5.00e6, 'prepare script should cost almost 5.00e6 gas')
+      assert.isAtMost(setupReceipt.receipt.gasUsed, 5.67e6, 'setup script should cost almost 5.67e6 gas')
+      assert.isAtMost(multiSigSetupReceipt.receipt.gasUsed, 1.84e6, 'multisig script should cost almost 1.84e6 gas')
     })
 
     it('registers a new DAO on ENS', async () => {
