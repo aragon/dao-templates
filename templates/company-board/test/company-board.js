@@ -3,6 +3,7 @@ const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
 const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
 const { getEventArgument } = require('@aragon/test-helpers/events')
 const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
+const { encodeFunctionCall } = require('@aragon/templates-shared/helpers/abi')
 const { getInstalledAppsById } = require('@aragon/templates-shared/helpers/events')(artifacts)
 const { assertRole, assertMissingRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
 const assertRevert = require('@aragon/templates-shared/helpers/assertRevert')(web3)
@@ -15,9 +16,11 @@ const Kernel = artifacts.require('Kernel')
 const Agent = artifacts.require('Agent')
 const Vault = artifacts.require('Vault')
 const Voting = artifacts.require('Voting')
+const Payroll = artifacts.require('Payroll')
 const Finance = artifacts.require('Finance')
 const TokenManager = artifacts.require('TokenManager')
 const MiniMeToken = artifacts.require('MiniMeToken')
+const MockContract = artifacts.require('ExecutionTarget')
 const PublicResolver = artifacts.require('PublicResolver')
 const EVMScriptRegistry = artifacts.require('EVMScriptRegistry')
 
@@ -27,9 +30,9 @@ const THIRTY_DAYS = ONE_DAY * 30
 const TWO_MONTHS = ONE_DAY * 31
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
-contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHolder1, shareHolder2, shareHolder3]) => {
-  let daoID, template, dao, acl, ens
-  let shareVoting, boardVoting, boardTokenManager, shareTokenManager, boardToken, shareToken, finance, agent, vault
+contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHolder1, shareHolder2, shareHolder3, someone]) => {
+  let daoID, template, dao, acl, ens, feed
+  let shareVoting, boardVoting, boardTokenManager, shareTokenManager, boardToken, shareToken, finance, agent, vault, payroll
 
   const BOARD_MEMBERS = [boardMember1, boardMember2]
   const SHARE_HOLDERS = [shareHolder1, shareHolder2, shareHolder3]
@@ -47,6 +50,23 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
   const SHARE_MIN_ACCEPTANCE_QUORUM = 5e16
   const SHARE_VOTING_SETTINGS = [SHARE_SUPPORT_REQUIRED, SHARE_MIN_ACCEPTANCE_QUORUM, SHARE_VOTE_DURATION]
 
+  const PAYROLL_DENOMINATION_TOKEN = '0x0000000000000000000000000000000000000abc'
+  const PAYROLL_RATE_EXPIRY_TIME = TWO_MONTHS
+
+  const SETUP_SHARE_PARAMS = 'string,address[],uint256[],uint64[3],uint64,bool'
+  const SETUP_SHARE_WITH_PAYROLL_PARAMS = 'string,address[],uint256[],uint64[3],uint64,bool,uint256[4]'
+
+  const setupShare = async (...params) => template.sendTransaction(setupShareTx(...params))
+  const setupShareTx = (...params) => {
+    const paramsSig = params.length === SETUP_SHARE_PARAMS.split(',').length ? SETUP_SHARE_PARAMS : SETUP_SHARE_WITH_PAYROLL_PARAMS
+    const data = encodeFunctionCall(
+      `setupShare(${paramsSig})`,
+      paramsSig.split(','),
+      params
+    )
+    return {from: owner, to: template.address, data}
+  }
+
   before('fetch company board template and ENS', async () => {
     const { registry, address } = await deployedAddresses()
     ens = ENS.at(registry)
@@ -59,92 +79,101 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
     context('when there was no instance prepared before', () => {
       it('reverts', async () => {
-        await assertRevert(template, template.setupInstance.request(randomId(), BOARD_MEMBERS, SHARE_HOLDERS, SHARE_STAKES, BOARD_VOTING_SETTINGS, SHARE_VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANY_MISSING_CACHE')
+        await assertRevert(template, template.setupBoard.request(BOARD_MEMBERS, BOARD_VOTING_SETTINGS), 'COMPANY_MISSING_CACHE')
+      })
+
+      it('reverts', async () => {
+        await assertRevert(template, template.setupShare.request(randomId(), SHARE_HOLDERS, SHARE_STAKES, SHARE_VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANY_MISSING_CACHE')
       })
     })
 
-    context('when there was an instance prepared before', () => {
+    context('when there was an instance already prepared', () => {
       before('prepare instance', async () => {
         await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL)
       })
 
-      it('reverts when no board members were given', async () => {
-        await assertRevert(template, template.setupInstance.request(randomId(), [], SHARE_HOLDERS, SHARE_STAKES, BOARD_VOTING_SETTINGS, SHARE_VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANY_MISSING_BOARD_MEMBERS')
+      context('when there was no board setup before', () => {
+        it('reverts when no board members were given', async () => {
+          await assertRevert(template, template.setupBoard.request([], BOARD_VOTING_SETTINGS), 'COMPANY_MISSING_BOARD_MEMBERS')
+        })
       })
 
-      it('reverts when no share members were given', async () => {
-        await assertRevert(template, template.setupInstance.request(randomId(), BOARD_MEMBERS, [], SHARE_STAKES, BOARD_VOTING_SETTINGS, SHARE_VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANY_MISSING_SHARE_MEMBERS')
-      })
+      context('when there was a board already setup', () => {
+        before('setup board', async () => {
+          await template.setupBoard(BOARD_MEMBERS, BOARD_VOTING_SETTINGS)
+        })
 
-      it('reverts when number of shared members and stakes do not match', async () => {
-        await assertRevert(template, template.setupInstance.request(randomId(), BOARD_MEMBERS, [shareHolder1], SHARE_STAKES, BOARD_VOTING_SETTINGS, SHARE_VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
-        await assertRevert(template, template.setupInstance.request(randomId(), BOARD_MEMBERS, SHARE_HOLDERS, [1e18], BOARD_VOTING_SETTINGS, SHARE_VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
+        it('reverts when no share members were given', async () => {
+          await assertRevert(template, setupShareTx(randomId(), [], SHARE_STAKES, SHARE_VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANY_MISSING_SHARE_MEMBERS')
+        })
+
+        it('reverts when number of shared members and stakes do not match', async () => {
+          await assertRevert(template, setupShareTx(randomId(), [shareHolder1], SHARE_STAKES, SHARE_VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
+          await assertRevert(template, setupShareTx(randomId(), SHARE_HOLDERS, [1e18], SHARE_VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
+        })
       })
     })
   })
 
   context('when the creation succeeds', () => {
-    let setupReceipt, prepareReceipt
+    let prepareReceipt, setupBoardReceipt, setupShareReceipt
 
-    const createDAO = (useAgentAsVault, financePeriod) => {
-      before('create company entity with board', async () => {
-        daoID = randomId()
-        prepareReceipt = await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL, { from: owner })
-        setupReceipt = await template.setupInstance(daoID, BOARD_MEMBERS, SHARE_HOLDERS, SHARE_STAKES, BOARD_VOTING_SETTINGS, SHARE_VOTING_SETTINGS, financePeriod, useAgentAsVault, { from: owner })
-
-        dao = Kernel.at(getEventArgument(prepareReceipt, 'DeployDao', 'dao'))
-        boardToken = MiniMeToken.at(getEventArgument(prepareReceipt, 'DeployToken', 'token', 0))
-        shareToken = MiniMeToken.at(getEventArgument(prepareReceipt, 'DeployToken', 'token', 1))
-        await loadDAO({ vault: !useAgentAsVault, agent: useAgentAsVault })
-      })
-    }
-
-    const loadDAO = async (apps = { vault: false, agent: false, payroll: false}) => {
+    const loadDAO = async (apps = { vault: false, agent: false, payroll: false }) => {
       dao = Kernel.at(getEventArgument(prepareReceipt, 'DeployDao', 'dao'))
       boardToken = MiniMeToken.at(getEventArgument(prepareReceipt, 'DeployToken', 'token', 0))
       shareToken = MiniMeToken.at(getEventArgument(prepareReceipt, 'DeployToken', 'token', 1))
       acl = ACL.at(await dao.acl())
-      const installedApps = getInstalledAppsById(setupReceipt)
 
-      assert.equal(installedApps.voting.length, 2, 'should have installed 2 voting apps')
-      boardVoting = Voting.at(installedApps.voting[0])
-      shareVoting = Voting.at(installedApps.voting[1])
+      const installedShareApps = getInstalledAppsById(setupShareReceipt)
+      const installedBoardApps = getInstalledAppsById(setupBoardReceipt)
 
-      assert.equal(installedApps.finance.length, 1, 'should have installed 1 finance app')
-      finance = Finance.at(installedApps.finance[0])
+      assert.equal(installedBoardApps.voting.length, 1, 'should have installed 1 board voting apps')
+      boardVoting = Voting.at(installedBoardApps.voting[0])
 
-      assert.equal(installedApps['token-manager'].length, 2, 'should have installed 2 token manager apps')
-      boardTokenManager = TokenManager.at(installedApps['token-manager'][0])
-      shareTokenManager = TokenManager.at(installedApps['token-manager'][1])
+      assert.equal(installedBoardApps['token-manager'].length, 1, 'should have installed 1 board token-manager apps')
+      boardTokenManager = TokenManager.at(installedBoardApps['token-manager'][0])
+
+      assert.equal(installedShareApps.voting.length, 1, 'should have installed 1 share voting apps')
+      shareVoting = Voting.at(installedShareApps.voting[0])
+
+      assert.equal(installedShareApps.finance.length, 1, 'should have installed 1 finance app')
+      finance = Finance.at(installedShareApps.finance[0])
+
+      assert.equal(installedShareApps['token-manager'].length, 1, 'should have installed 2 share token-manager apps')
+      shareTokenManager = TokenManager.at(installedShareApps['token-manager'][0])
 
       if(apps.agent) {
-        assert.equal(installedApps.agent.length, 1, 'should have installed 1 agent app')
-        agent = Agent.at(installedApps.agent[0])
+        assert.equal(installedShareApps.agent.length, 1, 'should have installed 1 agent app')
+        agent = Agent.at(installedShareApps.agent[0])
       }
 
       if(apps.vault) {
-        assert.equal(installedApps.vault.length, 1, 'should have installed 1 vault app')
-        vault = Vault.at(installedApps.vault[0])
+        assert.equal(installedShareApps.vault.length, 1, 'should have installed 1 vault app')
+        vault = Vault.at(installedShareApps.vault[0])
       }
 
       if(apps.payroll) {
-        assert.equal(installedApps.payroll.length, 1, 'should have installed 1 payroll app')
-        payroll = Payroll.at(installedApps.payroll[0])
+        assert.equal(installedShareApps.payroll.length, 1, 'should have installed 1 payroll app')
+        payroll = Payroll.at(installedShareApps.payroll[0])
       }
     }
 
-    const itCostsUpTo = expectedSetupCost => {
+    const itCostsUpTo = expectedShareCost => {
       const expectedPrepareCost = 5e6
-      const expectedTotalCost = expectedPrepareCost + expectedSetupCost
+      const expectedBoardCost = 1.3e6
+      const expectedTotalCost = expectedPrepareCost + expectedBoardCost + expectedShareCost
 
       it(`gas costs must be up to ~${expectedTotalCost} gas`, async () => {
         const prepareCost = prepareReceipt.receipt.gasUsed
         assert.isAtMost(prepareCost, expectedPrepareCost, `prepare call should cost up to ${expectedPrepareCost} gas`)
 
-        const setupCost = setupReceipt.receipt.gasUsed
-        assert.isAtMost(setupCost, expectedSetupCost, `setup call should cost up to ${expectedSetupCost} gas`)
+        const boardCost = setupBoardReceipt.receipt.gasUsed
+        assert.isAtMost(boardCost, expectedBoardCost, `board setup call should cost up to ${expectedBoardCost} gas`)
 
-        const totalCost = prepareCost + setupCost
+        const shareCost = setupShareReceipt.receipt.gasUsed
+        assert.isAtMost(shareCost, expectedShareCost, `share setup call should cost up to ${expectedShareCost} gas`)
+
+        const totalCost = prepareCost + shareCost
         assert.isAtMost(totalCost, expectedTotalCost, `total costs should be up to ${expectedTotalCost} gas`)
       })
     }
@@ -284,47 +313,128 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
       })
     }
 
-    context('when requesting a custom finance period', () => {
-      const FINANCE_PERIOD = 60 * 60 * 24 * 15 // 15 days
+    const itSetupsPayrollAppCorrectly = employeeManager => {
+      it('should have payroll app correctly setup', async () => {
+        assert.isTrue(await payroll.hasInitialized(), 'payroll not initialized')
+        assert.equal(await payroll.feed(), feed.address)
+        assert.equal(await payroll.rateExpiryTime(), PAYROLL_RATE_EXPIRY_TIME)
+        assert.equal(await payroll.denominationToken(), PAYROLL_DENOMINATION_TOKEN)
+        assert.equal(web3.toChecksumAddress(await payroll.finance()), finance.address)
 
-      context('when requesting an agent app', () => {
-        const USE_AGENT_AS_VAULT = true
+        const expectedManager = employeeManager === ZERO_ADDRESS ? boardVoting : { address: employeeManager }
 
-        createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
-        itCostsUpTo(5.3e6)
-        itSetupsDAOCorrectly(FINANCE_PERIOD)
-        itSetupsAgentAppCorrectly()
+        await assertRole(acl, payroll, boardVoting, 'ADD_BONUS_ROLE', expectedManager)
+        await assertRole(acl, payroll, boardVoting, 'ADD_EMPLOYEE_ROLE', expectedManager)
+        await assertRole(acl, payroll, boardVoting, 'ADD_REIMBURSEMENT_ROLE', expectedManager)
+        await assertRole(acl, payroll, boardVoting, 'TERMINATE_EMPLOYEE_ROLE', expectedManager)
+        await assertRole(acl, payroll, boardVoting, 'SET_EMPLOYEE_SALARY_ROLE', expectedManager)
+
+        await assertRole(acl, payroll, boardVoting, 'MODIFY_PRICE_FEED_ROLE', boardVoting)
+        await assertRole(acl, payroll, boardVoting, 'MODIFY_RATE_EXPIRY_ROLE', boardVoting)
+        await assertRole(acl, payroll, boardVoting, 'MANAGE_ALLOWED_TOKENS_ROLE', boardVoting)
+      })
+    }
+
+    context('when not requesting a payroll app', () => {
+
+      const createDAO = (useAgentAsVault, financePeriod) => {
+        before('create company entity with board', async () => {
+          daoID = randomId()
+          prepareReceipt = await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL, { from: owner })
+          setupBoardReceipt = await template.setupBoard(BOARD_MEMBERS, BOARD_VOTING_SETTINGS, { from: owner })
+          setupShareReceipt = await setupShare(daoID, SHARE_HOLDERS, SHARE_STAKES, SHARE_VOTING_SETTINGS, financePeriod, useAgentAsVault)
+
+          dao = Kernel.at(getEventArgument(prepareReceipt, 'DeployDao', 'dao'))
+          boardToken = MiniMeToken.at(getEventArgument(prepareReceipt, 'DeployToken', 'token', 0))
+          shareToken = MiniMeToken.at(getEventArgument(prepareReceipt, 'DeployToken', 'token', 1))
+          await loadDAO({ vault: !useAgentAsVault, agent: useAgentAsVault })
+        })
+      }
+
+      context('when requesting a custom finance period', () => {
+        const FINANCE_PERIOD = 60 * 60 * 24 * 15 // 15 days
+
+        context('when requesting an agent app', () => {
+          const USE_AGENT_AS_VAULT = true
+
+          createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
+          itCostsUpTo(4.2e6)
+          itSetupsDAOCorrectly(FINANCE_PERIOD)
+          itSetupsAgentAppCorrectly()
+        })
+
+        context('when requesting an vault app', () => {
+          const USE_AGENT_AS_VAULT = false
+
+          createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
+          itCostsUpTo(3.8e6)
+          itSetupsDAOCorrectly(FINANCE_PERIOD)
+          itSetupsVaultAppCorrectly()
+        })
       })
 
-      context('when requesting an vault app', () => {
-        const USE_AGENT_AS_VAULT = false
+      context('when requesting a default finance period', () => {
+        const FINANCE_PERIOD = 0 // use default
 
-        createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
-        itCostsUpTo(5e6)
-        itSetupsDAOCorrectly(FINANCE_PERIOD)
-        itSetupsVaultAppCorrectly()
+        context('when requesting an agent app', () => {
+          const USE_AGENT_AS_VAULT = true
+
+          createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
+          itCostsUpTo(4.2e6)
+          itSetupsDAOCorrectly(FINANCE_PERIOD)
+          itSetupsAgentAppCorrectly()
+        })
+
+        context('when requesting an vault app', () => {
+          const USE_AGENT_AS_VAULT = false
+
+          createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
+          itCostsUpTo(3.8e6)
+          itSetupsDAOCorrectly(FINANCE_PERIOD)
+          itSetupsVaultAppCorrectly()
+        })
       })
     })
 
-    context('when requesting a default finance period', () => {
-      const FINANCE_PERIOD = 0 // use default
+    context('when requesting a payroll app', () => {
+      const FINANCE_PERIOD = 0
+      const USE_AGENT_AS_VAULT = true
 
-      context('when requesting an agent app', () => {
-        const USE_AGENT_AS_VAULT = true
+      const createDAO = (employeeManager = undefined) => {
+        before('create company entity with board', async () => {
+          daoID = randomId()
+          feed = await MockContract.new() // has to be a contract
+          prepareReceipt = await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL, { from: owner })
+          setupBoardReceipt = await template.setupBoard(BOARD_MEMBERS, BOARD_VOTING_SETTINGS, { from: owner })
 
-        createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
+          const payrollSettings = [PAYROLL_DENOMINATION_TOKEN, feed.address, PAYROLL_RATE_EXPIRY_TIME, employeeManager]
+          setupShareReceipt = await setupShare(daoID, SHARE_HOLDERS, SHARE_STAKES, SHARE_VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT, payrollSettings)
+
+          dao = Kernel.at(getEventArgument(prepareReceipt, 'DeployDao', 'dao'))
+          boardToken = MiniMeToken.at(getEventArgument(prepareReceipt, 'DeployToken', 'token', 0))
+          shareToken = MiniMeToken.at(getEventArgument(prepareReceipt, 'DeployToken', 'token', 1))
+          await loadDAO({ vault: !USE_AGENT_AS_VAULT, agent: USE_AGENT_AS_VAULT, payroll: true })
+        })
+      }
+
+      context('when requesting a custom employee manager', () => {
+        const EMPLOYEE_MANAGER = someone
+
+        createDAO(EMPLOYEE_MANAGER)
         itCostsUpTo(5.3e6)
         itSetupsDAOCorrectly(FINANCE_PERIOD)
         itSetupsAgentAppCorrectly()
+        itSetupsPayrollAppCorrectly(EMPLOYEE_MANAGER)
       })
 
-      context('when requesting an vault app', () => {
-        const USE_AGENT_AS_VAULT = false
+      context('when requesting the default employee manager', () => {
+        const EMPLOYEE_MANAGER = ZERO_ADDRESS
 
-        createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
-        itCostsUpTo(5e6)
+        createDAO(EMPLOYEE_MANAGER)
+        itCostsUpTo(5.3e6)
         itSetupsDAOCorrectly(FINANCE_PERIOD)
-        itSetupsVaultAppCorrectly()
+        itSetupsAgentAppCorrectly()
+        itSetupsPayrollAppCorrectly(EMPLOYEE_MANAGER)
       })
     })
   })
