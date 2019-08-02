@@ -14,20 +14,20 @@ template.newToken(name, symbol)
 Create a new reputation entity:
 
 ```
-template.newInstance(id, holders, stakes, voteSettings, financePeriod, useAgentAsVault)
+template.newInstance(id, holders, stakes, votingSettings, financePeriod, useAgentAsVault)
 ```
 
 - `name`: Name for org, will assign `[name].aragonid.eth`
 - `holders`: Array of token holder addresses
 - `stakes`: Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`)
-- `voteSettings`: Array of [supportRequired, minAcceptanceQuorum, voteDuration] for votes by the organization's members
-- `financePeriod`: Initial duration for accounting periods
+- `votingSettings`: Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
+- `financePeriod`: Initial duration for accounting periods, it can be set to zero in order to use the default of 30 days.
 - `useAgentAsVault`: Use an Agent app as a more advanced form of Vault app
 
 Alternatively, create a new reputation entity with a Payroll app:
 
 ```
-template.newInstance(name, holders, stakes, voteSettings, financePeriod, useAgentAsVault, payrollSettings)
+template.newInstance(name, holders, stakes, votingSettings, financePeriod, useAgentAsVault, payrollSettings)
 ```
 
 - `payrollSettings`: Array of [address denominationToken , IFeed priceFeed, uint64 rateExpiryTime, address employeeManager (set to voting if 0x0) ] for the Payroll app
