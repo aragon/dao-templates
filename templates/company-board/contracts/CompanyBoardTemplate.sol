@@ -38,6 +38,11 @@ contract CompanyBoardTemplate is BaseTemplate {
         _ensureMiniMeFactoryIsValid(_miniMeFactory);
     }
 
+    /**
+    * @dev Create a new pair of MiniMe tokens for the Company with Board DAO and a cache a plain DAO to set it up
+    * @param _shareTokenName String with the name for the token used by share holders in the organization
+    * @param _shareTokenSymbol String with the symbol for the token used by share holders in the organization
+    */
     function prepareInstance(string _shareTokenName, string _shareTokenSymbol) external {
         (Kernel dao,) = _createDAO();
         MiniMeToken boardToken = _createToken(BOARD_TOKEN_NAME, BOARD_TOKEN_SYMBOL, BOARD_TOKEN_DECIMALS);
@@ -45,13 +50,24 @@ contract CompanyBoardTemplate is BaseTemplate {
         _storeCache(dao, boardToken, shareToken, msg.sender);
     }
 
+    /**
+    * @dev Setup a previous deployed DAO with the Company with Board components
+    * @param _id String with the name for org, will assign `[id].aragonid.eth`
+    * @param _boardMembers Array of board member addresses (1 token will be minted for each board member)
+    * @param _shareHolders Array of share holder addresses
+    * @param _shareStakes Array of token stakes for share holders (token has 18 decimals, multiply token amount `* 10^18`)
+    * @param _boardVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the board voting app of the organization
+    * @param _shareVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the share voting app of the organization
+    * @param _financePeriod Initial duration for accounting periods, it can be set to zero in order to use the default of 30 days.
+    * @param _useAgentAsVault Boolean to tell whether to use an Agent app as a more advanced form of Vault app
+    */
     function setupInstance(
         string _id,
         address[] _boardMembers,
         address[] _shareHolders,
         uint256[] _shareStakes,
-        uint64[3] _boardVotingSettings, /* [supportRequired, minAcceptanceQuorum, voteDuration] */
-        uint64[3] _shareVotingSettings, /* [supportRequired, minAcceptanceQuorum, voteDuration] */
+        uint64[3] _boardVotingSettings,
+        uint64[3] _shareVotingSettings,
         uint64 _financePeriod,
         bool _useAgentAsVault
     )
@@ -67,8 +83,8 @@ contract CompanyBoardTemplate is BaseTemplate {
         address[] _boardMembers,
         address[] _shareHolders,
         uint256[] _shareStakes,
-        uint64[3] _boardVotingSettings, /* [supportRequired, minAcceptanceQuorum, voteDuration] */
-        uint64[3] _shareVotingSettings, /* [supportRequired, minAcceptanceQuorum, voteDuration] */
+        uint64[3] _boardVotingSettings,
+        uint64[3] _shareVotingSettings,
         uint64 _financePeriod,
         bool _useAgentAsVault
     )

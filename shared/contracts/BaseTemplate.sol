@@ -17,18 +17,21 @@ import "@aragon/os/contracts/lib/ens/ENS.sol";
 import "@aragon/os/contracts/lib/ens/PublicResolver.sol";
 import "@aragon/os/contracts/factory/DAOFactory.sol";
 import "@aragon/os/contracts/common/IsContract.sol";
+import "@aragon/os/contracts/common/Uint256Helpers.sol";
 import "@aragon/id/contracts/IFIFSResolvingRegistrar.sol";
 
 
 contract BaseTemplate is APMNamehash, IsContract {
+    using Uint256Helpers for uint256;
+
     /* Hardcoded constant to save gas
     * bytes32 constant internal AGENT_APP_ID = apmNamehash("agent");                  // agent.aragonpm.eth
     * bytes32 constant internal VAULT_APP_ID = apmNamehash("vault");                  // vault.aragonpm.eth
     * bytes32 constant internal VOTING_APP_ID = apmNamehash("voting");                // voting.aragonpm.eth
+    * bytes32 constant internal SURVEY_APP_ID = apmNamehash("survey");                // survey.aragonpm.eth
     * bytes32 constant internal PAYROLL_APP_ID = apmNamehash("payroll");              // payroll.aragonpm.eth
     * bytes32 constant internal FINANCE_APP_ID = apmNamehash("finance");              // finance.aragonpm.eth
     * bytes32 constant internal TOKEN_MANAGER_APP_ID = apmNamehash("token-manager");  // token-manager.aragonpm.eth
-    * bytes32 constant internal SURVEY_APP_ID = apmNamehash("survey");                // survey.aragonpm.eth
     */
     bytes32 constant internal AGENT_APP_ID = 0x9ac98dc5f995bf0211ed589ef022719d1487e5cb2bab505676f0d084c07cf89a;
     bytes32 constant internal VAULT_APP_ID = 0x7e852e0fcfce6551c13800f1e7476f982525c2b5277ba14b24339c68416336d1;
@@ -137,6 +140,40 @@ contract BaseTemplate is APMNamehash, IsContract {
         _acl.createPermission(_grantee, _agent, _agent.RUN_SCRIPT_ROLE(), _manager);
     }
 
+    /* VAULT */
+
+    function _installVaultApp(Kernel _dao) internal returns (Vault) {
+        return Vault(_installDefaultApp(_dao, VAULT_APP_ID, abi.encodeWithSelector(VAULT_INIT_SELECTOR)));
+    }
+
+    function _createVaultPermissions(ACL _acl, Vault _vault, address _grantee, address _manager) internal {
+        _acl.createPermission(_grantee, _vault, _vault.TRANSFER_ROLE(), _manager);
+    }
+
+    /* VOTING */
+
+    function _installVotingApp(Kernel _dao, MiniMeToken _token, uint64 _support, uint64 _acceptance, uint64 _duration) internal returns (Voting) {
+        return Voting(_installNonDefaultApp(_dao, VOTING_APP_ID, abi.encodeWithSelector(VOTING_INIT_SELECTOR, _token, _support, _acceptance, _duration)));
+    }
+
+    function _createVotingPermissions(ACL _acl, Voting _voting, address _grantee, address _manager) internal {
+        _acl.createPermission(_grantee, _voting, _voting.MODIFY_QUORUM_ROLE(), _manager);
+        _acl.createPermission(_grantee, _voting, _voting.MODIFY_SUPPORT_ROLE(), _manager);
+    }
+
+    /* SURVEY */
+
+    function _installSurveyApp(Kernel _dao, MiniMeToken _token, uint64 _minParticipationPct, uint64 _surveyTime) internal returns (Survey) {
+        Survey survey = Survey(_installNonDefaultApp(_dao, SURVEY_APP_ID));
+        survey.initialize(_token, _minParticipationPct, _surveyTime);
+        return survey;
+    }
+
+    function _createSurveyPermissions(ACL _acl, Survey _survey, address _grantee, address _manager) internal {
+        _acl.createPermission(_grantee, _survey, _survey.CREATE_SURVEYS_ROLE(), _manager);
+        _acl.createPermission(_grantee, _survey, _survey.MODIFY_PARTICIPATION_ROLE(), _manager);
+    }
+
     /* PAYROLL */
 
     function _installPayrollApp(Kernel _dao, Finance _finance, address _denominationToken, IFeed _priceFeed, uint64 _rateExpiryTime) internal returns (Payroll) {
@@ -155,6 +192,13 @@ contract BaseTemplate is APMNamehash, IsContract {
         _acl.createPermission(_settingsManager, _payroll, _payroll.MODIFY_PRICE_FEED_ROLE(), _permissionsManager);
         _acl.createPermission(_settingsManager, _payroll, _payroll.MODIFY_RATE_EXPIRY_ROLE(), _permissionsManager);
         _acl.createPermission(_settingsManager, _payroll, _payroll.MANAGE_ALLOWED_TOKENS_ROLE(), _permissionsManager);
+    }
+
+    function _unwrapPayrollSettings(uint256[4] _payrollSettings) internal pure returns (address denominationToken, IFeed priceFeed, uint64 rateExpiryTime, address employeeManager) {
+        denominationToken = _toAddress(_payrollSettings[0]);
+        priceFeed = IFeed(_toAddress(_payrollSettings[1]));
+        rateExpiryTime = _payrollSettings[2].toUint64();
+        employeeManager = _toAddress(_payrollSettings[3]);
     }
 
     /* FINANCE */
@@ -204,41 +248,6 @@ contract BaseTemplate is APMNamehash, IsContract {
         _createPermissionForTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
         _tokenManager.mint(_holder, _stake);
         _removePermissionFromTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
-    }
-
-    /* SURVEY */
-
-    function _installSurveyApp(Kernel _dao, MiniMeToken _token, uint64 _minParticipationPct, uint64 _surveyTime) internal returns (Survey) {
-        Survey survey = Survey(_installNonDefaultApp(_dao, SURVEY_APP_ID));
-        survey.initialize(_token, _minParticipationPct, _surveyTime);
-        return survey;
-    }
-
-    function _createSurveyPermissions(ACL _acl, Survey _survey, address _grantee, address _manager) internal {
-        _acl.createPermission(_grantee, _survey, _survey.CREATE_SURVEYS_ROLE(), _manager);
-        _acl.createPermission(_grantee, _survey, _survey.MODIFY_PARTICIPATION_ROLE(), _manager);
-    }
-
-
-    /* VAULT */
-
-    function _installVaultApp(Kernel _dao) internal returns (Vault) {
-        return Vault(_installDefaultApp(_dao, VAULT_APP_ID, abi.encodeWithSelector(VAULT_INIT_SELECTOR)));
-    }
-
-    function _createVaultPermissions(ACL _acl, Vault _vault, address _grantee, address _manager) internal {
-        _acl.createPermission(_grantee, _vault, _vault.TRANSFER_ROLE(), _manager);
-    }
-
-    /* VOTING */
-
-    function _installVotingApp(Kernel _dao, MiniMeToken _token, uint64 _support, uint64 _acceptance, uint64 _duration) internal returns (Voting) {
-        return Voting(_installNonDefaultApp(_dao, VOTING_APP_ID, abi.encodeWithSelector(VOTING_INIT_SELECTOR, _token, _support, _acceptance, _duration)));
-    }
-
-    function _createVotingPermissions(ACL _acl, Voting _voting, address _grantee, address _manager) internal {
-        _acl.createPermission(_grantee, _voting, _voting.MODIFY_QUORUM_ROLE(), _manager);
-        _acl.createPermission(_grantee, _voting, _voting.MODIFY_SUPPORT_ROLE(), _manager);
     }
 
     /* EVM SCRIPTS */
@@ -305,8 +314,7 @@ contract BaseTemplate is APMNamehash, IsContract {
 
     /* HELPERS */
 
-    // TODO: Move to helper (in this repo for now)
-    function _toAddress(uint256 _value) internal pure returns(address) {
+    function _toAddress(uint256 _value) private pure returns (address) {
         require(_value <= uint160(-1), ERROR_CANNOT_CAST_VALUE_TO_ADDRESS);
         return address(_value);
     }
