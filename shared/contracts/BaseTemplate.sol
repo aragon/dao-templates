@@ -41,11 +41,6 @@ contract BaseTemplate is APMNamehash, IsContract {
     bytes32 constant internal TOKEN_MANAGER_APP_ID = 0x6b20a3010614eeebf2138ccec99f028a61c811b3b1a3343b6ff635985c75c91f;
     bytes32 constant internal SURVEY_APP_ID = 0x030b2ab880b88e228f2da5a3d19a2a31bc10dbf91fb1143776a6de489389471e;
 
-    bytes4 constant private AGENT_INIT_SELECTOR = 0x8129fc1c;
-    bytes4 constant private VAULT_INIT_SELECTOR = 0x8129fc1c;
-    bytes4 constant private FINANCE_INIT_SELECTOR = 0x1798de81;
-    bytes4 constant private VOTING_INIT_SELECTOR = 0xdf3d3305;
-
     string constant private ERROR_ENS_NOT_CONTRACT = "TEMPLATE_ENS_NOT_CONTRACT";
     string constant private ERROR_DAO_FACTORY_NOT_CONTRACT = "TEMPLATE_DAO_FAC_NOT_CONTRACT";
     string constant private ERROR_ARAGON_ID_NOT_PROVIDED = "TEMPLATE_ARAGON_ID_NOT_PROVIDED";
@@ -125,7 +120,8 @@ contract BaseTemplate is APMNamehash, IsContract {
     /* AGENT */
 
     function _installDefaultAgentApp(Kernel _dao) internal returns (Agent) {
-        Agent agent = Agent(_installDefaultApp(_dao, AGENT_APP_ID, abi.encodeWithSelector(AGENT_INIT_SELECTOR)));
+        bytes memory initializeData = abi.encodeWithSelector(Agent(0).initialize.selector);
+        Agent agent = Agent(_installDefaultApp(_dao, AGENT_APP_ID, initializeData));
         // We assume that installing the Agent app as a default app means the DAO should have its
         // Vault replaced by the Agent. Thus, we also set the DAO's recovery app to the Agent.
         _dao.setRecoveryVaultAppId(AGENT_APP_ID);
@@ -133,7 +129,8 @@ contract BaseTemplate is APMNamehash, IsContract {
     }
 
     function _installNonDefaultAgentApp(Kernel _dao) internal returns (Agent) {
-        return Agent(_installNonDefaultApp(_dao, AGENT_APP_ID, abi.encodeWithSelector(AGENT_INIT_SELECTOR)));
+        bytes memory initializeData = abi.encodeWithSelector(Agent(0).initialize.selector);
+        return Agent(_installNonDefaultApp(_dao, AGENT_APP_ID, initializeData));
     }
 
     function _createAgentPermissions(ACL _acl, Agent _agent, address _grantee, address _manager) internal {
@@ -144,7 +141,8 @@ contract BaseTemplate is APMNamehash, IsContract {
     /* VAULT */
 
     function _installVaultApp(Kernel _dao) internal returns (Vault) {
-        return Vault(_installDefaultApp(_dao, VAULT_APP_ID, abi.encodeWithSelector(VAULT_INIT_SELECTOR)));
+        bytes memory initializeData = abi.encodeWithSelector(Vault(0).initialize.selector);
+        return Vault(_installDefaultApp(_dao, VAULT_APP_ID, initializeData));
     }
 
     function _createVaultPermissions(ACL _acl, Vault _vault, address _grantee, address _manager) internal {
@@ -154,7 +152,8 @@ contract BaseTemplate is APMNamehash, IsContract {
     /* VOTING */
 
     function _installVotingApp(Kernel _dao, MiniMeToken _token, uint64 _support, uint64 _acceptance, uint64 _duration) internal returns (Voting) {
-        return Voting(_installNonDefaultApp(_dao, VOTING_APP_ID, abi.encodeWithSelector(VOTING_INIT_SELECTOR, _token, _support, _acceptance, _duration)));
+        bytes memory initializeData = abi.encodeWithSelector(Voting(0).initialize.selector, _token, _support, _acceptance, _duration);
+        return Voting(_installNonDefaultApp(_dao, VOTING_APP_ID, initializeData));
     }
 
     function _createVotingPermissions(ACL _acl, Voting _voting, address _grantee, address _manager) internal {
@@ -165,9 +164,8 @@ contract BaseTemplate is APMNamehash, IsContract {
     /* SURVEY */
 
     function _installSurveyApp(Kernel _dao, MiniMeToken _token, uint64 _minParticipationPct, uint64 _surveyTime) internal returns (Survey) {
-        Survey survey = Survey(_installNonDefaultApp(_dao, SURVEY_APP_ID));
-        survey.initialize(_token, _minParticipationPct, _surveyTime);
-        return survey;
+        bytes memory initializeData = abi.encodeWithSelector(Survey(0).initialize.selector, _token, _minParticipationPct, _surveyTime);
+        return Survey(_installNonDefaultApp(_dao, SURVEY_APP_ID, initializeData));
     }
 
     function _createSurveyPermissions(ACL _acl, Survey _survey, address _grantee, address _manager) internal {
@@ -178,9 +176,8 @@ contract BaseTemplate is APMNamehash, IsContract {
     /* PAYROLL */
 
     function _installPayrollApp(Kernel _dao, Finance _finance, address _denominationToken, IFeed _priceFeed, uint64 _rateExpiryTime) internal returns (Payroll) {
-        Payroll payroll = Payroll(_installNonDefaultApp(_dao, PAYROLL_APP_ID));
-        payroll.initialize(_finance, _denominationToken, _priceFeed, _rateExpiryTime);
-        return payroll;
+        bytes memory initializeData = abi.encodeWithSelector(Payroll(0).initialize.selector, _finance, _denominationToken, _priceFeed, _rateExpiryTime);
+        return Payroll(_installNonDefaultApp(_dao, PAYROLL_APP_ID, initializeData));
     }
 
     /**
@@ -216,7 +213,8 @@ contract BaseTemplate is APMNamehash, IsContract {
     /* FINANCE */
 
     function _installFinanceApp(Kernel _dao, Vault _vault, uint64 _periodDuration) internal returns (Finance) {
-        return Finance(_installNonDefaultApp(_dao, FINANCE_APP_ID, abi.encodeWithSelector(FINANCE_INIT_SELECTOR, _vault, _periodDuration)));
+        bytes memory initializeData = abi.encodeWithSelector(Finance(0).initialize.selector, _vault, _periodDuration);
+        return Finance(_installNonDefaultApp(_dao, FINANCE_APP_ID, initializeData));
     }
 
     function _createFinancePermissions(ACL _acl, Finance _finance, address _grantee, address _manager) internal {
@@ -273,24 +271,24 @@ contract BaseTemplate is APMNamehash, IsContract {
     /* APPS */
 
     function _installNonDefaultApp(Kernel _dao, bytes32 _appId) internal returns (address) {
-        return _installApp(_dao, _appId, new bytes(0), false);
+        return _installNonDefaultApp(_dao, _appId, new bytes(0));
     }
 
-    function _installNonDefaultApp(Kernel _dao, bytes32 _appId, bytes _data) internal returns (address) {
-        return _installApp(_dao, _appId, _data, false);
+    function _installNonDefaultApp(Kernel _dao, bytes32 _appId, bytes _initializeData) internal returns (address) {
+        return _installApp(_dao, _appId, _initializeData, false);
     }
 
     function _installDefaultApp(Kernel _dao, bytes32 _appId) internal returns (address) {
-        return _installApp(_dao, _appId, new bytes(0), true);
+        return _installDefaultApp(_dao, _appId, new bytes(0));
     }
 
-    function _installDefaultApp(Kernel _dao, bytes32 _appId, bytes _data) internal returns (address) {
-        return _installApp(_dao, _appId, _data, true);
+    function _installDefaultApp(Kernel _dao, bytes32 _appId, bytes _initializeData) internal returns (address) {
+        return _installApp(_dao, _appId, _initializeData, true);
     }
 
-    function _installApp(Kernel _dao, bytes32 _appId, bytes _data, bool _setDefault) internal returns (address) {
+    function _installApp(Kernel _dao, bytes32 _appId, bytes _initializeData, bool _setDefault) internal returns (address) {
         address latestBaseAppAddress = _latestVersionAppBase(_appId);
-        address instance = address(_dao.newAppInstance(_appId, latestBaseAppAddress, _data, _setDefault));
+        address instance = address(_dao.newAppInstance(_appId, latestBaseAppAddress, _initializeData, _setDefault));
         emit InstalledApp(instance, _appId);
         return instance;
     }
