@@ -291,7 +291,7 @@ contract('Membership', ([_, owner, member1, member2, someone]) => {
 
       context('when there was no token created before', () => {
         it('reverts', async () => {
-          await assertRevert(newInstance(randomId(), MEMBERS, VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'MEMBERSHIP_MISSING_TOKEN_CACHE')
+          await assertRevert(newInstance(randomId(), MEMBERS, VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'TEMPLATE_MISSING_TOKEN_CACHE')
         })
       })
 

@@ -297,7 +297,7 @@ contract('Reputation', ([_, owner, holder1, holder2, someone]) => {
 
       context('when there was no token created before', () => {
         it('reverts', async () => {
-          await assertRevert(newInstance(randomId(), HOLDERS, STAKES, VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'REPUTATION_MISSING_TOKEN_CACHE')
+          await assertRevert(newInstance(randomId(), HOLDERS, STAKES, VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'TEMPLATE_MISSING_TOKEN_CACHE')
         })
       })
 

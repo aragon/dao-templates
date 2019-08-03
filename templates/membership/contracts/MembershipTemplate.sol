@@ -1,21 +1,18 @@
 pragma solidity 0.4.24;
 
+import "@aragon/templates-shared/contracts/TokenCache.sol";
 import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 
 
-contract MembershipTemplate is BaseTemplate {
+contract MembershipTemplate is BaseTemplate, TokenCache {
     string constant private ERROR_MISSING_MEMBERS = "MEMBERSHIP_MISSING_MEMBERS";
-    string constant private ERROR_MISSING_TOKEN_CACHE = "MEMBERSHIP_MISSING_TOKEN_CACHE";
     string constant private ERROR_BAD_VOTE_SETTINGS = "MEMBERSHIP_BAD_VOTE_SETTINGS";
     string constant private ERROR_BAD_PAYROLL_SETTINGS = "MEMBERSHIP_BAD_PAYROLL_SETTINGS";
 
     bool constant private TOKEN_TRANSFERABLE = false;
     uint8 constant private TOKEN_DECIMALS = uint8(0);
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(1);
-
     uint64 constant private DEFAULT_FINANCE_PERIOD = uint64(30 days);
-
-    mapping (address => address) internal tokenCache;
 
     constructor(DAOFactory _daoFactory, ENS _ens, MiniMeTokenFactory _miniMeFactory, IFIFSResolvingRegistrar _aragonID)
         BaseTemplate(_daoFactory, _ens, _miniMeFactory, _aragonID)
@@ -129,18 +126,6 @@ contract MembershipTemplate is BaseTemplate {
         _createEvmScriptsRegistryPermissions(_acl, _voting, _voting);
         _createVotingPermissions(_acl, _voting, _voting, _tokenManager, _voting);
         _createTokenManagerPermissions(_acl, _tokenManager, _voting, _voting);
-    }
-
-    function _cacheToken(MiniMeToken token, address _owner) internal {
-        tokenCache[_owner] = token;
-    }
-
-    function _popTokenCache(address _owner) internal returns (MiniMeToken) {
-        require(tokenCache[_owner] != address(0), ERROR_MISSING_TOKEN_CACHE);
-
-        MiniMeToken token = MiniMeToken(tokenCache[_owner]);
-        delete tokenCache[_owner];
-        return token;
     }
 
     function _ensureMembershipSettings(address[] _members, uint64[3] _votingSettings, uint256[4] _payrollSettings) private pure {
