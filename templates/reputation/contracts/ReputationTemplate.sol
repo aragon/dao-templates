@@ -133,12 +133,7 @@ contract ReputationTemplate is BaseTemplate {
         _createFinancePermissions(_acl, _finance, _voting, _voting);
         _createEvmScriptsRegistryPermissions(_acl, _voting, _voting);
         _createVotingPermissions(_acl, _voting, _voting, _tokenManager, _voting);
-        _createCustomTokenManagerPermissions(_acl, _tokenManager, _voting);
-    }
-
-    function _createCustomTokenManagerPermissions(ACL _acl, TokenManager _tokenManager, Voting _voting) internal {
-        _acl.createPermission(_voting, _tokenManager, _tokenManager.BURN_ROLE(), _voting);
-        _acl.createPermission(_voting, _tokenManager, _tokenManager.MINT_ROLE(), _voting);
+        _createTokenManagerPermissions(_acl, _tokenManager, _voting, _voting);
     }
 
     function _cacheToken(MiniMeToken _token, address _owner) internal {

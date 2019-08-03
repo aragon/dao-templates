@@ -239,8 +239,7 @@ contract BaseTemplate is APMNamehash, IsContract {
 
     function _createTokenManagerPermissions(ACL _acl, TokenManager _tokenManager, address _grantee, address _manager) internal {
         _acl.createPermission(_grantee, _tokenManager, _tokenManager.MINT_ROLE(), _manager);
-        _acl.createPermission(_grantee, _tokenManager, _tokenManager.ASSIGN_ROLE(), _manager);
-        _acl.createPermission(_grantee, _tokenManager, _tokenManager.REVOKE_VESTINGS_ROLE(), _manager);
+        _acl.createPermission(_grantee, _tokenManager, _tokenManager.BURN_ROLE(), _manager);
     }
 
     function _mintTokens(ACL _acl, TokenManager _tokenManager, address[] _holders, uint256[] _stakes) internal {
