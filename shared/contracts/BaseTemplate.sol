@@ -151,14 +151,19 @@ contract BaseTemplate is APMNamehash, IsContract {
 
     /* VOTING */
 
+    function _installVotingApp(Kernel _dao, MiniMeToken _token, uint64[3] _votingSettings) internal returns (Voting) {
+        return _installVotingApp(_dao, _token, _votingSettings[0], _votingSettings[1], _votingSettings[2]);
+    }
+
     function _installVotingApp(Kernel _dao, MiniMeToken _token, uint64 _support, uint64 _acceptance, uint64 _duration) internal returns (Voting) {
         bytes memory initializeData = abi.encodeWithSelector(Voting(0).initialize.selector, _token, _support, _acceptance, _duration);
         return Voting(_installNonDefaultApp(_dao, VOTING_APP_ID, initializeData));
     }
 
-    function _createVotingPermissions(ACL _acl, Voting _voting, address _grantee, address _manager) internal {
-        _acl.createPermission(_grantee, _voting, _voting.MODIFY_QUORUM_ROLE(), _manager);
-        _acl.createPermission(_grantee, _voting, _voting.MODIFY_SUPPORT_ROLE(), _manager);
+    function _createVotingPermissions(ACL _acl, Voting _voting, address _settingsGrantee, address _createVotesGrantee, address _manager) internal {
+        _acl.createPermission(_settingsGrantee, _voting, _voting.MODIFY_QUORUM_ROLE(), _manager);
+        _acl.createPermission(_settingsGrantee, _voting, _voting.MODIFY_SUPPORT_ROLE(), _manager);
+        _acl.createPermission(_createVotesGrantee, _voting, _voting.CREATE_VOTES_ROLE(), _manager);
     }
 
     /* SURVEY */

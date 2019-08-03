@@ -109,7 +109,7 @@ contract CompanyTemplate is BaseTemplate {
         Vault agentOrVault = _useAgentAsVault ? _installDefaultAgentApp(_dao) : _installVaultApp(_dao);
         Finance finance = _installFinanceApp(_dao, agentOrVault, _financePeriod == 0 ? DEFAULT_FINANCE_PERIOD : _financePeriod);
         TokenManager tokenManager = _installTokenManagerApp(_dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
-        Voting voting = _installVotingApp(_dao, token, _votingSettings[0], _votingSettings[1], _votingSettings[2]);
+        Voting voting = _installVotingApp(_dao, token, _votingSettings);
 
         _mintTokens(_acl, tokenManager, _holders, _stakes);
         _setupPermissions(_acl, agentOrVault, voting, finance, tokenManager, _useAgentAsVault);
@@ -132,14 +132,8 @@ contract CompanyTemplate is BaseTemplate {
         _createVaultPermissions(_acl, _agentOrVault, _finance, _voting);
         _createFinancePermissions(_acl, _finance, _voting, _voting);
         _createEvmScriptsRegistryPermissions(_acl, _voting, _voting);
-        _createCustomVotingPermissions(_acl, _voting, _tokenManager);
+        _createVotingPermissions(_acl, _voting, _voting, _tokenManager, _voting);
         _createCustomTokenManagerPermissions(_acl, _tokenManager, _voting);
-    }
-
-    function _createCustomVotingPermissions(ACL _acl, Voting _voting, TokenManager _tokenManager) internal {
-        _acl.createPermission(_tokenManager, _voting, _voting.CREATE_VOTES_ROLE(), _voting);
-        _acl.createPermission(_voting, _voting, _voting.MODIFY_QUORUM_ROLE(), _voting);
-        _acl.createPermission(_voting, _voting, _voting.MODIFY_SUPPORT_ROLE(), _voting);
     }
 
     function _createCustomTokenManagerPermissions(ACL _acl, TokenManager _tokenManager, Voting _voting) internal {

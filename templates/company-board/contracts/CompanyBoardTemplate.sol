@@ -110,7 +110,7 @@ contract CompanyBoardTemplate is BaseTemplate {
     function _setupBoardApps(Kernel _dao, address[] _members, uint64[3] _votingSettings) internal {
         ACL acl = ACL(_dao.acl());
         MiniMeToken token = _popBoardTokenCache();
-        Voting voting = _installVotingApp(_dao, token, _votingSettings[0], _votingSettings[1], _votingSettings[2]);
+        Voting voting = _installVotingApp(_dao, token, _votingSettings);
         TokenManager tokenManager = _installTokenManagerApp(_dao, token, BOARD_TRANSFERABLE, BOARD_MAX_PER_ACCOUNT);
 
         _mintTokens(acl, tokenManager, _members, 1);
@@ -138,7 +138,7 @@ contract CompanyBoardTemplate is BaseTemplate {
         ACL acl = ACL(dao.acl());
 
         MiniMeToken token = _popShareTokenCache();
-        shareVoting = _installVotingApp(dao, token, _votingSettings[0], _votingSettings[1], _votingSettings[2]);
+        shareVoting = _installVotingApp(dao, token, _votingSettings);
         shareTokenManager = _installTokenManagerApp(dao, token, SHARE_TRANSFERABLE, SHARE_MAX_PER_ACCOUNT);
         _mintTokens(acl, shareTokenManager, _holders, _stakes);
     }
@@ -161,7 +161,8 @@ contract CompanyBoardTemplate is BaseTemplate {
         _createCustomFinancePermissions(_acl, _finance, boardVoting, _shareVoting);
         _createCustomTokenManagerPermissions(_acl, boardTokenManager, _shareVoting);
         _createCustomTokenManagerPermissions(_acl, _shareTokenManager, _shareVoting);
-        _createCustomVotingPermissions(_acl, boardVoting, _shareVoting, boardTokenManager);
+        _createVotingPermissions(_acl, _boardVoting, _shareVoting, _boardTokenManager, _shareVoting);
+        _createVotingPermissions(_acl, _shareVoting, _shareVoting, _boardTokenManager, _shareVoting);
         _createEvmScriptsRegistryPermissions(_acl, _shareVoting, _shareVoting);
         return boardVoting;
     }
@@ -183,16 +184,6 @@ contract CompanyBoardTemplate is BaseTemplate {
         _createPermissions(_acl, grantees, _finance, _finance.CREATE_PAYMENTS_ROLE(), _shareVoting);
         _acl.createPermission(_shareVoting, _finance, _finance.EXECUTE_PAYMENTS_ROLE(), _shareVoting);
         _acl.createPermission(_shareVoting, _finance, _finance.MANAGE_PAYMENTS_ROLE(), _shareVoting);
-    }
-
-    function _createCustomVotingPermissions(ACL _acl, Voting _boardVoting, Voting _shareVoting, TokenManager _boardTokenManager) internal {
-        _acl.createPermission(_boardTokenManager, _boardVoting, _boardVoting.CREATE_VOTES_ROLE(), _shareVoting);
-        _acl.createPermission(_shareVoting, _boardVoting, _boardVoting.MODIFY_QUORUM_ROLE(), _shareVoting);
-        _acl.createPermission(_shareVoting, _boardVoting, _boardVoting.MODIFY_SUPPORT_ROLE(), _shareVoting);
-
-        _acl.createPermission(_boardTokenManager, _shareVoting, _shareVoting.CREATE_VOTES_ROLE(), _shareVoting);
-        _acl.createPermission(_shareVoting, _shareVoting, _shareVoting.MODIFY_QUORUM_ROLE(), _shareVoting);
-        _acl.createPermission(_shareVoting, _shareVoting, _shareVoting.MODIFY_SUPPORT_ROLE(), _shareVoting);
     }
 
     function _createCustomTokenManagerPermissions(ACL _acl, TokenManager _tokenManager, Voting _voting) internal {
