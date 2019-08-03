@@ -41,11 +41,11 @@ contract('Trust', ([_, owner, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
   context('when the creation fails', () => {
     context('when there was no DAO prepared', () => {
       it('reverts when trying to setup a new DAO', async () => {
-        await assertRevert(template, template.setupInstance.request(randomId(), BENEFICIARY_KEYS, HEIRS, HEIRS_STAKE), 'TRUST_MISSING_SENDER_CACHE')
+        await assertRevert(template.setupInstance(randomId(), BENEFICIARY_KEYS, HEIRS, HEIRS_STAKE), 'TRUST_MISSING_SENDER_CACHE')
       })
 
       it('reverts when trying to setup a new multisig wallet', async () => {
-        await assertRevert(template, template.setupMultiSig.request(MULTI_SIG_KEYS), 'TRUST_MISSING_SENDER_CACHE')
+        await assertRevert(template.setupMultiSig(MULTI_SIG_KEYS), 'TRUST_MISSING_SENDER_CACHE')
       })
     })
 
@@ -56,21 +56,21 @@ contract('Trust', ([_, owner, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
       })
 
       it('reverts when the given beneficiary keys are not 2', async () => {
-        await assertRevert(template, template.setupInstance.request(daoID, [beneficiaryKey1], HEIRS, HEIRS_STAKE), 'TRUST_BAD_BENEFICIARY_KEY_LENGTH')
-        await assertRevert(template, template.setupInstance.request(daoID, [beneficiaryKey1, beneficiaryKey2, heir1], HEIRS, HEIRS_STAKE), 'TRUST_BAD_BENEFICIARY_KEY_LENGTH')
+        await assertRevert(template.setupInstance(daoID, [beneficiaryKey1], HEIRS, HEIRS_STAKE), 'TRUST_BAD_BENEFICIARY_KEY_LENGTH')
+        await assertRevert(template.setupInstance(daoID, [beneficiaryKey1, beneficiaryKey2, heir1], HEIRS, HEIRS_STAKE), 'TRUST_BAD_BENEFICIARY_KEY_LENGTH')
       })
 
       it('reverts when the given heirs do not match', async () => {
-        await assertRevert(template, template.setupInstance.request(daoID, BENEFICIARY_KEYS, HEIRS, [66e18]), 'TRUST_BAD_HEIRS_LENGTH')
+        await assertRevert(template.setupInstance(daoID, BENEFICIARY_KEYS, HEIRS, [66e18]), 'TRUST_BAD_HEIRS_LENGTH')
       })
 
       it('reverts when the given heirs stake do not represent a 66%', async () => {
-        await assertRevert(template, template.setupInstance.request(daoID, BENEFICIARY_KEYS, HEIRS, [1e18, 1e18]), 'TRUST_INVALID_HEIRS_STAKE')
+        await assertRevert(template.setupInstance(daoID, BENEFICIARY_KEYS, HEIRS, [1e18, 1e18]), 'TRUST_INVALID_HEIRS_STAKE')
       })
 
       context('when there was no DAO setup', () => {
         it('reverts when trying to setup a new multisig wallet', async () => {
-          await assertRevert(template, template.setupMultiSig.request(MULTI_SIG_KEYS), 'TRUST_MISSING_SENDER_CACHE')
+          await assertRevert(template.setupMultiSig(MULTI_SIG_KEYS), 'TRUST_MISSING_SENDER_CACHE')
         })
       })
 
@@ -80,8 +80,8 @@ contract('Trust', ([_, owner, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
         })
 
         it('reverts when then given multi sig keys are not 2', async () => {
-          await assertRevert(template, template.setupMultiSig.request([multiSigKey1]), 'TRUST_BAD_MULTI_SIG_KEYS_LENGTH')
-          await assertRevert(template, template.setupMultiSig.request([multiSigKey1, multiSigKey2, heir1]), 'TRUST_BAD_MULTI_SIG_KEYS_LENGTH')
+          await assertRevert(template.setupMultiSig([multiSigKey1]), 'TRUST_BAD_MULTI_SIG_KEYS_LENGTH')
+          await assertRevert(template.setupMultiSig([multiSigKey1, multiSigKey2, heir1]), 'TRUST_BAD_MULTI_SIG_KEYS_LENGTH')
         })
       })
     })

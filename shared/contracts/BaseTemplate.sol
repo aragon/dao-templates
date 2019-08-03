@@ -182,6 +182,17 @@ contract BaseTemplate is APMNamehash, IsContract {
         return payroll;
     }
 
+    /**
+    * @dev Internal function to configure payroll permissions. Note that we allow defining different managers for
+    *      payroll in order to since it may be useful having one to control the payroll settings (rate expiration,
+    *      price feed, and allowed tokens), and another one to control the core functionality of the payroll app
+    *      (bonuses, salaries, reimbursements, employees, etc).
+    * @param _acl ACL instance being configured
+    * @param _acl Payroll app being configured
+    * @param _employeeManager Address that will receive permissions to handle core payroll functionality
+    * @param _settingsManager Address that will receive permissions to manage payroll settings
+    * @param _permissionsManager Address that will be the ACL manager for the payroll permissions
+    */
     function _createPayrollPermissions(ACL _acl, Payroll _payroll, address _employeeManager, address _settingsManager, address _permissionsManager) internal {
         _acl.createPermission(_employeeManager, _payroll, _payroll.ADD_BONUS_ROLE(), _permissionsManager);
         _acl.createPermission(_employeeManager, _payroll, _payroll.ADD_EMPLOYEE_ROLE(), _permissionsManager);

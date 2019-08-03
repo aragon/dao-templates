@@ -18,30 +18,25 @@ module.exports = web3 => {
     return decodedReason
   }
 
-  async function transactionWillRevert(tx) {
+  async function assertRevertGeth(request, reason) {
     try {
-      await web3.eth.estimateGas(tx)
-      return false
+      await request
     } catch (error) {
-      return true
+      const { tx, receipt: { status } } = error
+      assert.equal(status, '0x0', `Expected transaction to revert but it executed with status ${status}`)
+      if (reason.length === 0) return true
+
+      assert.notEqual(tx, undefined, `Expected error to include transaction hash, cannot assert revert reason ${reason}: ${error}`)
+      const { gas, gasPrice, from, to, nonce, input: data } = web3.eth.getTransaction(tx)
+      const response = await web3.eth.call({ data, from, to, gas, gasPrice, nonce })
+      const reasonFound = decodeReason(response)
+      assert.equal(reasonFound, reason, `Revert reason '${reason}' not found. Found '${reasonFound}' instead.` )
     }
   }
 
-  async function assertRevertGeth(truffleInstance, requestOrTx, reason) {
-    const tx = requestOrTx.hasOwnProperty('method') ? requestOrTx.params[0] : requestOrTx
-    assert.isTrue(await transactionWillRevert(tx), 'Transaction should revert')
-
-    if (reason.length === 0) return true
-    const response = await web3.eth.call(tx)
-    const reasonFound = decodeReason(response)
-    assert.equal(reasonFound, reason, `Revert reason '${reason}' not found. Found '${reasonFound}' instead.` )
-  }
-
-  async function assertRevertGanache(truffleInstance, requestOrTx, reason) {
-    const tx = requestOrTx.hasOwnProperty('method') ? requestOrTx.params[0] : requestOrTx
-    if (!tx.from) tx.from = web3.eth.accounts[0]
+  async function assertRevertGanache(request, reason) {
     const { assertRevert } = require('@aragon/test-helpers/assertThrow')
-    await assertRevert(truffleInstance.sendTransaction(tx), reason)
+    return assertRevert(request, reason)
   }
 
   return isGanache() ? assertRevertGanache : assertRevertGeth

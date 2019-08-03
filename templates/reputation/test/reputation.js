@@ -1,3 +1,6 @@
+const encodeCall = require('@aragon/templates-shared/helpers/encodeCall')
+const assertRevert = require('@aragon/templates-shared/helpers/assertRevert')(web3)
+
 const { hash: namehash } = require('eth-ens-namehash')
 const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
 const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
@@ -5,8 +8,6 @@ const { getEventArgument } = require('@aragon/test-helpers/events')
 const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
 const { getInstalledAppsById } = require('@aragon/templates-shared/helpers/events')(artifacts)
 const { assertRole, assertMissingRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
-const { encodeFunctionCall } = require('@aragon/templates-shared/helpers/abi')
-const assertRevert = require('@aragon/templates-shared/helpers/assertRevert')(web3)
 
 const ReputationTemplate = artifacts.require('ReputationTemplate')
 
@@ -47,25 +48,18 @@ contract('Reputation', ([_, owner, holder1, holder2, someone]) => {
   const PAYROLL_DENOMINATION_TOKEN = '0x0000000000000000000000000000000000000abc'
   const PAYROLL_RATE_EXPIRY_TIME = TWO_MONTHS
 
-  const NEW_INSTANCE_PARAMS = 'string,address[],uint256[],uint64[3],uint64,bool'
-  const NEW_INSTANCE_WITH_PAYROLL_PARAMS = 'string,address[],uint256[],uint64[3],uint64,bool,uint256[4]'
-
-  const newInstance = async (...params) => template.sendTransaction(newInstanceTx(...params))
-  const newInstanceTx = (...params) => {
-    const paramsSig = params.length === NEW_INSTANCE_PARAMS.split(',').length ? NEW_INSTANCE_PARAMS : NEW_INSTANCE_WITH_PAYROLL_PARAMS
-    const data = encodeFunctionCall(
-      `newInstance(${paramsSig})`,
-      paramsSig.split(','),
-      params
-    )
-    return {from: owner, to: template.address, data}
-  }
-
   before('fetch reputation template and ENS', async () => {
     const { registry, address } = await deployedAddresses()
     ens = ENS.at(registry)
     template = ReputationTemplate.at(address)
   })
+
+  const newInstance = (...params) => {
+    const lastParam = params[params.length - 1]
+    const txParams = (!Array.isArray(lastParam) && typeof lastParam === 'object') ? params.pop() : {}
+    const newInstanceFn = ReputationTemplate.abi.find(({ name, inputs }) => name === 'newInstance' && inputs.length === params.length)
+    return template.sendTransaction(encodeCall(newInstanceFn, params, txParams))
+  }
 
   const loadDAO = async (tokenReceipt, instanceReceipt, apps = { vault: false, agent: false, payroll: false}) => {
     dao = Kernel.at(getEventArgument(instanceReceipt, 'DeployDao', 'dao'))
@@ -224,12 +218,12 @@ contract('Reputation', ([_, owner, holder1, holder2, someone]) => {
       const USE_AGENT_AS_VAULT = true
 
       it('reverts when no holders were given', async () => {
-        await assertRevert(template, template.newTokenAndInstance.request(TOKEN_NAME, TOKEN_SYMBOL, randomId(), [], [], VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'REPUTATION_EMPTY_HOLDERS')
+        await assertRevert(template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, randomId(), [], [], VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'REPUTATION_EMPTY_HOLDERS')
       })
 
       it('reverts when holders and stakes length do not match', async () => {
-        await assertRevert(template, template.newTokenAndInstance.request(TOKEN_NAME, TOKEN_SYMBOL, randomId(), [holder1], STAKES, VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
-        await assertRevert(template, template.newTokenAndInstance.request(TOKEN_NAME, TOKEN_SYMBOL, randomId(), HOLDERS, [1e18], VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
+        await assertRevert(template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, randomId(), [holder1], STAKES, VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
+        await assertRevert(template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, randomId(), HOLDERS, [1e18], VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
       })
     })
 
@@ -244,19 +238,9 @@ contract('Reputation', ([_, owner, holder1, holder2, someone]) => {
         })
       }
 
-      const itCostsUpTo = (expectedDaoCreationCost) => {
-        const expectedTokenCreationCost = 1.8e6
-        const expectedTotalCost = expectedTokenCreationCost + expectedDaoCreationCost
-
-        it(`gas costs must be up to ~${expectedTotalCost} gas`, async () => {
-          const tokenCreationCost = tokenReceipt.receipt.gasUsed
-          assert.isAtMost(tokenCreationCost, expectedTokenCreationCost, `token creation call should cost up to ${tokenCreationCost} gas`)
-
-          const daoCreationCost = instanceReceipt.receipt.gasUsed
-          assert.isAtMost(daoCreationCost, expectedDaoCreationCost, `dao creation call should cost up to ${expectedDaoCreationCost} gas`)
-
-          const totalCost = tokenCreationCost + daoCreationCost
-          assert.isAtMost(totalCost, expectedTotalCost, `total costs should be up to ${expectedTotalCost} gas`)
+      const itCostsUpTo = (expectedCost) => {
+        it(`gas costs must be up to ~${expectedCost} gas`, async () => {
+          assert.isAtMost(receipt.receipt.gasUsed, expectedCost, `create call should cost up to ${expectedCost} gas`)
         })
       }
 
@@ -313,7 +297,7 @@ contract('Reputation', ([_, owner, holder1, holder2, someone]) => {
 
       context('when there was no token created before', () => {
         it('reverts', async () => {
-          await assertRevert(template, newInstanceTx(randomId(), HOLDERS, STAKES, VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'REPUTATION_MISSING_TOKEN_CACHE')
+          await assertRevert(newInstance(randomId(), HOLDERS, STAKES, VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'REPUTATION_MISSING_TOKEN_CACHE')
         })
       })
 
@@ -323,12 +307,12 @@ contract('Reputation', ([_, owner, holder1, holder2, someone]) => {
         })
 
         it('reverts when no holders were given', async () => {
-          await assertRevert(template, newInstanceTx(randomId(), [], [], VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'REPUTATION_EMPTY_HOLDERS')
+          await assertRevert(newInstance(randomId(), [], [], VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'REPUTATION_EMPTY_HOLDERS')
         })
 
         it('reverts when holders and stakes length do not match', async () => {
-          await assertRevert(template, newInstanceTx(randomId(), [holder1], STAKES, VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
-          await assertRevert(template, newInstanceTx(randomId(), HOLDERS, [1e18], VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
+          await assertRevert(newInstance(randomId(), [holder1], STAKES, VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
+          await assertRevert(newInstance(randomId(), HOLDERS, [1e18], VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
         })
       })
     })
@@ -336,13 +320,19 @@ contract('Reputation', ([_, owner, holder1, holder2, someone]) => {
     context('when the creation succeeds', () => {
       let instanceReceipt, tokenReceipt
 
-      const itCostsUpTo = (daoCreationCost) => {
-        const tokenCreationCost = 1.8e6
-        const totalCost = tokenCreationCost + daoCreationCost
+      const itCostsUpTo = (expectedDaoCreationCost) => {
+        const expectedTokenCreationCost = 1.8e6
+        const expectedTotalCost = expectedTokenCreationCost + expectedDaoCreationCost
 
-        it(`costs max ~${totalCost} gas`, async () => {
-          assert.isAtMost(tokenReceipt.receipt.gasUsed, 1.8e6, 'create token script should cost almost 1.8e6 gas')
-          assert.isAtMost(instanceReceipt.receipt.gasUsed, daoCreationCost, `create instance script should cost almost ${daoCreationCost} gas`)
+        it(`gas costs must be up to ~${expectedTotalCost} gas`, async () => {
+          const tokenCreationCost = tokenReceipt.receipt.gasUsed
+          assert.isAtMost(tokenCreationCost, expectedTokenCreationCost, `token creation call should cost up to ${tokenCreationCost} gas`)
+
+          const daoCreationCost = instanceReceipt.receipt.gasUsed
+          assert.isAtMost(daoCreationCost, expectedDaoCreationCost, `dao creation call should cost up to ${expectedDaoCreationCost} gas`)
+
+          const totalCost = tokenCreationCost + daoCreationCost
+          assert.isAtMost(totalCost, expectedTotalCost, `total costs should be up to ${expectedTotalCost} gas`)
         })
       }
 
@@ -352,7 +342,7 @@ contract('Reputation', ([_, owner, holder1, holder2, someone]) => {
           before('create reputation entity without payroll app', async () => {
             daoID = randomId()
             tokenReceipt = await template.newToken(TOKEN_NAME, TOKEN_SYMBOL, { from: owner })
-            instanceReceipt = await newInstance(daoID, HOLDERS, STAKES, VOTING_SETTINGS, financePeriod, useAgentAsVault)
+            instanceReceipt = await newInstance(daoID, HOLDERS, STAKES, VOTING_SETTINGS, financePeriod, useAgentAsVault, { from: owner })
             await loadDAO(tokenReceipt, instanceReceipt, { vault: !useAgentAsVault, agent: useAgentAsVault })
           })
         }
@@ -408,12 +398,12 @@ contract('Reputation', ([_, owner, holder1, holder2, someone]) => {
 
         const createDAO = (employeeManager = undefined) => {
           before('create reputation entity with payroll app', async () => {
-            feed = await MockContract.new() // has to be a contract
             daoID = randomId()
+            feed = await MockContract.new() // has to be a contract
             tokenReceipt = await template.newToken(TOKEN_NAME, TOKEN_SYMBOL, { from: owner })
 
             const payrollSettings = [PAYROLL_DENOMINATION_TOKEN, feed.address, PAYROLL_RATE_EXPIRY_TIME, employeeManager]
-            instanceReceipt = await newInstance(daoID, HOLDERS, STAKES, VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT, payrollSettings)
+            instanceReceipt = await newInstance(daoID, HOLDERS, STAKES, VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT, payrollSettings, { from: owner })
             await loadDAO(tokenReceipt, instanceReceipt, { vault: !USE_AGENT_AS_VAULT, agent: USE_AGENT_AS_VAULT, payroll: true })
           })
         }

@@ -1,12 +1,13 @@
+const encodeCall = require('@aragon/templates-shared/helpers/encodeCall')
+const assertRevert = require('@aragon/templates-shared/helpers/assertRevert')(web3)
+
 const { hash: namehash } = require('eth-ens-namehash')
 const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
 const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
 const { getEventArgument } = require('@aragon/test-helpers/events')
 const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
-const { encodeFunctionCall } = require('@aragon/templates-shared/helpers/abi')
 const { getInstalledAppsById } = require('@aragon/templates-shared/helpers/events')(artifacts)
 const { assertRole, assertMissingRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
-const assertRevert = require('@aragon/templates-shared/helpers/assertRevert')(web3)
 
 const CompanyTemplate = artifacts.require('CompanyBoardTemplate')
 
@@ -53,25 +54,18 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
   const PAYROLL_DENOMINATION_TOKEN = '0x0000000000000000000000000000000000000abc'
   const PAYROLL_RATE_EXPIRY_TIME = TWO_MONTHS
 
-  const SETUP_SHARE_PARAMS = 'string,address[],uint256[],uint64[3],uint64,bool'
-  const SETUP_SHARE_WITH_PAYROLL_PARAMS = 'string,address[],uint256[],uint64[3],uint64,bool,uint256[4]'
-
-  const setupShare = async (...params) => template.sendTransaction(setupShareTx(...params))
-  const setupShareTx = (...params) => {
-    const paramsSig = params.length === SETUP_SHARE_PARAMS.split(',').length ? SETUP_SHARE_PARAMS : SETUP_SHARE_WITH_PAYROLL_PARAMS
-    const data = encodeFunctionCall(
-      `setupShare(${paramsSig})`,
-      paramsSig.split(','),
-      params
-    )
-    return {from: owner, to: template.address, data}
-  }
-
   before('fetch company board template and ENS', async () => {
     const { registry, address } = await deployedAddresses()
     ens = ENS.at(registry)
     template = CompanyTemplate.at(address)
   })
+
+  const setupShare = (...params) => {
+    const lastParam = params[params.length - 1]
+    const txParams = (!Array.isArray(lastParam) && typeof lastParam === 'object') ? params.pop() : {}
+    const setupShareFn = CompanyTemplate.abi.find(({ name, inputs }) => name === 'setupShare' && inputs.length === params.length)
+    return template.sendTransaction(encodeCall(setupShareFn, params, txParams))
+  }
 
   context('when the creation fails', () => {
     const FINANCE_PERIOD = 0
@@ -79,11 +73,11 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
     context('when there was no instance prepared before', () => {
       it('reverts', async () => {
-        await assertRevert(template, template.setupBoard.request(BOARD_MEMBERS, BOARD_VOTING_SETTINGS), 'COMPANY_MISSING_CACHE')
+        await assertRevert(template.setupBoard(BOARD_MEMBERS, BOARD_VOTING_SETTINGS), 'COMPANY_MISSING_CACHE')
       })
 
       it('reverts', async () => {
-        await assertRevert(template, template.setupShare.request(randomId(), SHARE_HOLDERS, SHARE_STAKES, SHARE_VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANY_MISSING_CACHE')
+        await assertRevert(template.setupShare(randomId(), SHARE_HOLDERS, SHARE_STAKES, SHARE_VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANY_MISSING_CACHE')
       })
     })
 
@@ -94,7 +88,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
 
       context('when there was no board setup before', () => {
         it('reverts when no board members were given', async () => {
-          await assertRevert(template, template.setupBoard.request([], BOARD_VOTING_SETTINGS), 'COMPANY_MISSING_BOARD_MEMBERS')
+          await assertRevert(template.setupBoard([], BOARD_VOTING_SETTINGS), 'COMPANY_MISSING_BOARD_MEMBERS')
         })
       })
 
@@ -104,12 +98,12 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
         })
 
         it('reverts when no share members were given', async () => {
-          await assertRevert(template, setupShareTx(randomId(), [], SHARE_STAKES, SHARE_VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANY_MISSING_SHARE_MEMBERS')
+          await assertRevert(setupShare(randomId(), [], SHARE_STAKES, SHARE_VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANY_MISSING_SHARE_MEMBERS')
         })
 
         it('reverts when number of shared members and stakes do not match', async () => {
-          await assertRevert(template, setupShareTx(randomId(), [shareHolder1], SHARE_STAKES, SHARE_VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
-          await assertRevert(template, setupShareTx(randomId(), SHARE_HOLDERS, [1e18], SHARE_VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
+          await assertRevert(setupShare(randomId(), [shareHolder1], SHARE_STAKES, SHARE_VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
+          await assertRevert(setupShare(randomId(), SHARE_HOLDERS, [1e18], SHARE_VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANY_BAD_HOLDERS_STAKES_LEN')
         })
       })
     })
@@ -342,7 +336,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
           daoID = randomId()
           prepareReceipt = await template.prepareInstance(SHARE_TOKEN_NAME, SHARE_TOKEN_SYMBOL, { from: owner })
           setupBoardReceipt = await template.setupBoard(BOARD_MEMBERS, BOARD_VOTING_SETTINGS, { from: owner })
-          setupShareReceipt = await setupShare(daoID, SHARE_HOLDERS, SHARE_STAKES, SHARE_VOTING_SETTINGS, financePeriod, useAgentAsVault)
+          setupShareReceipt = await setupShare(daoID, SHARE_HOLDERS, SHARE_STAKES, SHARE_VOTING_SETTINGS, financePeriod, useAgentAsVault, { from: owner })
 
           dao = Kernel.at(getEventArgument(prepareReceipt, 'DeployDao', 'dao'))
           boardToken = MiniMeToken.at(getEventArgument(prepareReceipt, 'DeployToken', 'token', 0))
@@ -408,7 +402,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
           setupBoardReceipt = await template.setupBoard(BOARD_MEMBERS, BOARD_VOTING_SETTINGS, { from: owner })
 
           const payrollSettings = [PAYROLL_DENOMINATION_TOKEN, feed.address, PAYROLL_RATE_EXPIRY_TIME, employeeManager]
-          setupShareReceipt = await setupShare(daoID, SHARE_HOLDERS, SHARE_STAKES, SHARE_VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT, payrollSettings)
+          setupShareReceipt = await setupShare(daoID, SHARE_HOLDERS, SHARE_STAKES, SHARE_VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT, payrollSettings, { from: owner })
 
           dao = Kernel.at(getEventArgument(prepareReceipt, 'DeployDao', 'dao'))
           boardToken = MiniMeToken.at(getEventArgument(prepareReceipt, 'DeployToken', 'token', 0))
