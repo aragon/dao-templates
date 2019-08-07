@@ -20,6 +20,6 @@
   },
   "devDependencies": {
     "@aragon/test-helpers": "^2.0.0",
-    "web3-eth-abi": "1.0.0-beta.37"
+    "web3-eth-abi": "^1.2.0"
   }
 }
