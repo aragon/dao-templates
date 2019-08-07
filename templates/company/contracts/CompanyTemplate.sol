@@ -12,7 +12,7 @@ contract CompanyTemplate is BaseTemplate {
 
     bool constant private TOKEN_TRANSFERABLE = true;
     uint8 constant private TOKEN_DECIMALS = uint8(18);
-    uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(0);            // no limit of tokens per account
+    uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(0);
 
     uint64 constant private DEFAULT_FINANCE_PERIOD = uint64(30 days);
 
@@ -27,7 +27,8 @@ contract CompanyTemplate is BaseTemplate {
     }
 
     /**
-    * @dev Create a new MiniMe token and deploy a Company DAO. This function does not admit payroll setup due to gas limits.
+    * @dev Create a new MiniMe token and deploy a Company DAO. This function does not allow Payroll
+    *      to be setup due to gas limits.
     * @param _tokenName String with the name for the token used by share holders in the organization
     * @param _tokenSymbol String with the symbol for the token used by share holders in the organization
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
@@ -43,7 +44,7 @@ contract CompanyTemplate is BaseTemplate {
         string _id,
         address[] _holders,
         uint256[] _stakes,
-        uint64[3] _votingSettings, /*  */
+        uint64[3] _votingSettings,
         uint64 _financePeriod,
         bool _useAgentAsVault
     )
@@ -54,7 +55,7 @@ contract CompanyTemplate is BaseTemplate {
     }
 
     /**
-    * @dev Create a new MiniMe token for the Company DAO
+    * @dev Create a new MiniMe token and cache it for the user
     * @param _name String with the name for the token used by share holders in the organization
     * @param _symbol String with the symbol for the token used by share holders in the organization
     */
@@ -65,7 +66,7 @@ contract CompanyTemplate is BaseTemplate {
     }
 
     /**
-    * @dev Deploy a Company DAO using a previous deployed MiniMe token
+    * @dev Deploy a Company DAO using a previously cached MiniMe token
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
     * @param _holders Array of token holder addresses
     * @param _stakes Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`)
@@ -83,7 +84,7 @@ contract CompanyTemplate is BaseTemplate {
     }
 
     /**
-    * @dev Deploy a Company DAO using a previous deployed MiniMe token
+    * @dev Deploy a Company DAO using a previously cached MiniMe token
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
     * @param _holders Array of token holder addresses
     * @param _stakes Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`)

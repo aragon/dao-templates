@@ -27,7 +27,8 @@ contract ReputationTemplate is BaseTemplate {
     }
 
     /**
-    * @dev Create a new MiniMe token and deploy a Company DAO. This function does not admit payroll setup due to gas limits.
+    * @dev Create a new MiniMe token and deploy a Reputation DAO. This function does not allow Payroll
+    *      to be setup due to gas limits.
     * @param _tokenName String with the name for the token used by share holders in the organization
     * @param _tokenSymbol String with the symbol for the token used by share holders in the organization
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
@@ -54,7 +55,7 @@ contract ReputationTemplate is BaseTemplate {
     }
 
     /**
-    * @dev Create a new MiniMe token for the Reputation DAO
+    * @dev Create a new MiniMe token and cache it for the user
     * @param _name String with the name for the token used by share holders in the organization
     * @param _symbol String with the symbol for the token used by share holders in the organization
     */
@@ -65,7 +66,7 @@ contract ReputationTemplate is BaseTemplate {
     }
 
     /**
-    * @dev Deploy a Reputation DAO using a previous deployed MiniMe token
+    * @dev Deploy a Reputation DAO using a previously cached MiniMe token
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
     * @param _holders Array of token holder addresses
     * @param _stakes Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`)
@@ -73,9 +74,7 @@ contract ReputationTemplate is BaseTemplate {
     * @param _financePeriod Initial duration for accounting periods, it can be set to zero in order to use the default of 30 days.
     * @param _useAgentAsVault Boolean to tell whether to use an Agent app as a more advanced form of Vault app
     */
-    function newInstance(string _id, address[] _holders, uint256[] _stakes, uint64[3] _votingSettings, uint64 _financePeriod, bool _useAgentAsVault)
-        public
-    {
+    function newInstance(string _id, address[] _holders, uint256[] _stakes, uint64[3] _votingSettings, uint64 _financePeriod, bool _useAgentAsVault) public {
         _ensureReputationSettings(_holders, _stakes, _votingSettings);
 
         (Kernel dao, ACL acl) = _createDAO();
@@ -85,7 +84,7 @@ contract ReputationTemplate is BaseTemplate {
     }
 
     /**
-    * @dev Deploy a Reputation DAO using a previous deployed MiniMe token
+    * @dev Deploy a Reputation DAO using a previously cached MiniMe token
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
     * @param _holders Array of token holder addresses
     * @param _stakes Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`)

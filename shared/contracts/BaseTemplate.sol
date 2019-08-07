@@ -74,9 +74,10 @@ contract BaseTemplate is APMNamehash, IsContract {
     }
 
     /**
-    * @dev Create a DAO using the DAO Factory and configure root permissions to the template to grant full control to
-    *      set it up. Once the DAO setup has finished, it may be desired calling `_transferRootPermissionsFromTemplate`
-    *      helper to transfer the root permissions to the responsible entity.
+    * @dev Create a DAO using the DAO Factory and grant the template root permissions so it has full
+    *      control during setup. Once the DAO setup has finished, it is recommended to call the
+    *      `_transferRootPermissionsFromTemplate()` helper to transfer the root permissions to
+    *      the end entity in control of the organization.
     */
     function _createDAO() internal returns (Kernel dao, ACL acl) {
         dao = daoFactory.newDAO(this);
@@ -125,8 +126,8 @@ contract BaseTemplate is APMNamehash, IsContract {
 
     function _installDefaultAgentApp(Kernel _dao) internal returns (Agent) {
         Agent agent = Agent(_installDefaultApp(_dao, AGENT_APP_ID, abi.encodeWithSelector(AGENT_INIT_SELECTOR)));
-        // We assume that installing the Agent app as default is in order to replace the Vault app which is
-        // normally installed as default. Thus, we are setting its ID as the Vault id that the Kernel will use.
+        // We assume that installing the Agent app as a default app means the DAO should have its
+        // Vault replaced by the Agent. Thus, we also set the DAO's recovery app to the Agent.
         _dao.setRecoveryVaultAppId(AGENT_APP_ID);
         return agent;
     }
@@ -184,12 +185,12 @@ contract BaseTemplate is APMNamehash, IsContract {
 
     /**
     * @dev Internal function to configure payroll permissions. Note that we allow defining different managers for
-    *      payroll in order to since it may be useful having one to control the payroll settings (rate expiration,
-    *      price feed, and allowed tokens), and another one to control the core functionality of the payroll app
-    *      (bonuses, salaries, reimbursements, employees, etc).
+    *      payroll since it may be useful to have one control the payroll settings (rate expiration, price feed,
+    *      and allowed tokens), and another one to control the employee functionality (bonuses, salaries,
+    *      reimbursements, employees, etc).
     * @param _acl ACL instance being configured
     * @param _acl Payroll app being configured
-    * @param _employeeManager Address that will receive permissions to handle core payroll functionality
+    * @param _employeeManager Address that will receive permissions to handle employee payroll functionality
     * @param _settingsManager Address that will receive permissions to manage payroll settings
     * @param _permissionsManager Address that will be the ACL manager for the payroll permissions
     */

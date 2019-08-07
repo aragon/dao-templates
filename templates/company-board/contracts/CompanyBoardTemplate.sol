@@ -42,7 +42,7 @@ contract CompanyBoardTemplate is BaseTemplate {
     }
 
     /**
-    * @dev Create a new pair of MiniMe tokens for the Company with Board DAO and a cache a plain DAO to set it up
+    * @dev Create a new pair of MiniMe tokens for the Company with Board DAO and cache it for later setup steps
     * @param _shareTokenName String with the name for the token used by share holders in the organization
     * @param _shareTokenSymbol String with the symbol for the token used by share holders in the organization
     */
@@ -54,7 +54,7 @@ contract CompanyBoardTemplate is BaseTemplate {
     }
 
     /**
-    * @dev Setup a previous deployed DAO with the Board components
+    * @dev Setup a user's prepared DAO instance with the Board components
     * @param _members Array of board member addresses (1 token will be minted for each board member)
     * @param _votingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the board voting app of the organization
     */
@@ -67,7 +67,7 @@ contract CompanyBoardTemplate is BaseTemplate {
     }
 
     /**
-    * @dev Setup a previous deployed DAO with the Company with Share components
+    * @dev Finalize a user's prepared DAO instance (with the Board installed)
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
     * @param _holders Array of share holder addresses
     * @param _stakes Array of token stakes for share holders (token has 18 decimals, multiply token amount `* 10^18`)
@@ -86,7 +86,7 @@ contract CompanyBoardTemplate is BaseTemplate {
     }
 
     /**
-    * @dev Setup a previous deployed DAO with the Company with Share components
+    * @dev Finalize a user's prepared DAO instance (with the Board installed)
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
     * @param _holders Array of share holder addresses
     * @param _stakes Array of token stakes for share holders (token has 18 decimals, multiply token amount `* 10^18`)

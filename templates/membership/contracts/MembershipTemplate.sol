@@ -26,7 +26,8 @@ contract MembershipTemplate is BaseTemplate {
     }
 
     /**
-    * @dev Create a new MiniMe token and deploy a Membership DAO. This function does not admit payroll setup due to gas limits.
+    * @dev Create a new MiniMe token and deploy a Membership DAO. This function does not allow Payroll
+    *      to be setup due to gas limits.
     * @param _tokenName String with the name for the token used by share holders in the organization
     * @param _tokenSymbol String with the symbol for the token used by share holders in the organization
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
@@ -51,7 +52,7 @@ contract MembershipTemplate is BaseTemplate {
     }
 
     /**
-    * @dev Create a new MiniMe token for the Membership DAO
+    * @dev Create a new MiniMe token and cache it for the user
     * @param _name String with the name for the token used by share holders in the organization
     * @param _symbol String with the symbol for the token used by share holders in the organization
     */
@@ -62,7 +63,7 @@ contract MembershipTemplate is BaseTemplate {
     }
 
     /**
-    * @dev Deploy a Membership DAO using a previous deployed MiniMe token
+    * @dev Deploy a Membership DAO using a previously cached MiniMe token
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
     * @param _members Array of member addresses (1 token will be minted for each member)
     * @param _votingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
@@ -79,7 +80,7 @@ contract MembershipTemplate is BaseTemplate {
     }
 
     /**
-    * @dev Deploy a Membership DAO using a previous deployed MiniMe token
+    * @dev Deploy a Membership DAO using a previously cached MiniMe token
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
     * @param _members Array of member addresses (1 token will be minted for each member)
     * @param _votingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
