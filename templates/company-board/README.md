@@ -5,25 +5,25 @@
 Create new tokens and initialize DAO for the company-board entity:
 
 ```
-template.prepareInstance(tokenName, tokenSymbol)
+template.prepareInstance(shareTokenName, shareTokenSymbol)
 ```
 
-- `tokenName`: Name for the token used by share holders in the organization
-- `tokenSymbol`: Symbol for the token used by share holders in the organization
+- `shareTokenName`: Name for the token used by share holders in the organization
+- `shareTokenSymbol`: Symbol for the token used by share holders in the organization
 
 Setup company-board DAO:
 
 ```
-template.setupInstance(name, boardHolders, shareHolders, shareStakes, boardVoteSettings, shareVoteSettings, financePeriod, useAgentAsVault)
+template.setupInstance(name, boardHolders, shareHolders, shareStakes, boardVotingSettings, shareVotingSettings, financePeriod, useAgentAsVault)
 ```
 
 - `name`: Name for org, will assign `[name].aragonid.eth`
 - `boardMembers`: Array of board member addresses (1 token will be minted for each board member)
 - `shareHolders`: Array of share holder addresses
 - `shareStakes`: Array of token stakes for share holders (token has 18 decimals, multiply token amount `* 10^18`)
-- `boardVoteSettings`: Array of [supportRequired, minAcceptanceQuorum, voteDuration] for votes by the organization's board members
-- `shareVoteSettings`: Array of [supportRequired, minAcceptanceQuorum, voteDuration] for votes by the organization's share holders
-- `financePeriod`: Initial duration for accounting periods
+- `boardVotingSettings`: Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the board voting app of the organization
+- `shareVotingSettings`: Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the share voting app of the organization
+- `financePeriod`: Initial duration for accounting periods, it can be set to zero in order to use the default of 30 days.
 - `useAgentAsVault`: Use an Agent app as a more advanced form of Vault app
 
 ## Deploying templates

@@ -43,12 +43,13 @@
     "@aragon/apps-vault": "^4.1.0",
     "@aragon/apps-voting": "^2.1.0",
     "@aragon/apps-finance": "^3.0.0",
-    "@aragon/apps-survey": "^1.0.0",
+    "@aragon/apps-payroll": "^1.0.0-rc.1",
     "@aragon/apps-token-manager": "^2.1.0",
     "@aragon/apps-shared-minime": "^1.0.0",
     "@aragon/templates-shared": "^1.0.0"
   },
   "devDependencies": {
+    "@aragon/apps-survey": "^1.0.0",
     "@aragon/test-helpers": "^2.0.0",
     "eth-ens-namehash": "^2.0.8",
     "eth-gas-reporter": "^0.1.1",
