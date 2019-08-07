@@ -45,25 +45,19 @@ contract CompanyBoardTemplate is BaseTemplate {
     * @dev Create a new pair of MiniMe tokens for the Company with Board DAO and cache it for later setup steps
     * @param _shareTokenName String with the name for the token used by share holders in the organization
     * @param _shareTokenSymbol String with the symbol for the token used by share holders in the organization
-    */
-    function prepareInstance(string _shareTokenName, string _shareTokenSymbol) external {
-        (Kernel dao,) = _createDAO();
-        MiniMeToken boardToken = _createToken(BOARD_TOKEN_NAME, BOARD_TOKEN_SYMBOL, BOARD_TOKEN_DECIMALS);
-        MiniMeToken shareToken = _createToken(_shareTokenName, _shareTokenSymbol, SHARE_TOKEN_DECIMALS);
-        _cacheDao(dao, boardToken, shareToken);
-    }
-
-    /**
-    * @dev Setup a user's prepared DAO instance with the Board components
     * @param _members Array of board member addresses (1 token will be minted for each board member)
     * @param _votingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the board voting app of the organization
     */
-    function setupBoard(address[] _members, uint64[3] _votingSettings) external {
+    function prepareInstance(string _shareTokenName, string _shareTokenSymbol, address[] _members, uint64[3] _votingSettings) external {
         require(_members.length > 0, ERROR_MISSING_BOARD_MEMBERS);
         require(_votingSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
 
-        Kernel dao = _fetchDaoCache();
-        _setupBoardApps(dao, _members, _votingSettings);
+        (Kernel dao,) = _createDAO();
+        MiniMeToken boardToken = _createToken(BOARD_TOKEN_NAME, BOARD_TOKEN_SYMBOL, BOARD_TOKEN_DECIMALS);
+        MiniMeToken shareToken = _createToken(_shareTokenName, _shareTokenSymbol, SHARE_TOKEN_DECIMALS);
+        _setupBoardApps(dao, boardToken, _members, _votingSettings);
+
+        _cacheDao(dao, boardToken, shareToken);
     }
 
     /**
@@ -97,7 +91,7 @@ contract CompanyBoardTemplate is BaseTemplate {
              for the payroll app. The `employeeManager` can be set to `0x0` in order to use the voting app as the employee manager.
     */
     function setupShare(string _id, address[] _holders, uint256[] _stakes, uint64[3] _votingSettings, uint64 _financePeriod, bool _useAgentAsVault, uint256[4] _payrollSettings) external {
-        _ensureCompanySettings(_holders, _stakes, _votingSettings,_payrollSettings);
+        _ensureCompanySettings(_holders, _stakes, _votingSettings, _payrollSettings);
 
         (Finance finance, Voting boardVoting, Voting shareVoting) = _setupShareApps(_holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault);
 
@@ -107,11 +101,10 @@ contract CompanyBoardTemplate is BaseTemplate {
         _registerID(_id, address(dao));
     }
 
-    function _setupBoardApps(Kernel _dao, address[] _members, uint64[3] _votingSettings) internal {
+    function _setupBoardApps(Kernel _dao, MiniMeToken _boardToken, address[] _members, uint64[3] _votingSettings) internal {
         ACL acl = ACL(_dao.acl());
-        MiniMeToken token = _popBoardTokenCache();
-        Voting voting = _installVotingApp(_dao, token, _votingSettings);
-        TokenManager tokenManager = _installTokenManagerApp(_dao, token, BOARD_TRANSFERABLE, BOARD_MAX_PER_ACCOUNT);
+        Voting voting = _installVotingApp(_dao, _boardToken, _votingSettings);
+        TokenManager tokenManager = _installTokenManagerApp(_dao, _boardToken, BOARD_TRANSFERABLE, BOARD_MAX_PER_ACCOUNT);
 
         _mintTokens(acl, tokenManager, _members, 1);
         _cacheBoardApps(voting, tokenManager);
