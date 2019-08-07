@@ -376,7 +376,7 @@ contract('Company', ([_, owner, holder1, holder2, someone]) => {
             const USE_AGENT_AS_VAULT = true
 
             createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
-            itCostsUpTo(6.2e6)
+            itCostsUpTo(5e6)
             itSetupsDAOCorrectly(FINANCE_PERIOD)
             itSetupsAgentAppCorrectly()
           })
@@ -385,7 +385,7 @@ contract('Company', ([_, owner, holder1, holder2, someone]) => {
             const USE_AGENT_AS_VAULT = false
 
             createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
-            itCostsUpTo(6.2e6)
+            itCostsUpTo(5e6)
             itSetupsDAOCorrectly(FINANCE_PERIOD)
             itSetupsVaultAppCorrectly()
           })
