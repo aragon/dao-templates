@@ -25,10 +25,10 @@ contract CompanyBoardTemplate is BaseTemplate {
 
     struct Cache {
         address dao;
-        address boardToken;
         address shareToken;
+        address boardToken;
+        address shareVoting;
         address boardVoting;
-        address boardTokenManager;
     }
 
     mapping (address => Cache) internal cache;
@@ -42,207 +42,173 @@ contract CompanyBoardTemplate is BaseTemplate {
     }
 
     /**
-    * @dev Create a new pair of MiniMe tokens for the Company with Board DAO and cache it for later setup steps
+    * @dev Create an incomplete Company with Board DAO and cache it for later setup steps
     * @param _shareTokenName String with the name for the token used by share holders in the organization
     * @param _shareTokenSymbol String with the symbol for the token used by share holders in the organization
-    * @param _members Array of board member addresses (1 token will be minted for each board member)
-    * @param _votingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the board voting app of the organization
+    * @param _shareVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the share voting app of the organization
+    * @param _boardVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the board voting app of the organization
     */
-    function prepareInstance(string _shareTokenName, string _shareTokenSymbol, address[] _members, uint64[3] _votingSettings) external {
-        require(_members.length > 0, ERROR_MISSING_BOARD_MEMBERS);
-        require(_votingSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
+    function prepareInstance(string _shareTokenName, string _shareTokenSymbol, uint64[3] _shareVotingSettings, uint64[3] _boardVotingSettings) external {
+        require(_boardVotingSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
+        require(_shareVotingSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
 
-        (Kernel dao,) = _createDAO();
-        MiniMeToken boardToken = _createToken(BOARD_TOKEN_NAME, BOARD_TOKEN_SYMBOL, BOARD_TOKEN_DECIMALS);
         MiniMeToken shareToken = _createToken(_shareTokenName, _shareTokenSymbol, SHARE_TOKEN_DECIMALS);
-        _setupBoardApps(dao, boardToken, _members, _votingSettings);
+        MiniMeToken boardToken = _createToken(BOARD_TOKEN_NAME, BOARD_TOKEN_SYMBOL, BOARD_TOKEN_DECIMALS);
 
-        _cacheDao(dao, boardToken, shareToken);
+        (Kernel dao, ACL acl) = _createDAO();
+        Voting shareVoting = _installVotingApp(dao, shareToken, _shareVotingSettings);
+        Voting boardVoting = _installVotingApp(dao, boardToken, _boardVotingSettings);
+
+        _createEvmScriptsRegistryPermissions(acl, shareVoting, shareVoting);
+
+        _cachePreparedDao(dao, shareToken, boardToken, shareVoting, boardVoting);
     }
 
     /**
-    * @dev Finalize a user's prepared DAO instance (with the Board installed)
+    * @dev Finalize a previously prepared DAO instance cached by the user
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
-    * @param _holders Array of share holder addresses
-    * @param _stakes Array of token stakes for share holders (token has 18 decimals, multiply token amount `* 10^18`)
-    * @param _votingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the share voting app of the organization
+    * @param _shareHolders Array of share holder addresses
+    * @param _shareStakes Array of token stakes for share holders (token has 18 decimals, multiply token amount `* 10^18`)
+    * @param _boardMembers Array of board member addresses (1 token will be minted for each board member)
     * @param _financePeriod Initial duration for accounting periods, it can be set to zero in order to use the default of 30 days.
     * @param _useAgentAsVault Boolean to tell whether to use an Agent app as a more advanced form of Vault app
     */
-    function setupShare(string _id, address[] _holders, uint256[] _stakes, uint64[3] _votingSettings, uint64 _financePeriod, bool _useAgentAsVault) external {
-        _ensureCompanySettings(_holders, _stakes, _votingSettings);
+    function finalizeInstance(string _id, address[] _shareHolders, uint256[] _shareStakes, address[] _boardMembers, uint64 _financePeriod, bool _useAgentAsVault) external {
+        _ensureFinalizationSettings(_shareHolders, _shareStakes, _boardMembers);
 
-        (, Voting boardVoting, Voting shareVoting) = _setupShareApps(_holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault);
+        (Kernel dao, Voting shareVoting, Voting boardVoting) = _popDaoCache();
 
-        Kernel dao = _popDaoCache();
+        _setupVaultAndFinanceApps(dao, _financePeriod, _useAgentAsVault, shareVoting, boardVoting);
+        _finalizeApps(dao, _shareHolders, _shareStakes, _boardMembers, shareVoting, boardVoting);
+
         _transferRootPermissionsFromTemplate(dao, boardVoting, shareVoting);
         _registerID(_id, address(dao));
     }
 
     /**
-    * @dev Finalize a user's prepared DAO instance (with the Board installed)
+    * @dev Finalize a previously prepared DAO instance cached by the user
     * @param _id String with the name for org, will assign `[id].aragonid.eth`
-    * @param _holders Array of share holder addresses
-    * @param _stakes Array of token stakes for share holders (token has 18 decimals, multiply token amount `* 10^18`)
-    * @param _votingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the share voting app of the organization
+    * @param _shareHolders Array of share holder addresses
+    * @param _shareStakes Array of token stakes for share holders (token has 18 decimals, multiply token amount `* 10^18`)
+    * @param _boardMembers Array of board member addresses (1 token will be minted for each board member)
     * @param _financePeriod Initial duration for accounting periods, it can be set to zero in order to use the default of 30 days.
     * @param _useAgentAsVault Boolean to tell whether to use an Agent app as a more advanced form of Vault app
     * @param _payrollSettings Array of [address denominationToken , IFeed priceFeed, uint64 rateExpiryTime, address employeeManager]
-             for the payroll app. The `employeeManager` can be set to `0x0` in order to use the voting app as the employee manager.
+             for the payroll app. The `employeeManager` can be set to `0x0` in order to use the board voting app as the employee manager.
     */
-    function setupShare(string _id, address[] _holders, uint256[] _stakes, uint64[3] _votingSettings, uint64 _financePeriod, bool _useAgentAsVault, uint256[4] _payrollSettings) external {
-        _ensureCompanySettings(_holders, _stakes, _votingSettings, _payrollSettings);
+    function finalizeInstance(string _id, address[] _shareHolders, uint256[] _shareStakes, address[] _boardMembers, uint64 _financePeriod, bool _useAgentAsVault, uint256[4] _payrollSettings) external {
+        _ensureFinalizationSettings(_shareHolders, _shareStakes, _boardMembers);
+        require(_payrollSettings.length == 4, ERROR_BAD_PAYROLL_SETTINGS);
 
-        (Finance finance, Voting boardVoting, Voting shareVoting) = _setupShareApps(_holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault);
+        (Kernel dao, Voting shareVoting, Voting boardVoting) = _popDaoCache();
 
-        Kernel dao = _popDaoCache();
-        _setupPayrollApp(dao, finance, boardVoting, _payrollSettings);
+        Finance finance = _setupVaultAndFinanceApps(dao, _financePeriod, _useAgentAsVault, shareVoting, boardVoting);
+        _setupPayrollApp(dao, finance, _payrollSettings, boardVoting);
+        _finalizeApps(dao, _shareHolders, _shareStakes, _boardMembers, shareVoting, boardVoting);
+
         _transferRootPermissionsFromTemplate(dao, boardVoting, shareVoting);
         _registerID(_id, address(dao));
     }
 
-    function _setupBoardApps(Kernel _dao, MiniMeToken _boardToken, address[] _members, uint64[3] _votingSettings) internal {
+    function _finalizeApps(Kernel _dao, address[] _shareHolders, uint256[] _shareStakes, address[] _boardMembers, Voting _shareVoting, Voting _boardVoting) internal {
+        (MiniMeToken shareToken, MiniMeToken boardToken) = _popTokenCaches();
+
+        // Install
+        TokenManager shareTokenManager = _installTokenManagerApp(_dao, shareToken, SHARE_TRANSFERABLE, SHARE_MAX_PER_ACCOUNT);
+        TokenManager boardTokenManager = _installTokenManagerApp(_dao, boardToken, BOARD_TRANSFERABLE, BOARD_MAX_PER_ACCOUNT);
+
+        // Mint tokens
         ACL acl = ACL(_dao.acl());
-        Voting voting = _installVotingApp(_dao, _boardToken, _votingSettings);
-        TokenManager tokenManager = _installTokenManagerApp(_dao, _boardToken, BOARD_TRANSFERABLE, BOARD_MAX_PER_ACCOUNT);
+        _mintTokens(acl, shareTokenManager, _shareHolders, _shareStakes);
+        _mintTokens(acl, boardTokenManager, _boardMembers, 1);
 
-        _mintTokens(acl, tokenManager, _members, 1);
-        _cacheBoardApps(voting, tokenManager);
+        // Assign permissions for token managers
+        _createTokenManagerPermissions(acl, shareTokenManager, _shareVoting, _shareVoting);
+        _createTokenManagerPermissions(acl, boardTokenManager, _shareVoting, _shareVoting);
+
+        // Assign permissions for votings
+        _createVotingPermissions(acl, _shareVoting, _shareVoting, boardTokenManager, _shareVoting);
+        _createVotingPermissions(acl, _boardVoting, _shareVoting, boardTokenManager, _shareVoting);
     }
 
-    function _setupShareApps(address[] _holders, uint256[] _stakes, uint64[3] _votingSettings, uint64 _financePeriod, bool _useAgentAsVault) internal returns (Finance, Voting, Voting) {
-        (Voting shareVoting, TokenManager shareTokenManager) = _installTokenApps(_holders, _stakes, _votingSettings);
-        (Vault agentOrVault, Finance finance) = _installVaultAndFinance(_financePeriod, _useAgentAsVault);
-        Voting boardVoting = _setupPermissions(shareVoting, shareTokenManager, agentOrVault, finance, _useAgentAsVault);
-        return (finance, boardVoting, shareVoting);
-    }
+    function _setupVaultAndFinanceApps(Kernel _dao, uint64 _financePeriod, bool _useAgentAsVault, Voting _shareVoting, Voting _boardVoting) internal returns (Finance) {
+        // Install
+        Vault agentOrVault = _useAgentAsVault ? _installDefaultAgentApp(_dao) : _installVaultApp(_dao);
+        Finance finance = _installFinanceApp(_dao, agentOrVault, _financePeriod == 0 ? DEFAULT_FINANCE_PERIOD : _financePeriod);
 
-    function _setupPayrollApp(Kernel _dao, Finance _finance, Voting _voting, uint256[4] _payrollSettings) internal {
-        (address denominationToken, IFeed priceFeed, uint64 rateExpiryTime, address employeeManager) = _unwrapPayrollSettings(_payrollSettings);
-        address manager = employeeManager == address(0) ? _voting : employeeManager;
-
+        // Assign permissions
         ACL acl = ACL(_dao.acl());
-        Payroll payroll = _installPayrollApp(_dao, _finance, denominationToken, priceFeed, rateExpiryTime);
-        _createPayrollPermissions(acl, payroll, manager, _voting, _voting);
-    }
-
-    function _installTokenApps(address[] _holders, uint256[] _stakes, uint64[3] _votingSettings) internal returns (Voting shareVoting, TokenManager shareTokenManager) {
-        Kernel dao = _fetchDaoCache();
-        ACL acl = ACL(dao.acl());
-
-        MiniMeToken token = _popShareTokenCache();
-        shareVoting = _installVotingApp(dao, token, _votingSettings);
-        shareTokenManager = _installTokenManagerApp(dao, token, SHARE_TRANSFERABLE, SHARE_MAX_PER_ACCOUNT);
-        _mintTokens(acl, shareTokenManager, _holders, _stakes);
-    }
-
-    function _installVaultAndFinance(uint64 _financePeriod, bool _useAgentAsVault) internal returns (Vault agentOrVault, Finance finance) {
-        Kernel dao = _fetchDaoCache();
-        agentOrVault = _useAgentAsVault ? _installDefaultAgentApp(dao) : _installVaultApp(dao);
-        finance = _installFinanceApp(dao, agentOrVault, _financePeriod == 0 ? DEFAULT_FINANCE_PERIOD : _financePeriod);
-    }
-
-    function _setupPermissions(Voting _shareVoting, TokenManager _shareTokenManager, Vault _agentOrVault, Finance _finance, bool _useAgentAsVault) internal returns (Voting) {
-        Kernel dao = _fetchDaoCache();
-        ACL _acl = ACL(dao.acl());
-        (Voting boardVoting, TokenManager boardTokenManager) = _popBoardApps();
-
         if (_useAgentAsVault) {
-            _createCustomAgentPermissions(_acl, Agent(_agentOrVault), boardVoting, _shareVoting);
+            _createCustomAgentPermissions(acl, Agent(agentOrVault), _shareVoting, _boardVoting);
         }
-        _createVaultPermissions(_acl, _agentOrVault, _finance, _shareVoting);
-        _createCustomFinancePermissions(_acl, _finance, boardVoting, _shareVoting);
-        _createTokenManagerPermissions(_acl, boardTokenManager, _shareVoting, _shareVoting);
-        _createTokenManagerPermissions(_acl, _shareTokenManager, _shareVoting, _shareVoting);
-        _createVotingPermissions(_acl, boardVoting, _shareVoting, boardTokenManager, _shareVoting);
-        _createVotingPermissions(_acl, _shareVoting, _shareVoting, boardTokenManager, _shareVoting);
-        _createEvmScriptsRegistryPermissions(_acl, _shareVoting, _shareVoting);
-        return boardVoting;
+        _createVaultPermissions(acl, agentOrVault, finance, _shareVoting);
+        _createCustomFinancePermissions(acl, finance, _shareVoting, _boardVoting);
+
+        return finance;
     }
 
-    function _createCustomAgentPermissions(ACL _acl, Agent _agent, Voting _boardVoting, Voting _shareVoting) internal {
+    function _setupPayrollApp(Kernel _dao, Finance _finance, uint256[4] memory _payrollSettings, Voting _boardVoting) internal {
+        (address denominationToken, IFeed priceFeed, uint64 rateExpiryTime, address employeeManager) = _unwrapPayrollSettings(_payrollSettings);
+        address manager = employeeManager == address(0) ? _boardVoting : employeeManager;
+
+        Payroll payroll = _installPayrollApp(_dao, _finance, denominationToken, priceFeed, rateExpiryTime);
+        ACL acl = ACL(_dao.acl());
+        _createPayrollPermissions(acl, payroll, manager, _boardVoting, _boardVoting);
+    }
+
+    function _createCustomAgentPermissions(ACL _acl, Agent _agent, Voting _shareVoting, Voting _boardVoting) internal {
         address[] memory grantees = new address[](2);
-        grantees[0] = address(_boardVoting);
-        grantees[1] = address(_shareVoting);
+        grantees[0] = address(_shareVoting);
+        grantees[1] = address(_boardVoting);
 
         _createPermissions(_acl, grantees, _agent, _agent.EXECUTE_ROLE(), _shareVoting);
         _createPermissions(_acl, grantees, _agent, _agent.RUN_SCRIPT_ROLE(), _shareVoting);
     }
 
-    function _createCustomFinancePermissions(ACL _acl, Finance _finance, Voting _boardVoting, Voting _shareVoting) internal {
+    function _createCustomFinancePermissions(ACL _acl, Finance _finance, Voting _shareVoting, Voting _boardVoting) internal {
         address[] memory grantees = new address[](2);
-        grantees[0] = address(_boardVoting);
-        grantees[1] = address(_shareVoting);
+        grantees[0] = address(_shareVoting);
+        grantees[1] = address(_boardVoting);
 
         _createPermissions(_acl, grantees, _finance, _finance.CREATE_PAYMENTS_ROLE(), _shareVoting);
         _acl.createPermission(_shareVoting, _finance, _finance.EXECUTE_PAYMENTS_ROLE(), _shareVoting);
         _acl.createPermission(_shareVoting, _finance, _finance.MANAGE_PAYMENTS_ROLE(), _shareVoting);
     }
 
-    function _cacheDao(Kernel _dao, MiniMeToken _boardToken, MiniMeToken _shareToken) internal {
+    function _cachePreparedDao(Kernel _dao, MiniMeToken _shareToken, MiniMeToken _boardToken, Voting _shareVoting, Voting _boardVoting) internal {
         Cache storage c = cache[msg.sender];
         c.dao = address(_dao);
-        c.boardToken = address(_boardToken);
         c.shareToken = address(_shareToken);
-    }
-
-    function _cacheBoardApps(Voting _boardVoting, TokenManager _boardTokenManager) internal {
-        Cache storage c = cache[msg.sender];
+        c.boardToken = address(_boardToken);
+        c.shareVoting = address(_shareVoting);
         c.boardVoting = address(_boardVoting);
-        c.boardTokenManager = address(_boardTokenManager);
     }
 
-    function _popDaoCache() internal returns (Kernel) {
+    function _popDaoCache() internal returns (Kernel dao, Voting shareVoting, Voting boardVoting) {
         Cache storage c = cache[msg.sender];
-        require(c.dao != address(0), ERROR_MISSING_CACHE);
+        require(c.dao != address(0) && c.shareVoting != address(0) && c.boardVoting != address(0), ERROR_MISSING_CACHE);
 
-        Kernel dao = Kernel(c.dao);
-        delete c.dao;
-        return dao;
-    }
-
-    function _popBoardTokenCache() internal returns (MiniMeToken) {
-        Cache storage c = cache[msg.sender];
-        require(c.boardToken != address(0), ERROR_MISSING_CACHE);
-
-        MiniMeToken boardToken = MiniMeToken(c.boardToken);
-        delete c.boardToken;
-        return boardToken;
-    }
-
-    function _popShareTokenCache() internal returns (MiniMeToken) {
-        Cache storage c = cache[msg.sender];
-        require(c.shareToken != address(0), ERROR_MISSING_CACHE);
-
-        MiniMeToken shareToken = MiniMeToken(c.shareToken);
-        delete c.shareToken;
-        return shareToken;
-    }
-
-    function _popBoardApps() internal returns (Voting boardVoting, TokenManager boardTokenManager) {
-        Cache storage c = cache[msg.sender];
-        require(c.boardVoting != address(0) && c.boardTokenManager != address(0), ERROR_MISSING_CACHE);
-
+        dao = Kernel(c.dao);
+        shareVoting = Voting(c.shareVoting);
         boardVoting = Voting(c.boardVoting);
-        boardTokenManager = TokenManager(c.boardTokenManager);
+        delete c.dao;
+        delete c.shareVoting;
         delete c.boardVoting;
-        delete c.boardTokenManager;
     }
 
-    function _fetchDaoCache() internal view returns (Kernel) {
+    function _popTokenCaches() internal returns (MiniMeToken shareToken, MiniMeToken boardToken) {
         Cache storage c = cache[msg.sender];
-        require(c.dao != address(0), ERROR_MISSING_CACHE);
-        return Kernel(c.dao);
+        require(c.shareToken != address(0) && c.boardToken != address(0), ERROR_MISSING_CACHE);
+
+        shareToken = MiniMeToken(c.shareToken);
+        boardToken = MiniMeToken(c.boardToken);
+        delete c.shareToken;
+        delete c.boardToken;
     }
 
-    function _ensureCompanySettings(address[] _holders, uint256[] _stakes, uint64[3] _votingSettings, uint256[4] _payrollSettings) private pure {
-        _ensureCompanySettings(_holders, _stakes, _votingSettings);
-        require(_payrollSettings.length == 4, ERROR_BAD_PAYROLL_SETTINGS);
-    }
-
-    function _ensureCompanySettings(address[] _holders, uint256[] _stakes, uint64[3] _votingSettings) private pure {
-        require(_holders.length > 0, ERROR_MISSING_SHARE_MEMBERS);
-        require(_holders.length == _stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
-        require(_votingSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
+    function _ensureFinalizationSettings(address[] memory _shareHolders, uint256[] memory _shareStakes, address[] memory _boardMembers) internal {
+        require(_shareHolders.length > 0, ERROR_MISSING_SHARE_MEMBERS);
+        require(_shareHolders.length == _shareStakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
+        require(_boardMembers.length > 0, ERROR_MISSING_BOARD_MEMBERS);
     }
 }
