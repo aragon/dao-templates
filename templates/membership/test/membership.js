@@ -28,7 +28,6 @@ const EVMScriptRegistry = artifacts.require('EVMScriptRegistry')
 const ONE_DAY = 60 * 60 * 24
 const ONE_WEEK = ONE_DAY * 7
 const THIRTY_DAYS = ONE_DAY * 30
-const TWO_MONTHS = ONE_DAY * 31
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 contract('Membership', ([_, owner, member1, member2, someone]) => {
@@ -45,7 +44,7 @@ contract('Membership', ([_, owner, member1, member2, someone]) => {
   const VOTING_SETTINGS = [SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION]
 
   const PAYROLL_DENOMINATION_TOKEN = '0x0000000000000000000000000000000000000abc'
-  const PAYROLL_RATE_EXPIRY_TIME = TWO_MONTHS
+  const PAYROLL_RATE_EXPIRY_TIME = THIRTY_DAYS
 
   before('fetch membership template and ENS', async () => {
     const { registry, address } = await deployedAddresses()
@@ -291,7 +290,7 @@ contract('Membership', ([_, owner, member1, member2, someone]) => {
 
       context('when there was no token created before', () => {
         it('reverts', async () => {
-          await assertRevert(newInstance(randomId(), MEMBERS, VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'MEMBERSHIP_MISSING_TOKEN_CACHE')
+          await assertRevert(newInstance(randomId(), MEMBERS, VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'TEMPLATE_MISSING_TOKEN_CACHE')
         })
       })
 

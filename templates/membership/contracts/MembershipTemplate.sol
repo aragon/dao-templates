@@ -1,21 +1,18 @@
 pragma solidity 0.4.24;
 
+import "@aragon/templates-shared/contracts/TokenCache.sol";
 import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 
 
-contract MembershipTemplate is BaseTemplate {
+contract MembershipTemplate is BaseTemplate, TokenCache {
     string constant private ERROR_MISSING_MEMBERS = "MEMBERSHIP_MISSING_MEMBERS";
-    string constant private ERROR_MISSING_TOKEN_CACHE = "MEMBERSHIP_MISSING_TOKEN_CACHE";
     string constant private ERROR_BAD_VOTE_SETTINGS = "MEMBERSHIP_BAD_VOTE_SETTINGS";
     string constant private ERROR_BAD_PAYROLL_SETTINGS = "MEMBERSHIP_BAD_PAYROLL_SETTINGS";
 
     bool constant private TOKEN_TRANSFERABLE = false;
     uint8 constant private TOKEN_DECIMALS = uint8(0);
     uint256 constant private TOKEN_MAX_PER_ACCOUNT = uint256(1);
-
     uint64 constant private DEFAULT_FINANCE_PERIOD = uint64(30 days);
-
-    mapping (address => address) internal tokenCache;
 
     constructor(DAOFactory _daoFactory, ENS _ens, MiniMeTokenFactory _miniMeFactory, IFIFSResolvingRegistrar _aragonID)
         BaseTemplate(_daoFactory, _ens, _miniMeFactory, _aragonID)
@@ -104,7 +101,7 @@ contract MembershipTemplate is BaseTemplate {
         Vault agentOrVault = _useAgentAsVault ? _installDefaultAgentApp(_dao) : _installVaultApp(_dao);
         Finance finance = _installFinanceApp(_dao, agentOrVault, _financePeriod == 0 ? DEFAULT_FINANCE_PERIOD : _financePeriod);
         TokenManager tokenManager = _installTokenManagerApp(_dao, token, TOKEN_TRANSFERABLE, TOKEN_MAX_PER_ACCOUNT);
-        Voting voting = _installVotingApp(_dao, token, _votingSettings[0], _votingSettings[1], _votingSettings[2]);
+        Voting voting = _installVotingApp(_dao, token, _votingSettings);
 
         _mintTokens(_acl, tokenManager, _members, 1);
         _setupPermissions(_acl, agentOrVault, voting, finance, tokenManager, _useAgentAsVault);
@@ -127,31 +124,8 @@ contract MembershipTemplate is BaseTemplate {
         _createVaultPermissions(_acl, _agentOrVault, _finance, _voting);
         _createFinancePermissions(_acl, _finance, _voting, _voting);
         _createEvmScriptsRegistryPermissions(_acl, _voting, _voting);
-        _createCustomVotingPermissions(_acl, _voting, _tokenManager);
-        _createCustomTokenManagerPermissions(_acl, _tokenManager, _voting);
-    }
-
-    function _createCustomVotingPermissions(ACL _acl, Voting _voting, TokenManager _tokenManager) internal {
-        _acl.createPermission(_tokenManager, _voting, _voting.CREATE_VOTES_ROLE(), _voting);
-        _acl.createPermission(_voting, _voting, _voting.MODIFY_QUORUM_ROLE(), _voting);
-        _acl.createPermission(_voting, _voting, _voting.MODIFY_SUPPORT_ROLE(), _voting);
-    }
-
-    function _createCustomTokenManagerPermissions(ACL _acl, TokenManager _tokenManager, Voting _voting) internal {
-        _acl.createPermission(_voting, _tokenManager, _tokenManager.BURN_ROLE(), _voting);
-        _acl.createPermission(_voting, _tokenManager, _tokenManager.MINT_ROLE(), _voting);
-    }
-
-    function _cacheToken(MiniMeToken token, address _owner) internal {
-        tokenCache[_owner] = token;
-    }
-
-    function _popTokenCache(address _owner) internal returns (MiniMeToken) {
-        require(tokenCache[_owner] != address(0), ERROR_MISSING_TOKEN_CACHE);
-
-        MiniMeToken token = MiniMeToken(tokenCache[_owner]);
-        delete tokenCache[_owner];
-        return token;
+        _createVotingPermissions(_acl, _voting, _voting, _tokenManager, _voting);
+        _createTokenManagerPermissions(_acl, _tokenManager, _voting, _voting);
     }
 
     function _ensureMembershipSettings(address[] _members, uint64[3] _votingSettings, uint256[4] _payrollSettings) private pure {

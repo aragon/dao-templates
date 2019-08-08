@@ -45,25 +45,19 @@ contract CompanyBoardTemplate is BaseTemplate {
     * @dev Create a new pair of MiniMe tokens for the Company with Board DAO and cache it for later setup steps
     * @param _shareTokenName String with the name for the token used by share holders in the organization
     * @param _shareTokenSymbol String with the symbol for the token used by share holders in the organization
-    */
-    function prepareInstance(string _shareTokenName, string _shareTokenSymbol) external {
-        (Kernel dao,) = _createDAO();
-        MiniMeToken boardToken = _createToken(BOARD_TOKEN_NAME, BOARD_TOKEN_SYMBOL, BOARD_TOKEN_DECIMALS);
-        MiniMeToken shareToken = _createToken(_shareTokenName, _shareTokenSymbol, SHARE_TOKEN_DECIMALS);
-        _cacheDao(dao, boardToken, shareToken);
-    }
-
-    /**
-    * @dev Setup a user's prepared DAO instance with the Board components
     * @param _members Array of board member addresses (1 token will be minted for each board member)
     * @param _votingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the board voting app of the organization
     */
-    function setupBoard(address[] _members, uint64[3] _votingSettings) external {
+    function prepareInstance(string _shareTokenName, string _shareTokenSymbol, address[] _members, uint64[3] _votingSettings) external {
         require(_members.length > 0, ERROR_MISSING_BOARD_MEMBERS);
         require(_votingSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
 
-        Kernel dao = _fetchDaoCache();
-        _setupBoardApps(dao, _members, _votingSettings);
+        (Kernel dao,) = _createDAO();
+        MiniMeToken boardToken = _createToken(BOARD_TOKEN_NAME, BOARD_TOKEN_SYMBOL, BOARD_TOKEN_DECIMALS);
+        MiniMeToken shareToken = _createToken(_shareTokenName, _shareTokenSymbol, SHARE_TOKEN_DECIMALS);
+        _setupBoardApps(dao, boardToken, _members, _votingSettings);
+
+        _cacheDao(dao, boardToken, shareToken);
     }
 
     /**
@@ -97,7 +91,7 @@ contract CompanyBoardTemplate is BaseTemplate {
              for the payroll app. The `employeeManager` can be set to `0x0` in order to use the voting app as the employee manager.
     */
     function setupShare(string _id, address[] _holders, uint256[] _stakes, uint64[3] _votingSettings, uint64 _financePeriod, bool _useAgentAsVault, uint256[4] _payrollSettings) external {
-        _ensureCompanySettings(_holders, _stakes, _votingSettings,_payrollSettings);
+        _ensureCompanySettings(_holders, _stakes, _votingSettings, _payrollSettings);
 
         (Finance finance, Voting boardVoting, Voting shareVoting) = _setupShareApps(_holders, _stakes, _votingSettings, _financePeriod, _useAgentAsVault);
 
@@ -107,11 +101,10 @@ contract CompanyBoardTemplate is BaseTemplate {
         _registerID(_id, address(dao));
     }
 
-    function _setupBoardApps(Kernel _dao, address[] _members, uint64[3] _votingSettings) internal {
+    function _setupBoardApps(Kernel _dao, MiniMeToken _boardToken, address[] _members, uint64[3] _votingSettings) internal {
         ACL acl = ACL(_dao.acl());
-        MiniMeToken token = _popBoardTokenCache();
-        Voting voting = _installVotingApp(_dao, token, _votingSettings[0], _votingSettings[1], _votingSettings[2]);
-        TokenManager tokenManager = _installTokenManagerApp(_dao, token, BOARD_TRANSFERABLE, BOARD_MAX_PER_ACCOUNT);
+        Voting voting = _installVotingApp(_dao, _boardToken, _votingSettings);
+        TokenManager tokenManager = _installTokenManagerApp(_dao, _boardToken, BOARD_TRANSFERABLE, BOARD_MAX_PER_ACCOUNT);
 
         _mintTokens(acl, tokenManager, _members, 1);
         _cacheBoardApps(voting, tokenManager);
@@ -138,7 +131,7 @@ contract CompanyBoardTemplate is BaseTemplate {
         ACL acl = ACL(dao.acl());
 
         MiniMeToken token = _popShareTokenCache();
-        shareVoting = _installVotingApp(dao, token, _votingSettings[0], _votingSettings[1], _votingSettings[2]);
+        shareVoting = _installVotingApp(dao, token, _votingSettings);
         shareTokenManager = _installTokenManagerApp(dao, token, SHARE_TRANSFERABLE, SHARE_MAX_PER_ACCOUNT);
         _mintTokens(acl, shareTokenManager, _holders, _stakes);
     }
@@ -159,9 +152,10 @@ contract CompanyBoardTemplate is BaseTemplate {
         }
         _createVaultPermissions(_acl, _agentOrVault, _finance, _shareVoting);
         _createCustomFinancePermissions(_acl, _finance, boardVoting, _shareVoting);
-        _createCustomTokenManagerPermissions(_acl, boardTokenManager, _shareVoting);
-        _createCustomTokenManagerPermissions(_acl, _shareTokenManager, _shareVoting);
-        _createCustomVotingPermissions(_acl, boardVoting, _shareVoting, boardTokenManager);
+        _createTokenManagerPermissions(_acl, boardTokenManager, _shareVoting, _shareVoting);
+        _createTokenManagerPermissions(_acl, _shareTokenManager, _shareVoting, _shareVoting);
+        _createVotingPermissions(_acl, boardVoting, _shareVoting, boardTokenManager, _shareVoting);
+        _createVotingPermissions(_acl, _shareVoting, _shareVoting, boardTokenManager, _shareVoting);
         _createEvmScriptsRegistryPermissions(_acl, _shareVoting, _shareVoting);
         return boardVoting;
     }
@@ -183,21 +177,6 @@ contract CompanyBoardTemplate is BaseTemplate {
         _createPermissions(_acl, grantees, _finance, _finance.CREATE_PAYMENTS_ROLE(), _shareVoting);
         _acl.createPermission(_shareVoting, _finance, _finance.EXECUTE_PAYMENTS_ROLE(), _shareVoting);
         _acl.createPermission(_shareVoting, _finance, _finance.MANAGE_PAYMENTS_ROLE(), _shareVoting);
-    }
-
-    function _createCustomVotingPermissions(ACL _acl, Voting _boardVoting, Voting _shareVoting, TokenManager _boardTokenManager) internal {
-        _acl.createPermission(_boardTokenManager, _boardVoting, _boardVoting.CREATE_VOTES_ROLE(), _shareVoting);
-        _acl.createPermission(_shareVoting, _boardVoting, _boardVoting.MODIFY_QUORUM_ROLE(), _shareVoting);
-        _acl.createPermission(_shareVoting, _boardVoting, _boardVoting.MODIFY_SUPPORT_ROLE(), _shareVoting);
-
-        _acl.createPermission(_boardTokenManager, _shareVoting, _shareVoting.CREATE_VOTES_ROLE(), _shareVoting);
-        _acl.createPermission(_shareVoting, _shareVoting, _shareVoting.MODIFY_QUORUM_ROLE(), _shareVoting);
-        _acl.createPermission(_shareVoting, _shareVoting, _shareVoting.MODIFY_SUPPORT_ROLE(), _shareVoting);
-    }
-
-    function _createCustomTokenManagerPermissions(ACL _acl, TokenManager _tokenManager, Voting _voting) internal {
-        _acl.createPermission(_voting, _tokenManager, _tokenManager.BURN_ROLE(), _voting);
-        _acl.createPermission(_voting, _tokenManager, _tokenManager.MINT_ROLE(), _voting);
     }
 
     function _cacheDao(Kernel _dao, MiniMeToken _boardToken, MiniMeToken _shareToken) internal {
