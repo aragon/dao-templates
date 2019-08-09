@@ -71,7 +71,16 @@ contract CompanyTemplate is BaseTemplate, TokenCache {
     * @param _financePeriod Initial duration for accounting periods, it can be set to zero in order to use the default of 30 days.
     * @param _useAgentAsVault Boolean to tell whether to use an Agent app as a more advanced form of Vault app
     */
-    function newInstance(string memory _id, address[] memory _holders, uint256[] memory _stakes, uint64[3] memory _votingSettings, uint64 _financePeriod, bool _useAgentAsVault) public {
+    function newInstance(
+        string memory _id,
+        address[] memory _holders,
+        uint256[] memory _stakes,
+        uint64[3] memory _votingSettings,
+        uint64 _financePeriod,
+        bool _useAgentAsVault
+    )
+        public
+    {
         _ensureCompanySettings(_holders, _stakes, _votingSettings);
 
         (Kernel dao, ACL acl) = _createDAO();
@@ -91,7 +100,17 @@ contract CompanyTemplate is BaseTemplate, TokenCache {
     * @param _payrollSettings Array of [address denominationToken , IFeed priceFeed, uint64 rateExpiryTime, address employeeManager]
              for the payroll app. The `employeeManager` can be set to `0x0` in order to use the voting app as the employee manager.
     */
-    function newInstance(string memory _id, address[] memory _holders, uint256[] memory _stakes, uint64[3] memory _votingSettings, uint64 _financePeriod, bool _useAgentAsVault, uint256[4] memory _payrollSettings) public {
+    function newInstance(
+        string memory _id,
+        address[] memory _holders,
+        uint256[] memory _stakes,
+        uint64[3] memory _votingSettings,
+        uint64 _financePeriod,
+        bool _useAgentAsVault,
+        uint256[4] memory _payrollSettings
+    )
+        public
+    {
         _ensureCompanySettings(_holders, _stakes, _votingSettings, _payrollSettings);
 
         (Kernel dao, ACL acl) = _createDAO();
@@ -101,7 +120,18 @@ contract CompanyTemplate is BaseTemplate, TokenCache {
         _registerID(_id, dao);
     }
 
-    function _setupApps(Kernel _dao, ACL _acl, address[] memory _holders, uint256[] memory _stakes, uint64[3] memory _votingSettings, uint64 _financePeriod, bool _useAgentAsVault) internal returns (Finance, Voting) {
+    function _setupApps(
+        Kernel _dao,
+        ACL _acl,
+        address[] memory _holders,
+        uint256[] memory _stakes,
+        uint64[3] memory _votingSettings,
+        uint64 _financePeriod,
+        bool _useAgentAsVault
+    )
+        internal
+        returns (Finance, Voting)
+    {
         MiniMeToken token = _popTokenCache(msg.sender);
         Vault agentOrVault = _useAgentAsVault ? _installDefaultAgentApp(_dao) : _installVaultApp(_dao);
         Finance finance = _installFinanceApp(_dao, agentOrVault, _financePeriod == 0 ? DEFAULT_FINANCE_PERIOD : _financePeriod);
@@ -122,7 +152,16 @@ contract CompanyTemplate is BaseTemplate, TokenCache {
         _createPayrollPermissions(_acl, payroll, manager, _voting, _voting);
     }
 
-    function _setupPermissions(ACL _acl, Vault _agentOrVault, Voting _voting, Finance _finance, TokenManager _tokenManager, bool _useAgentAsVault) internal {
+    function _setupPermissions(
+        ACL _acl,
+        Vault _agentOrVault,
+        Voting _voting,
+        Finance _finance,
+        TokenManager _tokenManager,
+        bool _useAgentAsVault
+    )
+        internal
+    {
         if (_useAgentAsVault) {
             _createAgentPermissions(_acl, Agent(_agentOrVault), _voting, _voting);
         }
@@ -133,7 +172,15 @@ contract CompanyTemplate is BaseTemplate, TokenCache {
         _createTokenManagerPermissions(_acl, _tokenManager, _voting, _voting);
     }
 
-    function _ensureCompanySettings(address[] memory _holders, uint256[] memory _stakes, uint64[3] memory _votingSettings, uint256[4] memory _payrollSettings) private pure {
+    function _ensureCompanySettings(
+        address[] memory _holders,
+        uint256[] memory _stakes,
+        uint64[3] memory _votingSettings,
+        uint256[4] memory _payrollSettings
+    )
+        private
+        pure
+    {
         _ensureCompanySettings(_holders, _stakes, _votingSettings);
         require(_payrollSettings.length == 4, ERROR_BAD_PAYROLL_SETTINGS);
     }

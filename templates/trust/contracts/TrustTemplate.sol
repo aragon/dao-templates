@@ -85,7 +85,15 @@ contract TrustTemplate is BaseTemplate {
         return dao;
     }
 
-    function setupInstance(string memory _id, address[] memory _beneficiaryKeys, address[] memory _heirs, uint256[] memory _heirsStakes) public returns (Kernel) {
+    function setupInstance(
+        string memory _id,
+        address[] memory _beneficiaryKeys,
+        address[] memory _heirs,
+        uint256[] memory _heirsStakes
+    )
+        public
+        returns (Kernel)
+    {
         require(_hasDaoCache(msg.sender), ERROR_MISSING_SENDER_CACHE);
         require(_heirs.length == _heirsStakes.length, ERROR_BAD_HEIRS_LENGTH);
         require(_beneficiaryKeys.length == BENEFICIARY_KEYS_AMOUNT, ERROR_BAD_BENEFICIARY_KEYS_LENGTH);
@@ -107,7 +115,15 @@ contract TrustTemplate is BaseTemplate {
         return multiSig;
     }
 
-    function _setupApps(Kernel _dao, address[] memory _beneficiaryKeys, address[] memory _heirs, uint256[] memory _heirsStakes, uint256 _blockedHeirsSupply) internal {
+    function _setupApps(
+        Kernel _dao,
+        address[] memory _beneficiaryKeys,
+        address[] memory _heirs,
+        uint256[] memory _heirsStakes,
+        uint256 _blockedHeirsSupply
+    )
+        internal
+    {
         // Install apps
         ACL acl = ACL(_dao.acl());
         Vault vault = _installVaultApp(_dao);

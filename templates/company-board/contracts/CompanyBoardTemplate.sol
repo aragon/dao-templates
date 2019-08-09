@@ -48,7 +48,14 @@ contract CompanyBoardTemplate is BaseTemplate {
     * @param _shareVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the share voting app of the organization
     * @param _boardVotingSettings Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the board voting app of the organization
     */
-    function prepareInstance(string _shareTokenName, string _shareTokenSymbol, uint64[3] _shareVotingSettings, uint64[3] _boardVotingSettings) external {
+    function prepareInstance(
+        string _shareTokenName,
+        string _shareTokenSymbol,
+        uint64[3] _shareVotingSettings,
+        uint64[3] _boardVotingSettings
+    )
+        external
+    {
         require(_boardVotingSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
         require(_shareVotingSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
 
@@ -73,7 +80,16 @@ contract CompanyBoardTemplate is BaseTemplate {
     * @param _financePeriod Initial duration for accounting periods, it can be set to zero in order to use the default of 30 days.
     * @param _useAgentAsVault Boolean to tell whether to use an Agent app as a more advanced form of Vault app
     */
-    function finalizeInstance(string _id, address[] _shareHolders, uint256[] _shareStakes, address[] _boardMembers, uint64 _financePeriod, bool _useAgentAsVault) external {
+    function finalizeInstance(
+        string _id,
+        address[] _shareHolders,
+        uint256[] _shareStakes,
+        address[] _boardMembers,
+        uint64 _financePeriod,
+        bool _useAgentAsVault
+    )
+        external
+    {
         _ensureFinalizationSettings(_shareHolders, _shareStakes, _boardMembers);
 
         (Kernel dao, Voting shareVoting, Voting boardVoting) = _popDaoCache();
@@ -96,7 +112,17 @@ contract CompanyBoardTemplate is BaseTemplate {
     * @param _payrollSettings Array of [address denominationToken , IFeed priceFeed, uint64 rateExpiryTime, address employeeManager]
              for the payroll app. The `employeeManager` can be set to `0x0` in order to use the board voting app as the employee manager.
     */
-    function finalizeInstance(string _id, address[] _shareHolders, uint256[] _shareStakes, address[] _boardMembers, uint64 _financePeriod, bool _useAgentAsVault, uint256[4] _payrollSettings) external {
+    function finalizeInstance(
+        string _id,
+        address[] _shareHolders,
+        uint256[] _shareStakes,
+        address[] _boardMembers,
+        uint64 _financePeriod,
+        bool _useAgentAsVault,
+        uint256[4] _payrollSettings
+    )
+        external
+    {
         _ensureFinalizationSettings(_shareHolders, _shareStakes, _boardMembers);
         require(_payrollSettings.length == 4, ERROR_BAD_PAYROLL_SETTINGS);
 
@@ -110,7 +136,16 @@ contract CompanyBoardTemplate is BaseTemplate {
         _registerID(_id, address(dao));
     }
 
-    function _finalizeApps(Kernel _dao, address[] memory _shareHolders, uint256[] memory _shareStakes, address[] memory _boardMembers, Voting _shareVoting, Voting _boardVoting) internal {
+    function _finalizeApps(
+        Kernel _dao,
+        address[] memory _shareHolders,
+        uint256[] memory _shareStakes,
+        address[] memory _boardMembers,
+        Voting _shareVoting,
+        Voting _boardVoting
+    )
+        internal
+    {
         (MiniMeToken shareToken, MiniMeToken boardToken) = _popTokenCaches();
 
         // Install
@@ -131,7 +166,16 @@ contract CompanyBoardTemplate is BaseTemplate {
         _createVotingPermissions(acl, _boardVoting, _shareVoting, boardTokenManager, _shareVoting);
     }
 
-    function _setupVaultAndFinanceApps(Kernel _dao, uint64 _financePeriod, bool _useAgentAsVault, Voting _shareVoting, Voting _boardVoting) internal returns (Finance) {
+    function _setupVaultAndFinanceApps(
+        Kernel _dao,
+        uint64 _financePeriod,
+        bool _useAgentAsVault,
+        Voting _shareVoting,
+        Voting _boardVoting
+    )
+        internal
+        returns (Finance)
+    {
         // Install
         Vault agentOrVault = _useAgentAsVault ? _installDefaultAgentApp(_dao) : _installVaultApp(_dao);
         Finance finance = _installFinanceApp(_dao, agentOrVault, _financePeriod == 0 ? DEFAULT_FINANCE_PERIOD : _financePeriod);
@@ -175,7 +219,15 @@ contract CompanyBoardTemplate is BaseTemplate {
         _acl.createPermission(_shareVoting, _finance, _finance.MANAGE_PAYMENTS_ROLE(), _shareVoting);
     }
 
-    function _cachePreparedDao(Kernel _dao, MiniMeToken _shareToken, MiniMeToken _boardToken, Voting _shareVoting, Voting _boardVoting) internal {
+    function _cachePreparedDao(
+        Kernel _dao,
+        MiniMeToken _shareToken,
+        MiniMeToken _boardToken,
+        Voting _shareVoting,
+        Voting _boardVoting
+    )
+        internal
+    {
         Cache storage c = cache[msg.sender];
         c.dao = address(_dao);
         c.shareToken = address(_shareToken);
@@ -206,7 +258,14 @@ contract CompanyBoardTemplate is BaseTemplate {
         delete c.boardToken;
     }
 
-    function _ensureFinalizationSettings(address[] memory _shareHolders, uint256[] memory _shareStakes, address[] memory _boardMembers) private pure {
+    function _ensureFinalizationSettings(
+        address[] memory _shareHolders,
+        uint256[] memory _shareStakes,
+        address[] memory _boardMembers
+    )
+        private
+        pure
+    {
         require(_shareHolders.length > 0, ERROR_MISSING_SHARE_MEMBERS);
         require(_shareHolders.length == _shareStakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         require(_boardMembers.length > 0, ERROR_MISSING_BOARD_MEMBERS);
