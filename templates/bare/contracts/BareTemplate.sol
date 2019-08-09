@@ -16,7 +16,7 @@ contract BareTemplate is BaseTemplate {
         newInstance(bytes32(0), new bytes32[](0), address(0), new bytes(0));
     }
 
-    function newInstance(bytes32 _appId, bytes32[] _roles, address _authorizedAddress, bytes _initializeCallData) public {
+    function newInstance(bytes32 _appId, bytes32[] memory _roles, address _authorizedAddress, bytes memory _initializeCallData) public {
         address root = msg.sender;
         (Kernel dao, ACL acl) = _createDAO();
 

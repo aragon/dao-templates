@@ -83,7 +83,7 @@ contract BaseTemplate is APMNamehash, IsContract {
 
     /* ACL */
 
-    function _createPermissions(ACL _acl, address[] _grantees, address _app, bytes32 _permission, address _manager) internal {
+    function _createPermissions(ACL _acl, address[] memory _grantees, address _app, bytes32 _permission, address _manager) internal {
         _acl.createPermission(_grantees[0], _app, _permission, address(this));
         for (uint256 i = 1; i < _grantees.length; i++) {
             _acl.grantPermission(_grantees[i], _app, _permission);
@@ -151,7 +151,7 @@ contract BaseTemplate is APMNamehash, IsContract {
 
     /* VOTING */
 
-    function _installVotingApp(Kernel _dao, MiniMeToken _token, uint64[3] _votingSettings) internal returns (Voting) {
+    function _installVotingApp(Kernel _dao, MiniMeToken _token, uint64[3] memory _votingSettings) internal returns (Voting) {
         return _installVotingApp(_dao, _token, _votingSettings[0], _votingSettings[1], _votingSettings[2]);
     }
 
@@ -208,7 +208,7 @@ contract BaseTemplate is APMNamehash, IsContract {
         _acl.createPermission(_settingsManager, _payroll, _payroll.MANAGE_ALLOWED_TOKENS_ROLE(), _permissionsManager);
     }
 
-    function _unwrapPayrollSettings(uint256[4] _payrollSettings) internal pure returns (address denominationToken, IFeed priceFeed, uint64 rateExpiryTime, address employeeManager) {
+    function _unwrapPayrollSettings(uint256[4] memory _payrollSettings) internal pure returns (address denominationToken, IFeed priceFeed, uint64 rateExpiryTime, address employeeManager) {
         denominationToken = _toAddress(_payrollSettings[0]);
         priceFeed = IFeed(_toAddress(_payrollSettings[1]));
         rateExpiryTime = _payrollSettings[2].toUint64();
@@ -242,7 +242,7 @@ contract BaseTemplate is APMNamehash, IsContract {
         _acl.createPermission(_grantee, _tokenManager, _tokenManager.BURN_ROLE(), _manager);
     }
 
-    function _mintTokens(ACL _acl, TokenManager _tokenManager, address[] _holders, uint256[] _stakes) internal {
+    function _mintTokens(ACL _acl, TokenManager _tokenManager, address[] memory _holders, uint256[] memory _stakes) internal {
         _createPermissionForTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
         for (uint256 i = 0; i < _holders.length; i++) {
             _tokenManager.mint(_holders[i], _stakes[i]);
@@ -250,7 +250,7 @@ contract BaseTemplate is APMNamehash, IsContract {
         _removePermissionFromTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
     }
 
-    function _mintTokens(ACL _acl, TokenManager _tokenManager, address[] _holders, uint256 _stake) internal {
+    function _mintTokens(ACL _acl, TokenManager _tokenManager, address[] memory _holders, uint256 _stake) internal {
         _createPermissionForTemplate(_acl, _tokenManager, _tokenManager.MINT_ROLE());
         for (uint256 i = 0; i < _holders.length; i++) {
             _tokenManager.mint(_holders[i], _stake);
@@ -278,7 +278,7 @@ contract BaseTemplate is APMNamehash, IsContract {
         return _installNonDefaultApp(_dao, _appId, new bytes(0));
     }
 
-    function _installNonDefaultApp(Kernel _dao, bytes32 _appId, bytes _initializeData) internal returns (address) {
+    function _installNonDefaultApp(Kernel _dao, bytes32 _appId, bytes memory _initializeData) internal returns (address) {
         return _installApp(_dao, _appId, _initializeData, false);
     }
 
@@ -286,11 +286,11 @@ contract BaseTemplate is APMNamehash, IsContract {
         return _installDefaultApp(_dao, _appId, new bytes(0));
     }
 
-    function _installDefaultApp(Kernel _dao, bytes32 _appId, bytes _initializeData) internal returns (address) {
+    function _installDefaultApp(Kernel _dao, bytes32 _appId, bytes memory _initializeData) internal returns (address) {
         return _installApp(_dao, _appId, _initializeData, true);
     }
 
-    function _installApp(Kernel _dao, bytes32 _appId, bytes _initializeData, bool _setDefault) internal returns (address) {
+    function _installApp(Kernel _dao, bytes32 _appId, bytes memory _initializeData, bool _setDefault) internal returns (address) {
         address latestBaseAppAddress = _latestVersionAppBase(_appId);
         address instance = address(_dao.newAppInstance(_appId, latestBaseAppAddress, _initializeData, _setDefault));
         emit InstalledApp(instance, _appId);
@@ -304,7 +304,7 @@ contract BaseTemplate is APMNamehash, IsContract {
 
     /* TOKEN */
 
-    function _createToken(string _name, string _symbol, uint8 _decimals) internal returns (MiniMeToken) {
+    function _createToken(string memory _name, string memory _symbol, uint8 _decimals) internal returns (MiniMeToken) {
         require(address(miniMeFactory) != address(0), ERROR_MINIME_FACTORY_NOT_PROVIDED);
         MiniMeToken token = miniMeFactory.createCloneToken(MiniMeToken(address(0)), 0, _name, _decimals, _symbol, true);
         emit DeployToken(address(token));
@@ -317,7 +317,7 @@ contract BaseTemplate is APMNamehash, IsContract {
 
     /* IDS */
 
-    function _registerID(string _name, address _owner) internal {
+    function _registerID(string memory _name, address _owner) internal {
         require(address(aragonID) != address(0), ERROR_ARAGON_ID_NOT_PROVIDED);
         aragonID.register(keccak256(abi.encodePacked(_name)), _owner);
     }
