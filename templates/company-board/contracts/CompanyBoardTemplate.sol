@@ -110,7 +110,7 @@ contract CompanyBoardTemplate is BaseTemplate {
         _registerID(_id, address(dao));
     }
 
-    function _finalizeApps(Kernel _dao, address[] _shareHolders, uint256[] _shareStakes, address[] _boardMembers, Voting _shareVoting, Voting _boardVoting) internal {
+    function _finalizeApps(Kernel _dao, address[] memory _shareHolders, uint256[] memory _shareStakes, address[] memory _boardMembers, Voting _shareVoting, Voting _boardVoting) internal {
         (MiniMeToken shareToken, MiniMeToken boardToken) = _popTokenCaches();
 
         // Install
@@ -206,7 +206,7 @@ contract CompanyBoardTemplate is BaseTemplate {
         delete c.boardToken;
     }
 
-    function _ensureFinalizationSettings(address[] memory _shareHolders, uint256[] memory _shareStakes, address[] memory _boardMembers) internal {
+    function _ensureFinalizationSettings(address[] memory _shareHolders, uint256[] memory _shareStakes, address[] memory _boardMembers) private pure {
         require(_shareHolders.length > 0, ERROR_MISSING_SHARE_MEMBERS);
         require(_shareHolders.length == _shareStakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         require(_boardMembers.length > 0, ERROR_MISSING_BOARD_MEMBERS);

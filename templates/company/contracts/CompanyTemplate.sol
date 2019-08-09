@@ -56,7 +56,7 @@ contract CompanyTemplate is BaseTemplate, TokenCache {
     * @param _name String with the name for the token used by share holders in the organization
     * @param _symbol String with the symbol for the token used by share holders in the organization
     */
-    function newToken(string _name, string _symbol) public returns (MiniMeToken) {
+    function newToken(string memory _name, string memory _symbol) public returns (MiniMeToken) {
         MiniMeToken token = _createToken(_name, _symbol, TOKEN_DECIMALS);
         _cacheToken(token, msg.sender);
         return token;
@@ -71,7 +71,7 @@ contract CompanyTemplate is BaseTemplate, TokenCache {
     * @param _financePeriod Initial duration for accounting periods, it can be set to zero in order to use the default of 30 days.
     * @param _useAgentAsVault Boolean to tell whether to use an Agent app as a more advanced form of Vault app
     */
-    function newInstance(string _id, address[] _holders, uint256[] _stakes, uint64[3] _votingSettings, uint64 _financePeriod, bool _useAgentAsVault) public {
+    function newInstance(string memory _id, address[] memory _holders, uint256[] memory _stakes, uint64[3] memory _votingSettings, uint64 _financePeriod, bool _useAgentAsVault) public {
         _ensureCompanySettings(_holders, _stakes, _votingSettings);
 
         (Kernel dao, ACL acl) = _createDAO();
@@ -91,7 +91,7 @@ contract CompanyTemplate is BaseTemplate, TokenCache {
     * @param _payrollSettings Array of [address denominationToken , IFeed priceFeed, uint64 rateExpiryTime, address employeeManager]
              for the payroll app. The `employeeManager` can be set to `0x0` in order to use the voting app as the employee manager.
     */
-    function newInstance(string _id, address[] _holders, uint256[] _stakes, uint64[3] _votingSettings, uint64 _financePeriod, bool _useAgentAsVault, uint256[4] _payrollSettings) public {
+    function newInstance(string memory _id, address[] memory _holders, uint256[] memory _stakes, uint64[3] memory _votingSettings, uint64 _financePeriod, bool _useAgentAsVault, uint256[4] memory _payrollSettings) public {
         _ensureCompanySettings(_holders, _stakes, _votingSettings, _payrollSettings);
 
         (Kernel dao, ACL acl) = _createDAO();
@@ -101,7 +101,7 @@ contract CompanyTemplate is BaseTemplate, TokenCache {
         _registerID(_id, dao);
     }
 
-    function _setupApps(Kernel _dao, ACL _acl, address[] _holders, uint256[] _stakes, uint64[3] _votingSettings, uint64 _financePeriod, bool _useAgentAsVault) internal returns (Finance, Voting) {
+    function _setupApps(Kernel _dao, ACL _acl, address[] memory _holders, uint256[] memory _stakes, uint64[3] memory _votingSettings, uint64 _financePeriod, bool _useAgentAsVault) internal returns (Finance, Voting) {
         MiniMeToken token = _popTokenCache(msg.sender);
         Vault agentOrVault = _useAgentAsVault ? _installDefaultAgentApp(_dao) : _installVaultApp(_dao);
         Finance finance = _installFinanceApp(_dao, agentOrVault, _financePeriod == 0 ? DEFAULT_FINANCE_PERIOD : _financePeriod);
@@ -114,7 +114,7 @@ contract CompanyTemplate is BaseTemplate, TokenCache {
         return (finance, voting);
     }
 
-    function _setupPayrollApp(Kernel _dao, ACL _acl, Finance _finance, Voting _voting, uint256[4] _payrollSettings) internal {
+    function _setupPayrollApp(Kernel _dao, ACL _acl, Finance _finance, Voting _voting, uint256[4] memory _payrollSettings) internal {
         (address denominationToken, IFeed priceFeed, uint64 rateExpiryTime, address employeeManager) = _unwrapPayrollSettings(_payrollSettings);
         address manager = employeeManager == address(0) ? _voting : employeeManager;
 
@@ -133,12 +133,12 @@ contract CompanyTemplate is BaseTemplate, TokenCache {
         _createTokenManagerPermissions(_acl, _tokenManager, _voting, _voting);
     }
 
-    function _ensureCompanySettings(address[] _holders, uint256[] _stakes, uint64[3] _votingSettings, uint256[4] _payrollSettings) private pure {
+    function _ensureCompanySettings(address[] memory _holders, uint256[] memory _stakes, uint64[3] memory _votingSettings, uint256[4] memory _payrollSettings) private pure {
         _ensureCompanySettings(_holders, _stakes, _votingSettings);
         require(_payrollSettings.length == 4, ERROR_BAD_PAYROLL_SETTINGS);
     }
 
-    function _ensureCompanySettings(address[] _holders, uint256[] _stakes, uint64[3] _votingSettings) private pure {
+    function _ensureCompanySettings(address[] memory _holders, uint256[] memory _stakes, uint64[3] memory _votingSettings) private pure {
         require(_holders.length > 0, ERROR_EMPTY_HOLDERS);
         require(_holders.length == _stakes.length, ERROR_BAD_HOLDERS_STAKES_LEN);
         require(_votingSettings.length == 3, ERROR_BAD_VOTE_SETTINGS);
