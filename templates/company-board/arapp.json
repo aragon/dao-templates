@@ -4,6 +4,12 @@
       "registry": "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1",
       "appName": "company-board-template.aragonpm.eth",
       "network": "rpc"
+    },
+    "rinkeby": {
+      "appName": "company-board-template",
+      "address": "0xaed2e82033528b44ad64358697d6d9a453ff2558",
+      "network": "rinkeby",
+      "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D"
     }
   },
   "roles": [],
