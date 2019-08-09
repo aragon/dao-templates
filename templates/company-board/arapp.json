@@ -10,6 +10,12 @@
       "address": "0xaed2e82033528b44ad64358697d6d9a453ff2558",
       "network": "rinkeby",
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D"
+    },
+    "ropsten": {
+      "appName": "company-board-template",
+      "address": "0x0704f5c2f742368bbf01cc9ca83b8653e3773466",
+      "network": "ropsten",
+      "registry": "0x6afe2cacee211ea9179992f89dc61ff25c61e923"
     }
   },
   "roles": [],
