@@ -4,6 +4,18 @@
       "registry": "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1",
       "appName": "membership-template.aragonpm.eth",
       "network": "rpc"
+    },
+    "ropsten": {
+      "appName": "membership-template",
+      "address": "0x033aeca9202555df3ac44f2f866ea1d0c4538598",
+      "network": "ropsten",
+      "registry": "0x6afe2cacee211ea9179992f89dc61ff25c61e923"
+    },
+    "rinkeby": {
+      "appName": "membership-template",
+      "address": "0xdb60a5c127e5a03e5b6ea80a90eead8c6da588bb",
+      "network": "rinkeby",
+      "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D"
     }
   },
   "roles": [],
