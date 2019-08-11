@@ -1,0 +1,84 @@
+---
+id: company
+tokens:
+- ref: share
+  symbol: Share
+  name: Share Token
+  decimals: 18
+apps:
+- ref: shareholder-voting
+  type: voting
+  token: share
+  support: 50
+  acceptance: 5
+  duration: 604800
+- ref: share-tm
+  type: token-manager
+  token: share
+- type: finance
+  default: true
+  vault: agent
+  period: 2592000
+- ref: agent
+  type: agent
+  default: true
+actions:
+- ref: mint-shares
+  name: MintTokens
+  params:
+  - token: share
+    amounts: "$SHARE_AMOUNTS"
+    to: "$SHARE_KEYS"
+permissions:
+- app: kernel
+  role: APP_MANAGER_ROLE
+  grantee: share-voting
+  manager: share-voting
+- app: acl
+  role: CREATE_PERMISSIONS_ROLE
+  grantee: share-voting
+  manager: share-voting
+- app: share-voting
+  role: CREATE_VOTES_ROLE
+  grantee: share-tm
+  manager: share-voting
+- app: share-voting
+  role: MODIFY_QUORUM_ROLE
+  grantee: share-voting
+  manager: share-voting
+- app: share-voting
+  role: MODIFY_SUPPORT_ROLE
+  grantee: share-voting
+  manager: share-voting
+- app: agent
+  role: EXECUTE_ROLE
+  grantee: share-voting
+  manager: share-voting
+- app: agent
+  role: RUN_SCRIPT_ROLE
+  grantee: share-voting
+  manager: share-voting
+- app: agent
+  role: TRANSFER_ROLE
+  grantee: finance
+  manager: share-voting
+- app: finance
+  role: CREATE_PAYMENTS_ROLE
+  grantee: share-voting
+  manager: share-voting
+- app: finance
+  role: EXECUTE_PAYMENTS_ROLE
+  grantee: share-voting
+  manager: share-voting
+- app: finance
+  role: MANAGE_PAYMENTS_ROLE
+  grantee: share-voting
+  manager: share-voting
+- app: share-tm
+  role: BURN_ROLE
+  grantee: share-voting
+  manager: share-voting
+- app: share-tm
+  role: MINT_ROLE
+  grantee: share-voting
+  manager: share-voting

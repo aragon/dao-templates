@@ -1,0 +1,18 @@
+{
+  "name": "@aragon/dao-template-engine",
+  "version": "1.0.0",
+  "description": "Aragon DAO template engine/generator",
+  "main": "src/program.js",
+  "bin": {
+    "dao-template-engine": "src/program.js"
+  },
+  "scripts": {
+    "test": "truffle test"
+  },
+  "dependencies": {
+    "@aragon/os": "4.2.0",
+    "commander": "^3.0.0",
+    "js-yaml": "^3.13.1",
+    "truffle": "^4.1.14"
+  }
+}
