@@ -1,4 +1,4 @@
-const readYaml = require('../utils/read-yaml')
+const readYaml = require('../utils/readYaml')
 
 const signature = 'permissions <descriptorFilePath>';
 const description = 'Generates a markdown table listing the permissions of a DAO'
