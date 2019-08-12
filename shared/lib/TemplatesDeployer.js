@@ -1,4 +1,3 @@
-const { APPS } = require('../helpers/apps')
 const { hash: namehash } = require('eth-ens-namehash')
 
 const logDeploy = require('@aragon/os/scripts/helpers/deploy-logger')
@@ -12,7 +11,7 @@ module.exports = class TemplateDeployer {
     this.web3 = web3
     this.artifacts = artifacts
     this.owner = owner
-    this.options = { apps: APPS, ...options }
+    this.options = { ...options }
   }
 
   async deploy(templateName, contractName) {
