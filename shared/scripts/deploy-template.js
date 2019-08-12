@@ -1,5 +1,5 @@
 const TemplatesDeployer = require('../lib/TemplatesDeployer')
-const { APPS } = require("../helpers/apps");
+const { APPS } = require('../helpers/apps')
 const getAccounts = require('@aragon/os/scripts/helpers/get-accounts')
 
 const errorOut = message => {
