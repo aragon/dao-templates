@@ -2,29 +2,37 @@
 
 ## Usage
 
-Create new tokens and initialize DAO for the company-board entity:
+Prepare an incomplete company-board entity:
 
 ```
-template.prepareInstance(shareTokenName, shareTokenSymbol)
+template.prepareInstance(shareTokenName, shareTokenSymbol, shareVotingSettings, boardVotingSettings)
 ```
 
 - `shareTokenName`: Name for the token used by share holders in the organization
 - `shareTokenSymbol`: Symbol for the token used by share holders in the organization
+- `shareVotingSettings`: Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the share voting app of the organization
+- `boardVotingSettings`: Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the board voting app of the organization
 
-Setup company-board DAO:
+Finalize company-board entity:
 
 ```
-template.setupInstance(name, boardHolders, shareHolders, shareStakes, boardVotingSettings, shareVotingSettings, financePeriod, useAgentAsVault)
+template.finalizeInstance(name, shareHolders, shareStakes, boardMembers, financePeriod, useAgentAsVault)
 ```
 
 - `name`: Name for org, will assign `[name].aragonid.eth`
-- `boardMembers`: Array of board member addresses (1 token will be minted for each board member)
 - `shareHolders`: Array of share holder addresses
 - `shareStakes`: Array of token stakes for share holders (token has 18 decimals, multiply token amount `* 10^18`)
-- `boardVotingSettings`: Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the board voting app of the organization
-- `shareVotingSettings`: Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the share voting app of the organization
+- `boardMembers`: Array of board member addresses (1 token will be minted for each board member)
 - `financePeriod`: Initial duration for accounting periods, it can be set to zero in order to use the default of 30 days.
 - `useAgentAsVault`: Use an Agent app as a more advanced form of Vault app
+
+Alternatively, create a new company entity with a Payroll app:
+
+```
+template.finalizeInstance(name, shareHolders, shareStakes, boardMembers, financePeriod, useAgentAsVault, payrollSettings)
+```
+
+- `payrollSettings`: Array of [address denominationToken , IFeed priceFeed, uint64 rateExpiryTime, address employeeManager (set to board voting if 0x0) ] for the Payroll app
 
 ## Deploying templates
 

@@ -85,7 +85,15 @@ contract TrustTemplate is BaseTemplate {
         return dao;
     }
 
-    function setupInstance(string _id, address[] _beneficiaryKeys, address[] _heirs, uint256[] _heirsStakes) public returns (Kernel) {
+    function setupInstance(
+        string memory _id,
+        address[] memory _beneficiaryKeys,
+        address[] memory _heirs,
+        uint256[] memory _heirsStakes
+    )
+        public
+        returns (Kernel)
+    {
         require(_hasDaoCache(msg.sender), ERROR_MISSING_SENDER_CACHE);
         require(_heirs.length == _heirsStakes.length, ERROR_BAD_HEIRS_LENGTH);
         require(_beneficiaryKeys.length == BENEFICIARY_KEYS_AMOUNT, ERROR_BAD_BENEFICIARY_KEYS_LENGTH);
@@ -97,7 +105,7 @@ contract TrustTemplate is BaseTemplate {
         return dao;
     }
 
-    function setupMultiSig(address[] _multiSigKeys) public returns (MultiSigWallet) {
+    function setupMultiSig(address[] memory _multiSigKeys) public returns (MultiSigWallet) {
         require(_hasDaoCache(msg.sender) && _hasAppsCache(msg.sender), ERROR_MISSING_SENDER_CACHE);
         require(_multiSigKeys.length == MULTI_SIG_EXTERNAL_KEYS_AMOUNT, ERROR_BAD_MULTI_SIG_KEYS_LENGTH);
 
@@ -107,7 +115,15 @@ contract TrustTemplate is BaseTemplate {
         return multiSig;
     }
 
-    function _setupApps(Kernel _dao, address[] _beneficiaryKeys, address[] _heirs, uint256[] _heirsStakes, uint256 _blockedHeirsSupply) internal {
+    function _setupApps(
+        Kernel _dao,
+        address[] memory _beneficiaryKeys,
+        address[] memory _heirs,
+        uint256[] memory _heirsStakes,
+        uint256 _blockedHeirsSupply
+    )
+        internal
+    {
         // Install apps
         ACL acl = ACL(_dao.acl());
         Vault vault = _installVaultApp(_dao);
@@ -133,7 +149,7 @@ contract TrustTemplate is BaseTemplate {
         _storeAppsCache(msg.sender, agent, holdVoting, holdTokenManager, heirsTokenManager);
     }
 
-    function _setupMultiSig(Kernel _dao, address[] _multiSigKeys) internal returns (MultiSigWallet) {
+    function _setupMultiSig(Kernel _dao, address[] memory _multiSigKeys) internal returns (MultiSigWallet) {
         ACL acl = ACL(_dao.acl());
 
         (Agent agent, Voting holdVoting, TokenManager holdTokenManager, TokenManager heirsTokenManager) = _getAppsCache(msg.sender);
@@ -144,7 +160,7 @@ contract TrustTemplate is BaseTemplate {
         return multiSig;
     }
 
-    function _createMultiSig(address[] _multiSigKeys, Agent _agent) internal returns (MultiSigWallet) {
+    function _createMultiSig(address[] memory _multiSigKeys, Agent _agent) internal returns (MultiSigWallet) {
         address[] memory multiSigOwners = new address[](3);
         multiSigOwners[0] = _multiSigKeys[0];
         multiSigOwners[1] = _multiSigKeys[1];
@@ -243,7 +259,7 @@ contract TrustTemplate is BaseTemplate {
         heirsTokenManager = TokenManager(c.heirsTokenManager);
     }
 
-    function _calculateBlockedHeirsSupply(uint256[] _heirsStakes) internal pure returns (uint256) {
+    function _calculateBlockedHeirsSupply(uint256[] memory _heirsStakes) internal pure returns (uint256) {
         uint256 totalHeirsSupply = 0;
         for (uint256 i = 0; i < _heirsStakes.length; i++) {
             totalHeirsSupply = totalHeirsSupply.add(_heirsStakes[i]);

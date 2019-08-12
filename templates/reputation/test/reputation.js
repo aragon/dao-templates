@@ -75,17 +75,17 @@ contract('Reputation', ([_, owner, holder1, holder2, someone]) => {
     assert.equal(installedApps['token-manager'].length, 1, 'should have installed 1 token manager app')
     tokenManager = TokenManager.at(installedApps['token-manager'][0])
 
-    if(apps.agent) {
+    if (apps.agent) {
       assert.equal(installedApps.agent.length, 1, 'should have installed 1 agent app')
       agent = Agent.at(installedApps.agent[0])
     }
 
-    if(apps.vault) {
+    if (apps.vault) {
       assert.equal(installedApps.vault.length, 1, 'should have installed 1 vault app')
       vault = Vault.at(installedApps.vault[0])
     }
 
-    if(apps.payroll) {
+    if (apps.payroll) {
       assert.equal(installedApps.payroll.length, 1, 'should have installed 1 payroll app')
       payroll = Payroll.at(installedApps.payroll[0])
     }
