@@ -1,4 +1,5 @@
 const TemplatesDeployer = require('../lib/TemplatesDeployer')
+const { APPS } = require('../helpers/apps')
 const getAccounts = require('@aragon/os/scripts/helpers/get-accounts')
 
 const errorOut = message => {
@@ -6,7 +7,7 @@ const errorOut = message => {
   throw new Error(message)
 }
 
-module.exports = async function deployTemplate(web3, artifacts, templateName, contractName) {
+module.exports = async function deployTemplate(web3, artifacts, templateName, contractName, apps = APPS) {
   let { ens, owner, verbose } = require('yargs')
     .option('e', { alias: 'ens', describe: 'ENS address', type: 'string' })
     .option('o', { alias: 'owner', describe: 'Sender address. Will use first address if no one is given', type: 'string' })
@@ -21,6 +22,6 @@ module.exports = async function deployTemplate(web3, artifacts, templateName, co
   if (!templateName) errorOut('Missing template id.')
   if (!contractName) errorOut('Missing template contract name.')
 
-  const deployer = new TemplatesDeployer(web3, artifacts, owner, { ens, verbose })
+  const deployer = new TemplatesDeployer(web3, artifacts, owner, { apps, ens, verbose })
   return deployer.deploy(templateName, contractName)
 }
