@@ -16,6 +16,12 @@
       "address": "0x4f90d5295dd48fb7a3ceef9ef6abfc51aec6346a",
       "network": "rinkeby",
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D"
+    },
+    "staging": {
+      "appName": "reputation-template.aragonpm.eth",
+      "address": "0x030d1e341bc2d8ab325d12919c593fb15cfdec45",
+      "network": "rinkeby",
+      "registry": "0xfe03625ea880a8cba336f9b5ad6e15b0a3b5a939"
     }
   },
   "roles": [],
