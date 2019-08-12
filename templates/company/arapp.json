@@ -6,13 +6,19 @@
       "network": "rpc"
     },
     "rinkeby": {
-      "appName": "company-template",
+      "appName": "company-template.aragonpm.eth",
       "address": "0xe8a5694c9ae3fc73a32e333c3b7b27ccb9a7d2cd",
       "network": "rinkeby",
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D"
     },
+    "staging": {
+      "appName": "company-template.aragonpm.eth",
+      "address": "0xa52e2e3e674c4bca8011d97045dcf0c95b1061a5",
+      "network": "rinkeby",
+      "registry": "0xfe03625ea880a8cba336f9b5ad6e15b0a3b5a939"
+    },
     "ropsten": {
-      "appName": "company-template",
+      "appName": "company-template.aragonpm.eth",
       "address": "0xd666f24f7b3028b633101693c8b31e217b9fd02f",
       "network": "ropsten",
       "registry": "0x6afe2cacee211ea9179992f89dc61ff25c61e923"
