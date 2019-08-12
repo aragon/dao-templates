@@ -1,8 +1,18 @@
 {
   "name": "@aragon/templates-shared",
-  "version": "1.0.0",
-  "private": true,
+  "version": "1.0.0-rc.1",
   "description": "Shared helpers for Aragon templates",
+  "author": "Aragon Association <legal@aragon.org>",
+  "license": "GPL-3.0-or-later",
+  "files": [
+    "contracts/",
+    "ethereum-data",
+    "helpers/",
+    "lib/",
+    "scripts/",
+    ".env",
+    "docker-compose.yml"
+  ],
   "dependencies": {
     "@aragon/apps-agent": "^1.0.0",
     "@aragon/apps-finance": "^3.0.0",
