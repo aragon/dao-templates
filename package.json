@@ -8,6 +8,7 @@
   "scripts": {
     "install": "npm run bootstrap",
     "bootstrap": "lerna bootstrap",
+    "lint": "lerna run --scope=@aragon/templates-* lint",
     "test": "npm run test:all",
     "test:all": "lerna run --scope=@aragon/templates-* --concurrency=1 --stream test:geth",
     "test:bare": "lerna run --scope=@aragon/templates-bare --stream test:geth",
@@ -15,8 +16,7 @@
     "test:company": "lerna run --scope=@aragon/templates-company --stream test:geth",
     "test:company:board": "lerna run --scope=@aragon/templates-company-board --stream test:geth",
     "test:membership": "lerna run --scope=@aragon/templates-membership --stream test:geth",
-    "test:reputation": "lerna run --scope=@aragon/templates-reputation --stream test:geth",
-    "lint": "lerna run --scope=@aragon/templates-* lint"
+    "test:reputation": "lerna run --scope=@aragon/templates-reputation --stream test:geth"
   },
   "devDependencies": {
     "lerna": "^3.0.0"
