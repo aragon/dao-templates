@@ -55,6 +55,7 @@ contract BaseTemplate is APMNamehash, IsContract {
     IFIFSResolvingRegistrar internal aragonID;
 
     event DeployDao(address dao);
+    event RegisterDao(string id);
     event DeployToken(address token);
     event InstalledApp(address appProxy, bytes32 appId);
 
@@ -320,6 +321,7 @@ contract BaseTemplate is APMNamehash, IsContract {
     function _registerID(string memory _name, address _owner) internal {
         require(address(aragonID) != address(0), ERROR_ARAGON_ID_NOT_PROVIDED);
         aragonID.register(keccak256(abi.encodePacked(_name)), _owner);
+        emit RegisterDao(_name);
     }
 
     function _ensureAragonIdIsValid(address _aragonID) internal view {

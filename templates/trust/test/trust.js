@@ -98,6 +98,8 @@ contract('Trust', ([_, owner, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
       holdToken = MiniMeToken.at(getEventArgument(prepareReceipt, 'DeployToken', 'token', 0))
       heirsToken = MiniMeToken.at(getEventArgument(prepareReceipt, 'DeployToken', 'token', 1))
       multiSig = MultiSigWallet.at(getEventArgument(multiSigSetupReceipt, 'DeployMultiSig', 'multiSig'))
+
+      assert.equal(daoID, getEventArgument(setupReceipt, 'RegisterDao', 'id'), 'should have emitted RegisterDao event with the correct id')
     })
 
     before('load apps', async () => {
