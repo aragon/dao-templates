@@ -10,7 +10,6 @@
     "helpers/",
     "lib/",
     "scripts/",
-    ".env",
     "docker-compose.yml"
   ],
   "dependencies": {

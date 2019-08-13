@@ -3,7 +3,7 @@ services:
   devnet:
     image: aragon/geth-devnet
     volumes:
-      - ${ETHDATA_LOCAL_PATH}:/root/.ethdata
+      - ./ethereum-data/:/root/.ethdata
     ports:
       - "8535:8545"
       - "8546:8546"
