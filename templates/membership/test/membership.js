@@ -65,7 +65,7 @@ contract('Membership', ([_, owner, member1, member2, someone]) => {
     acl = ACL.at(await dao.acl())
     const installedApps = getInstalledAppsById(instanceReceipt)
 
-    assert.equal(daoID, getEventArgument(instanceReceipt, 'RegisterDao', 'id'), 'should have emitted RegisterDao event with the correct id')
+    assert.equal(dao.address, getEventArgument(instanceReceipt, 'SetupDao', 'dao'), 'should have emitted a SetupDao event')
 
     assert.equal(installedApps.voting.length, 1, 'should have installed 1 voting app')
     voting = Voting.at(installedApps.voting[0])

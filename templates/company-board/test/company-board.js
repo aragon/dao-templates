@@ -104,7 +104,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
       const installedAppsDuringPrepare = getInstalledAppsById(prepareReceipt)
       const installedAppsDuringFinalize = getInstalledAppsById(finalizeInstanceReceipt)
 
-      assert.equal(daoID, getEventArgument(finalizeInstanceReceipt, 'RegisterDao', 'id'), 'should have emitted RegisterDao event with the correct id')
+      assert.equal(dao.address, getEventArgument(finalizeInstanceReceipt, 'SetupDao', 'dao'), 'should have emitted a SetupDao event')
 
       assert.equal(installedAppsDuringPrepare.voting.length, 2, 'should have installed 2 voting apps during prepare')
       shareVoting = Voting.at(installedAppsDuringPrepare.voting[0])

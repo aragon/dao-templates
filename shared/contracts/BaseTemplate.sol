@@ -55,7 +55,7 @@ contract BaseTemplate is APMNamehash, IsContract {
     IFIFSResolvingRegistrar internal aragonID;
 
     event DeployDao(address dao);
-    event RegisterDao(string id);
+    event SetupDao(address dao);
     event DeployToken(address token);
     event InstalledApp(address appProxy, bytes32 appId);
 
@@ -110,6 +110,7 @@ contract BaseTemplate is APMNamehash, IsContract {
         ACL _acl = ACL(_dao.acl());
         _transferPermissionFromTemplate(_acl, _dao, _to, _dao.APP_MANAGER_ROLE(), _manager);
         _transferPermissionFromTemplate(_acl, _acl, _to, _acl.CREATE_PERMISSIONS_ROLE(), _manager);
+        emit SetupDao(_dao);
     }
 
     function _transferPermissionFromTemplate(ACL _acl, address _app, address _to, bytes32 _permission, address _manager) internal {
@@ -321,7 +322,6 @@ contract BaseTemplate is APMNamehash, IsContract {
     function _registerID(string memory _name, address _owner) internal {
         require(address(aragonID) != address(0), ERROR_ARAGON_ID_NOT_PROVIDED);
         aragonID.register(keccak256(abi.encodePacked(_name)), _owner);
-        emit RegisterDao(_name);
     }
 
     function _ensureAragonIdIsValid(address _aragonID) internal view {
