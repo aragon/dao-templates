@@ -74,7 +74,7 @@ The network details will be automatically selected by the `arapp.json`'s environ
 | Share Token Manager | MINT                  | Share Voting        | Share Voting  |
 | Share Token Manager | BURN                  | Share Voting        | Share Voting  |
 
-## Permissions for the Payroll app
+### Additional permissions if the Payroll app is installed
 
 | App                 | Permission                 | Grantee             | Manager       |
 |---------------------|----------------------------|---------------------|---------------|
