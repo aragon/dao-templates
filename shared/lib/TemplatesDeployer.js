@@ -16,12 +16,15 @@ module.exports = class TemplateDeployer {
 
   async deploy(templateName, contractName) {
     await this.fetchOrDeployDependencies()
+    const template = await this.deployTemplate(contractName)
+    await this.registerDeploy(templateName, template)
+    return template
+  }
 
+  async deployTemplate(contractName) {
     const Template = this.artifacts.require(contractName)
     const template = await Template.new(this.daoFactory.address, this.ens.address, this.miniMeFactory.address, this.aragonID.address)
     await logDeploy(template)
-    if ((await this.isLocal()) && !(await this._isPackageRegistered(templateName))) await this._registerPackage(templateName, template)
-    await this._writeArappFile(templateName, template)
     return template
   }
 
@@ -32,6 +35,13 @@ module.exports = class TemplateDeployer {
     await this._fetchOrDeployDAOFactory()
     await this._fetchOrDeployMiniMeFactory()
     await this._checkAppsDeployment()
+  }
+
+  async registerDeploy(templateName, template) {
+    if ((await this.isLocal()) && !(await this._isPackageRegistered(templateName))) {
+      await this._registerPackage(templateName, template)
+    }
+    await this._writeArappFile(templateName, template)
   }
 
   async _checkAppsDeployment() {
@@ -170,9 +180,9 @@ module.exports = class TemplateDeployer {
     return owner !== '0x0000000000000000000000000000000000000000' && owner !== '0x'
   }
 
-  async _writeArappFile(id, template) {
+  async _writeArappFile(templateName, template) {
     const { address, constructor: { contractName } } = template
-    await this.arapp.write(id, address, contractName, this.ens.address)
+    await this.arapp.write(templateName, address, contractName, this.ens.address)
     this.log(`Template addresses saved to ${await this.arapp.filePath()}`)
   }
 
