@@ -60,11 +60,7 @@ The network details will be automatically selected by the `arapp.json`'s environ
 | Share Voting        | CREATE_VOTES          | Board Token Manager | Share Voting  |
 | Share Voting        | MODIFY_QUORUM         | Share Voting        | Share Voting  |
 | Share Voting        | MODIFY_SUPPORT        | Share Voting        | Share Voting  |
-| Agent               | TRANSFER              | Finance             | Share Voting  |
-| Agent               | RUN_SCRIPT            | Board Voting        | Share Voting  |
-| Agent               | RUN_SCRIPT            | Share Voting        | Share Voting  |
-| Agent               | EXECUTE               | Board Voting        | Share Voting  |
-| Agent               | EXECUTE               | Share Voting        | Share Voting  |
+| Agent or Vault      | TRANSFER              | Finance             | Share Voting  |
 | Finance             | CREATE_PAYMENTS       | Board Voting        | Share Voting  |
 | Finance             | CREATE_PAYMENTS       | Share Voting        | Share Voting  |
 | Finance             | EXECUTE_PAYMENTS      | Share Voting        | Share Voting  |
@@ -73,6 +69,15 @@ The network details will be automatically selected by the `arapp.json`'s environ
 | Board Token Manager | BURN                  | Share Voting        | Share Voting  |
 | Share Token Manager | MINT                  | Share Voting        | Share Voting  |
 | Share Token Manager | BURN                  | Share Voting        | Share Voting  |
+
+### Additional permissions if the Agent app is installed
+
+| App                 | Permission            | Grantee             | Manager       |
+|---------------------|-----------------------|---------------------|---------------|
+| Agent               | RUN_SCRIPT            | Board Voting        | Share Voting  |
+| Agent               | RUN_SCRIPT            | Share Voting        | Share Voting  |
+| Agent               | EXECUTE               | Board Voting        | Share Voting  |
+| Agent               | EXECUTE               | Share Voting        | Share Voting  |
 
 ### Additional permissions if the Payroll app is installed
 

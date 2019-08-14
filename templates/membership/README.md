@@ -54,16 +54,21 @@ The network details will be automatically selected by the `arapp.json`'s environ
 | Voting            | CREATE_VOTES          | Token Manager | Voting  |
 | Voting            | MODIFY_QUORUM         | Voting        | Voting  |
 | Voting            | MODIFY_SUPPORT        | Voting        | Voting  |
-| Agent             | TRANSFER              | Finance       | Voting  |
-| Agent             | RUN_SCRIPT            | Voting        | Voting  |
-| Agent             | EXECUTE               | Voting        | Voting  |
+| Agent or Vault    | TRANSFER              | Finance       | Voting  |
 | Finance           | CREATE_PAYMENTS       | Voting        | Voting  |
 | Finance           | EXECUTE_PAYMENTS      | Voting        | Voting  |
 | Finance           | DISABLE_PAYMENTS      | Voting        | Voting  |
 | Token Manager     | MINT                  | Voting        | Voting  |
 | Token Manager     | BURN                  | Voting        | Voting  |
 
-## Permissions for the Payroll app
+### Additional permissions if the Agent app is installed
+
+| App               | Permission            | Grantee       | Manager |
+|-------------------|-----------------------|---------------|---------|
+| Agent             | RUN_SCRIPT            | Voting        | Voting  |
+| Agent             | EXECUTE               | Voting        | Voting  |
+
+### Additional permissions if the Payroll app is installed
 
 | App                 | Permission                 | Grantee             | Manager       |
 |---------------------|----------------------------|---------------------|---------------|
