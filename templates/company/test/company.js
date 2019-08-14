@@ -257,7 +257,7 @@ contract('Company', ([_, owner, holder1, holder2, someone]) => {
           itSetupsAgentAppCorrectly()
         })
 
-        context('when requesting an vault app', () => {
+        context('when requesting a vault app', () => {
           const USE_AGENT_AS_VAULT = false
 
           createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
@@ -279,7 +279,7 @@ contract('Company', ([_, owner, holder1, holder2, someone]) => {
           itSetupsAgentAppCorrectly()
         })
 
-        context('when requesting an vault app', () => {
+        context('when requesting a vault app', () => {
           const USE_AGENT_AS_VAULT = false
 
           createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
@@ -360,7 +360,7 @@ contract('Company', ([_, owner, holder1, holder2, someone]) => {
             itSetupsAgentAppCorrectly()
           })
 
-          context('when requesting an vault app', () => {
+          context('when requesting a vault app', () => {
             const USE_AGENT_AS_VAULT = false
 
             createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
@@ -382,7 +382,7 @@ contract('Company', ([_, owner, holder1, holder2, someone]) => {
             itSetupsAgentAppCorrectly()
           })
 
-          context('when requesting an vault app', () => {
+          context('when requesting a vault app', () => {
             const USE_AGENT_AS_VAULT = false
 
             createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)

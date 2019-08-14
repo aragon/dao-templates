@@ -1,5 +1,7 @@
 # Aragon Membership template
 
+The membership template is intended to be used as the basis for a membership governed organization, like a cooperative or club. "Membership" is represented as a non-transferable token limited to one token per address. By default the template allows only members to create votes, and a vote of members is required for the organization to take any action, including the adding and removing members.
+
 ## Usage
 
 Create a new token for the membership entity:
@@ -29,7 +31,7 @@ Alternatively, create a new membership entity with a Payroll app:
 template.newInstance(name, members, votingSettings, financePeriod, useAgentAsVault, payrollSettings)
 ```
 
-- `payrollSettings`: Array of [address denominationToken , IFeed priceFeed, uint64 rateExpiryTime, address employeeManager (set to voting if 0x0) ] for the Payroll app
+- `payrollSettings`: Array of [address denominationToken , IFeed priceFeed, uint64 rateExpiryTime, address employeeManager (set to voting if 0x0)] for the Payroll app
 
 ## Deploying templates
 
@@ -52,11 +54,29 @@ The network details will be automatically selected by the `arapp.json`'s environ
 | Voting            | CREATE_VOTES          | Token Manager | Voting  |
 | Voting            | MODIFY_QUORUM         | Voting        | Voting  |
 | Voting            | MODIFY_SUPPORT        | Voting        | Voting  |
-| Agent             | TRANSFER              | Finance       | Voting  |
-| Agent             | RUN_SCRIPT            | Voting        | Voting  |
-| Agent             | EXECUTE               | Voting        | Voting  |
+| Agent or Vault    | TRANSFER              | Finance       | Voting  |
 | Finance           | CREATE_PAYMENTS       | Voting        | Voting  |
 | Finance           | EXECUTE_PAYMENTS      | Voting        | Voting  |
 | Finance           | DISABLE_PAYMENTS      | Voting        | Voting  |
 | Token Manager     | MINT                  | Voting        | Voting  |
 | Token Manager     | BURN                  | Voting        | Voting  |
+
+### Additional permissions if the Agent app is installed
+
+| App               | Permission            | Grantee       | Manager |
+|-------------------|-----------------------|---------------|---------|
+| Agent             | RUN_SCRIPT            | Voting        | Voting  |
+| Agent             | EXECUTE               | Voting        | Voting  |
+
+### Additional permissions if the Payroll app is installed
+
+| App                 | Permission                 | Grantee             | Manager       |
+|---------------------|----------------------------|---------------------|---------------|
+| Payroll             | ADD_BONUS_ROLE             | EOA or Voting       | Voting        |
+| Payroll             | ADD_EMPLOYEE_ROLE          | EOA or Voting       | Voting        |
+| Payroll             | ADD_REIMBURSEMENT_ROLE     | EOA or Voting       | Voting        |
+| Payroll             | TERMINATE_EMPLOYEE_ROLE    | EOA or Voting       | Voting        |
+| Payroll             | SET_EMPLOYEE_SALARY_ROLE   | EOA or voting       | Voting        |
+| Payroll             | MODIFY_PRICE_FEED_ROLE     | Voting              | Voting        |
+| Payroll             | MODIFY_RATE_EXPIRY_ROLE    | Voting              | Voting        |
+| Payroll             | MANAGE_ALLOWED_TOKENS_ROLE | Voting              | Voting        |

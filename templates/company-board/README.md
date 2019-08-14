@@ -1,5 +1,7 @@
 # Aragon Company Board template
 
+The Company with Board template is intended to be used as the basis for a token holder governed organization that has deferred some of its decision making power to an elected committee of "board" members. The "share" tokens are freely trade-able and can be added to exchanges. The "board" is represented by non-transferable tokens that are limited to one token per address. In order to change, add, or remove board members, share holders must vote to mint or burn "board" tokens. A share holder vote is required to make significant changes to the organization, and a board member is required to create shareholder votes.
+
 ## Usage
 
 Prepare an incomplete company-board entity:
@@ -32,7 +34,7 @@ Alternatively, create a new company entity with a Payroll app:
 template.finalizeInstance(name, shareHolders, shareStakes, boardMembers, financePeriod, useAgentAsVault, payrollSettings)
 ```
 
-- `payrollSettings`: Array of [address denominationToken , IFeed priceFeed, uint64 rateExpiryTime, address employeeManager (set to board voting if 0x0) ] for the Payroll app
+- `payrollSettings`: Array of [address denominationToken , IFeed priceFeed, uint64 rateExpiryTime, address employeeManager (set to board voting if 0x0)] for the Payroll app
 
 ## Deploying templates
 
@@ -58,11 +60,7 @@ The network details will be automatically selected by the `arapp.json`'s environ
 | Share Voting        | CREATE_VOTES          | Board Token Manager | Share Voting  |
 | Share Voting        | MODIFY_QUORUM         | Share Voting        | Share Voting  |
 | Share Voting        | MODIFY_SUPPORT        | Share Voting        | Share Voting  |
-| Agent               | TRANSFER              | Finance             | Share Voting  |
-| Agent               | RUN_SCRIPT            | Board Voting        | Share Voting  |
-| Agent               | RUN_SCRIPT            | Share Voting        | Share Voting  |
-| Agent               | EXECUTE               | Board Voting        | Share Voting  |
-| Agent               | EXECUTE               | Share Voting        | Share Voting  |
+| Agent or Vault      | TRANSFER              | Finance             | Share Voting  |
 | Finance             | CREATE_PAYMENTS       | Board Voting        | Share Voting  |
 | Finance             | CREATE_PAYMENTS       | Share Voting        | Share Voting  |
 | Finance             | EXECUTE_PAYMENTS      | Share Voting        | Share Voting  |
@@ -71,3 +69,25 @@ The network details will be automatically selected by the `arapp.json`'s environ
 | Board Token Manager | BURN                  | Share Voting        | Share Voting  |
 | Share Token Manager | MINT                  | Share Voting        | Share Voting  |
 | Share Token Manager | BURN                  | Share Voting        | Share Voting  |
+
+### Additional permissions if the Agent app is installed
+
+| App                 | Permission            | Grantee             | Manager       |
+|---------------------|-----------------------|---------------------|---------------|
+| Agent               | RUN_SCRIPT            | Board Voting        | Share Voting  |
+| Agent               | RUN_SCRIPT            | Share Voting        | Share Voting  |
+| Agent               | EXECUTE               | Board Voting        | Share Voting  |
+| Agent               | EXECUTE               | Share Voting        | Share Voting  |
+
+### Additional permissions if the Payroll app is installed
+
+| App                 | Permission                 | Grantee             | Manager       |
+|---------------------|----------------------------|---------------------|---------------|
+| Payroll             | ADD_BONUS_ROLE             | EOA or Board Voting | Board Voting  |
+| Payroll             | ADD_EMPLOYEE_ROLE          | EOA or Board Voting | Board Voting  |
+| Payroll             | ADD_REIMBURSEMENT_ROLE     | EOA or Board Voting | Board Voting  |
+| Payroll             | TERMINATE_EMPLOYEE_ROLE    | EOA or Board Voting | Board Voting  |
+| Payroll             | SET_EMPLOYEE_SALARY_ROLE   | EOA or Board Voting | Board Voting  |
+| Payroll             | MODIFY_PRICE_FEED_ROLE     | Board Voting        | Board Voting  |
+| Payroll             | MODIFY_RATE_EXPIRY_ROLE    | Board Voting        | Board Voting  |
+| Payroll             | MANAGE_ALLOWED_TOKENS_ROLE | Board Voting        | Board Voting  |

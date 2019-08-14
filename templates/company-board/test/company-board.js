@@ -332,7 +332,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
           itSetupsAgentAppCorrectly()
         })
 
-        context('when requesting an vault app', () => {
+        context('when requesting a vault app', () => {
           const USE_AGENT_AS_VAULT = false
 
           createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
@@ -354,7 +354,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
           itSetupsAgentAppCorrectly()
         })
 
-        context('when requesting an vault app', () => {
+        context('when requesting a vault app', () => {
           const USE_AGENT_AS_VAULT = false
 
           createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
