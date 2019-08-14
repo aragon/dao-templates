@@ -7,19 +7,19 @@
     },
     "ropsten": {
       "appName": "membership-template.aragonpm.eth",
-      "address": "0x033aeca9202555df3ac44f2f866ea1d0c4538598",
+      "address": "0xfa92efec3868a0d3690de57af56a664e5d00de74",
       "network": "ropsten",
       "registry": "0x6afe2cacee211ea9179992f89dc61ff25c61e923"
     },
     "rinkeby": {
       "appName": "membership-template.aragonpm.eth",
-      "address": "0xdb60a5c127e5a03e5b6ea80a90eead8c6da588bb",
+      "address": "0xe0aa4768db479ff326944b35ed70306e412722d9",
       "network": "rinkeby",
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D"
     },
     "staging": {
       "appName": "membership-template.aragonpm.eth",
-      "address": "0xc7fa991af044631444ec098a6da40b37b99f4593",
+      "address": "0x407fcd03b5fe34e4c0686a2d919a731855388503",
       "network": "rinkeby",
       "registry": "0xfe03625ea880a8cba336f9b5ad6e15b0a3b5a939"
     }
