@@ -12,4 +12,4 @@ Make sure to consider the following rules when using BaseTemplate:
 
 ## TokenCache usage
 
-Depending on the complexity of a template, you may need to initialize a template in more than one transaction. When doing so, the template needs to cache information about a partially built organization by a particular user. TokenCache's `_cacheToken()` and `_popTokenCache()` may in cases where you only need to cache a single token.
+Depending on the complexity of a template, you may need to initialize a template in more than one transaction. When doing so, the template needs to cache information about a partially built organization by a particular user. TokenCache's `_cacheToken()` and `_popTokenCache()` may be useful in cases where you only need to cache a single token.
