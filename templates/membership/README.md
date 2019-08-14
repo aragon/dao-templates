@@ -65,11 +65,11 @@ The network details will be automatically selected by the `arapp.json`'s environ
 
 | App                 | Permission                 | Grantee             | Manager       |
 |---------------------|----------------------------|---------------------|---------------|
-| Payroll             | ADD_BONUS_ROLE             | EAO or Voting       | Voting        |
-| Payroll             | ADD_EMPLOYEE_ROLE          | EAO or Voting       | Voting        |
-| Payroll             | ADD_REIMBURSEMENT_ROLE     | EAO or Voting       | Voting        |
-| Payroll             | TERMINATE_EMPLOYEE_ROLE    | EAO or Voting       | Voting        |
-| Payroll             | SET_EMPLOYEE_SALARY_ROLE   | EAO or voting       | Voting        |
+| Payroll             | ADD_BONUS_ROLE             | EOA or Voting       | Voting        |
+| Payroll             | ADD_EMPLOYEE_ROLE          | EOA or Voting       | Voting        |
+| Payroll             | ADD_REIMBURSEMENT_ROLE     | EOA or Voting       | Voting        |
+| Payroll             | TERMINATE_EMPLOYEE_ROLE    | EOA or Voting       | Voting        |
+| Payroll             | SET_EMPLOYEE_SALARY_ROLE   | EOA or voting       | Voting        |
 | Payroll             | MODIFY_PRICE_FEED_ROLE     | Voting              | Voting        |
 | Payroll             | MODIFY_RATE_EXPIRY_ROLE    | Voting              | Voting        |
 | Payroll             | MANAGE_ALLOWED_TOKENS_ROLE | Voting              | Voting        |
