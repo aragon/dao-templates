@@ -71,3 +71,16 @@ The network details will be automatically selected by the `arapp.json`'s environ
 | Board Token Manager | BURN                  | Share Voting        | Share Voting  |
 | Share Token Manager | MINT                  | Share Voting        | Share Voting  |
 | Share Token Manager | BURN                  | Share Voting        | Share Voting  |
+
+## Permissions for the Payroll app
+
+| App                 | Permission                 | Grantee             | Manager       |
+|---------------------|----------------------------|---------------------|---------------|
+| Payroll             | ADD_BONUS_ROLE             | EAO or Board Voting | Board Voting  |
+| Payroll             | ADD_EMPLOYEE_ROLE          | EAO or Board Voting | Board Voting  |
+| Payroll             | ADD_REIMBURSEMENT_ROLE     | EAO or Board Voting | Board Voting  |
+| Payroll             | TERMINATE_EMPLOYEE_ROLE    | EAO or Board Voting | Board Voting  |
+| Payroll             | SET_EMPLOYEE_SALARY_ROLE   | EAO or Board Voting | Board Voting  |
+| Payroll             | MODIFY_PRICE_FEED_ROLE     | Board Voting        | Board Voting  |
+| Payroll             | MODIFY_RATE_EXPIRY_ROLE    | Board Voting        | Board Voting  |
+| Payroll             | MANAGE_ALLOWED_TOKENS_ROLE | Board Voting        | Board Voting  |
