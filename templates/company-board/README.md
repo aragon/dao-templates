@@ -1,5 +1,7 @@
 # Aragon Company Board template
 
+The Company with Board template is intended to be used as the basis for a token holder governed organization that has deferred some of its decision making power to an elected committee of "board" members. The "share" tokens are freely trade-able and can be added to exchanges. The "board" is represented by non-transferable tokens that are limited to one token per address. In order to change, add, or remove board members share holders must vote to mint or burn "board" tokens. A share holder vote is required to make significant changes to the organization, and a board member is required to create shareholder votes.
+
 ## Usage
 
 Prepare an incomplete company-board entity:

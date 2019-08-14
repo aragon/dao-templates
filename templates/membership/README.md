@@ -1,5 +1,7 @@
 # Aragon Membership template
 
+The membership template is intended to be used as the basis for a membership governed organization, like a cooperative or club. "Membership" is represented as a non-transferable token limited to one token per address. By default the template allows only members to create votes, and a vote of members is required for the organization to take any action, including the adding and removing members.
+
 ## Usage
 
 Create a new token for the membership entity:

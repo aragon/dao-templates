@@ -1,5 +1,7 @@
 # Aragon Reputation template
 
+The reputation template is intended to be used as the basis for a reputation governed organization, like a software project or meritocratic community. "Reputation" is represented as a non-transferable token without restrictions on the balance an individual account can have. By default the template allows only addresses that have earned reputation to create votes, and reputation-weighted vote is required for the organization to take any action, including awarding or redistributing reputation.
+
 ## Usage
 
 Create a new token for the reputation entity:

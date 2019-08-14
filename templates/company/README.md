@@ -1,5 +1,7 @@
 # Aragon Company template
 
+The Company template is intended to be used as the basis for a token holder governed organization. The "share" token used for governance of the org is transferable, allowing it to be freely traded and added to exchanges. By default the template allows anyone to create a vote, and a vote must pass in order for the organization to take any action.
+
 ## Usage
 
 Create a new token for the company entity:
