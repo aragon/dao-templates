@@ -46,7 +46,7 @@
     "@aragon/apps-voting": "^2.1.0",
     "@aragon/id": "2.0.3",
     "@aragon/os": "4.2.0",
-    "@aragon/templates-shared": "^1.0.0"
+    "@aragon/templates-shared": "^1.0.0-rc.1"
   },
   "devDependencies": {
     "@aragon/apps-survey": "^1.0.0",
