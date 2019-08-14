@@ -7,19 +7,19 @@
     },
     "ropsten": {
       "appName": "reputation-template.aragonpm.eth",
-      "address": "0xe9bb561a3bc3d4ee19cd5514e32f3441e20faca5",
+      "address": "0xe7f17280a3b31720799ad3c292940369f15c591b",
       "network": "ropsten",
       "registry": "0x6afe2cacee211ea9179992f89dc61ff25c61e923"
     },
     "rinkeby": {
       "appName": "reputation-template.aragonpm.eth",
-      "address": "0x4f90d5295dd48fb7a3ceef9ef6abfc51aec6346a",
+      "address": "0x5ad4093d7553d81ecdff2799b61d93aebaff79b9",
       "network": "rinkeby",
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D"
     },
     "staging": {
       "appName": "reputation-template.aragonpm.eth",
-      "address": "0x030d1e341bc2d8ab325d12919c593fb15cfdec45",
+      "address": "0xb21c3a8a627f8478409b24a25fd8b748a7eca359",
       "network": "rinkeby",
       "registry": "0xfe03625ea880a8cba336f9b5ad6e15b0a3b5a939"
     }
