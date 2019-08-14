@@ -28,6 +28,6 @@ contract BareTemplate is BaseTemplate {
             }
         }
 
-        _transferRootPermissionsFromTemplate(dao, root);
+        _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, root);
     }
 }

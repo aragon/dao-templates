@@ -80,7 +80,7 @@ contract MembershipTemplate is BaseTemplate, TokenCache {
 
         (Kernel dao, ACL acl) = _createDAO();
         (, Voting voting) = _setupApps(dao, acl, _members, _votingSettings, _financePeriod, _useAgentAsVault);
-        _transferRootPermissionsFromTemplate(dao, voting);
+        _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, voting);
         _registerID(_id, dao);
     }
 
@@ -109,7 +109,7 @@ contract MembershipTemplate is BaseTemplate, TokenCache {
         (Kernel dao, ACL acl) = _createDAO();
         (Finance finance, Voting voting) = _setupApps(dao, acl, _members, _votingSettings, _financePeriod, _useAgentAsVault);
         _setupPayrollApp(dao, acl, finance, voting, _payrollSettings);
-        _transferRootPermissionsFromTemplate(dao, voting);
+        _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, voting);
         _registerID(_id, dao);
     }
 
