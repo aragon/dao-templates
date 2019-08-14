@@ -29,6 +29,8 @@ contract('Bare', ([_, deployer, tokenAddress, authorized]) => {
 
     dao = Kernel.at(getEventArgument(receipt, 'DeployDao', 'dao'))
     acl = ACL.at(await dao.acl())
+
+    assert.equal(dao.address, getEventArgument(receipt, 'SetupDao', 'dao'), 'should have emitted a SetupDao event')
   })
 
   it('sets up DAO and ACL permissions correctly', async () => {
