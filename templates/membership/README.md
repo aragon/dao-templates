@@ -29,7 +29,7 @@ Alternatively, create a new membership entity with a Payroll app:
 template.newInstance(name, members, votingSettings, financePeriod, useAgentAsVault, payrollSettings)
 ```
 
-- `payrollSettings`: Array of [address denominationToken , IFeed priceFeed, uint64 rateExpiryTime, address employeeManager (set to voting if 0x0) ] for the Payroll app
+- `payrollSettings`: Array of [address denominationToken , IFeed priceFeed, uint64 rateExpiryTime, address employeeManager (set to voting if 0x0)] for the Payroll app
 
 ## Deploying templates
 

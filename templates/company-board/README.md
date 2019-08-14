@@ -32,7 +32,7 @@ Alternatively, create a new company entity with a Payroll app:
 template.finalizeInstance(name, shareHolders, shareStakes, boardMembers, financePeriod, useAgentAsVault, payrollSettings)
 ```
 
-- `payrollSettings`: Array of [address denominationToken , IFeed priceFeed, uint64 rateExpiryTime, address employeeManager (set to board voting if 0x0) ] for the Payroll app
+- `payrollSettings`: Array of [address denominationToken , IFeed priceFeed, uint64 rateExpiryTime, address employeeManager (set to board voting if 0x0)] for the Payroll app
 
 ## Deploying templates
 
