@@ -1,27 +1,33 @@
 {
   "environments": {
     "default": {
-      "registry": "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1",
       "appName": "company-board-template.aragonpm.eth",
-      "network": "rpc"
+      "network": "rpc",
+      "registry": "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1"
     },
-    "ropsten": {
-      "appName": "company-board-template.aragonpm.eth",
-      "address": "0xf30d9253672cf6b9ae3401ea0af4d1620b88b226",
-      "network": "ropsten",
-      "registry": "0x6afe2cacee211ea9179992f89dc61ff25c61e923"
+    "mainnet": {
+      "appName": "bare-template.aragonpm.eth",
+      "network": "mainnet",
+      "registry": "0x314159265dd8dbb310642f98f50c066173c1259b",
+      "wsRPC": "wss://mainnet.eth.aragon.network/ws"
     },
     "rinkeby": {
       "appName": "company-board-template.aragonpm.eth",
-      "address": "0xa7a7af8f078d1246c9bb34fbeed1c6414963dbdc",
       "network": "rinkeby",
-      "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D"
+      "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
+      "wsRPC": "wss://rinkeby.eth.aragon.network/ws"
+    },
+    "ropsten": {
+      "appName": "company-board-template.aragonpm.eth",
+      "network": "ropsten",
+      "registry": "0x6afe2cacee211ea9179992f89dc61ff25c61e923",
+      "wsRPC": "wss://rinkeby.eth.aragon.network/ws"
     },
     "staging": {
       "appName": "company-board-template.aragonpm.eth",
-      "address": "0x4ec3ca155410f1c5676b2a9a3d6989cab3581386",
       "network": "rinkeby",
-      "registry": "0xfe03625ea880a8cba336f9b5ad6e15b0a3b5a939"
+      "registry": "0xfe03625ea880a8cba336f9b5ad6e15b0a3b5a939",
+      "wsRPC": "wss://rinkeby.eth.aragon.network/ws"
     }
   },
   "roles": [],

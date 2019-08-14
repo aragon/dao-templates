@@ -1,27 +1,33 @@
 {
   "environments": {
     "default": {
-      "registry": "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1",
       "appName": "reputation-template.aragonpm.eth",
-      "network": "rpc"
+      "network": "rpc",
+      "registry": "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1"
     },
-    "ropsten": {
+    "mainnet": {
       "appName": "reputation-template.aragonpm.eth",
-      "address": "0xe7f17280a3b31720799ad3c292940369f15c591b",
-      "network": "ropsten",
-      "registry": "0x6afe2cacee211ea9179992f89dc61ff25c61e923"
+      "network": "mainnet",
+      "registry": "0x314159265dd8dbb310642f98f50c066173c1259b",
+      "wsRPC": "wss://mainnet.eth.aragon.network/ws"
     },
     "rinkeby": {
       "appName": "reputation-template.aragonpm.eth",
-      "address": "0x5ad4093d7553d81ecdff2799b61d93aebaff79b9",
       "network": "rinkeby",
-      "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D"
+      "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
+      "wsRPC": "wss://rinkeby.eth.aragon.network/ws"
+    },
+    "ropsten": {
+      "appName": "reputation-template.aragonpm.eth",
+      "network": "ropsten",
+      "registry": "0x6afe2cacee211ea9179992f89dc61ff25c61e923",
+      "wsRPC": "wss://rinkeby.eth.aragon.network/ws"
     },
     "staging": {
       "appName": "reputation-template.aragonpm.eth",
-      "address": "0xb21c3a8a627f8478409b24a25fd8b748a7eca359",
       "network": "rinkeby",
-      "registry": "0xfe03625ea880a8cba336f9b5ad6e15b0a3b5a939"
+      "registry": "0xfe03625ea880a8cba336f9b5ad6e15b0a3b5a939",
+      "wsRPC": "wss://rinkeby.eth.aragon.network/ws"
     }
   },
   "roles": [],
