@@ -55,6 +55,7 @@ contract BaseTemplate is APMNamehash, IsContract {
     IFIFSResolvingRegistrar internal aragonID;
 
     event DeployDao(address dao);
+    event SetupDao(address dao);
     event DeployToken(address token);
     event InstalledApp(address appProxy, bytes32 appId);
 
@@ -71,8 +72,8 @@ contract BaseTemplate is APMNamehash, IsContract {
     /**
     * @dev Create a DAO using the DAO Factory and grant the template root permissions so it has full
     *      control during setup. Once the DAO setup has finished, it is recommended to call the
-    *      `_transferRootPermissionsFromTemplate()` helper to transfer the root permissions to
-    *      the end entity in control of the organization.
+    *      `_transferRootPermissionsFromTemplateAndFinalizeDAO()` helper to transfer the root
+    *      permissions to the end entity in control of the organization.
     */
     function _createDAO() internal returns (Kernel dao, ACL acl) {
         dao = daoFactory.newDAO(this);
@@ -101,14 +102,15 @@ contract BaseTemplate is APMNamehash, IsContract {
         _acl.removePermissionManager(_app, _permission);
     }
 
-    function _transferRootPermissionsFromTemplate(Kernel _dao, address _to) internal {
-        _transferRootPermissionsFromTemplate(_dao, _to, _to);
+    function _transferRootPermissionsFromTemplateAndFinalizeDAO(Kernel _dao, address _to) internal {
+        _transferRootPermissionsFromTemplateAndFinalizeDAO(_dao, _to, _to);
     }
 
-    function _transferRootPermissionsFromTemplate(Kernel _dao, address _to, address _manager) internal {
+    function _transferRootPermissionsFromTemplateAndFinalizeDAO(Kernel _dao, address _to, address _manager) internal {
         ACL _acl = ACL(_dao.acl());
         _transferPermissionFromTemplate(_acl, _dao, _to, _dao.APP_MANAGER_ROLE(), _manager);
         _transferPermissionFromTemplate(_acl, _acl, _to, _acl.CREATE_PERMISSIONS_ROLE(), _manager);
+        emit SetupDao(_dao);
     }
 
     function _transferPermissionFromTemplate(ACL _acl, address _app, address _to, bytes32 _permission, address _manager) internal {

@@ -65,6 +65,8 @@ contract('Membership', ([_, owner, member1, member2, someone]) => {
     acl = ACL.at(await dao.acl())
     const installedApps = getInstalledAppsById(instanceReceipt)
 
+    assert.equal(dao.address, getEventArgument(instanceReceipt, 'SetupDao', 'dao'), 'should have emitted a SetupDao event')
+
     assert.equal(installedApps.voting.length, 1, 'should have installed 1 voting app')
     voting = Voting.at(installedApps.voting[0])
 
@@ -244,7 +246,7 @@ contract('Membership', ([_, owner, member1, member2, someone]) => {
           const USE_AGENT_AS_VAULT = true
 
           createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
-          itCostsUpTo(6.7e6)
+          itCostsUpTo(6.71e6)
           itSetupsDAOCorrectly(FINANCE_PERIOD)
           itSetupsAgentAppCorrectly()
         })
@@ -266,7 +268,7 @@ contract('Membership', ([_, owner, member1, member2, someone]) => {
           const USE_AGENT_AS_VAULT = true
 
           createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
-          itCostsUpTo(6.7e6)
+          itCostsUpTo(6.71e6)
           itSetupsDAOCorrectly(FINANCE_PERIOD)
           itSetupsAgentAppCorrectly()
         })
