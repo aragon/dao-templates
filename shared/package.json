@@ -13,7 +13,7 @@
     "docker-compose.yml"
   ],
   "dependencies": {
-    "@aragon/apps-agent": "^1.0.0",
+    "@aragon/apps-agent": "^2.0.0-rc.1",
     "@aragon/apps-finance": "^3.0.0",
     "@aragon/apps-payroll": "^1.0.0-rc.1",
     "@aragon/apps-shared-migrations": "^1.0.0",
