@@ -23,7 +23,12 @@ module.exports = class TemplateDeployer {
 
   async deployTemplate(contractName) {
     const Template = this.artifacts.require(contractName)
-    const template = await Template.new(this.daoFactory.address, this.ens.address, this.miniMeFactory.address, this.aragonID.address)
+    const template = await Template.new(
+      this.daoFactory.address,
+      this.ens.address,
+      this.miniMeFactory.address,
+      this.aragonID.address
+    )
     await logDeploy(template)
     return template
   }
@@ -38,7 +43,10 @@ module.exports = class TemplateDeployer {
   }
 
   async registerDeploy(templateName, template) {
-    if ((await this.isLocal()) && !(await this._isPackageRegistered(templateName))) {
+    if (
+      (await this.isLocal()) &&
+      !(await this._isPackageRegistered(templateName))
+    ) {
       await this._registerPackage(templateName, template)
     }
     await this._writeArappFile(templateName, template)
@@ -66,7 +74,12 @@ module.exports = class TemplateDeployer {
       this.log(`Using ENS from arapp json file: ${ensAddress}`)
       this.ens = ENS.at(ensAddress)
     } else if (await this.isLocal()) {
-      const { ens } = await deployENS(null, { web3: this.web3, artifacts: this.artifacts, owner: this.owner, verbose: this.verbose })
+      const { ens } = await deployENS(null, {
+        web3: this.web3,
+        artifacts: this.artifacts,
+        owner: this.owner,
+        verbose: this.verbose,
+      })
       this.log('Deployed ENS:', ens.address)
       this.ens = ens
     } else {
@@ -85,35 +98,56 @@ module.exports = class TemplateDeployer {
         this.log(`Using APM registered at aragonpm.eth: ${apmAddress}`)
         this.apm = APM.at(apmAddress)
       } else if (await this.isLocal()) {
-        await deployAPM(null, { artifacts: this.artifacts, web3: this.web3, owner: this.owner, ensAddress: this.ens.address, verbose: this.verbose })
+        await deployAPM(null, {
+          artifacts: this.artifacts,
+          web3: this.web3,
+          owner: this.owner,
+          ensAddress: this.ens.address,
+          verbose: this.verbose,
+        })
         const apmAddress = await this._fetchRegisteredAPM()
         if (!apmAddress) this.error('Local APM deployment failed, aborting.')
         this.log('Deployed APM:', apmAddress)
         this.apm = APM.at(apmAddress)
       } else {
-        this.error('Please provide an APM instance or make sure there is one registered under "aragonpm.eth", aborting.')
+        this.error(
+          'Please provide an APM instance or make sure there is one registered under "aragonpm.eth", aborting.'
+        )
       }
     }
   }
 
   async _fetchOrDeployAragonID() {
-    const FIFSResolvingRegistrar = this.artifacts.require('FIFSResolvingRegistrar')
+    const FIFSResolvingRegistrar = this.artifacts.require(
+      'FIFSResolvingRegistrar'
+    )
     if (this.options.aragonID) {
       this.log(`Using provided aragonID: ${this.options.aragonID}`)
       this.aragonID = FIFSResolvingRegistrar.at(this.options.aragonID)
     } else {
       if (await this._isAragonIdRegistered()) {
         const aragonIDAddress = await this._fetchRegisteredAragonID()
-        this.log(`Using aragonID registered at aragonid.eth: ${aragonIDAddress}`)
+        this.log(
+          `Using aragonID registered at aragonid.eth: ${aragonIDAddress}`
+        )
         this.aragonID = FIFSResolvingRegistrar.at(aragonIDAddress)
       } else if (await this.isLocal()) {
-        await deployAragonID(null, { artifacts: this.artifacts, web3: this.web3, owner: this.owner, ensAddress: this.ens.address, verbose: this.verbose })
+        await deployAragonID(null, {
+          artifacts: this.artifacts,
+          web3: this.web3,
+          owner: this.owner,
+          ensAddress: this.ens.address,
+          verbose: this.verbose,
+        })
         const aragonIDAddress = await this._fetchRegisteredAragonID()
-        if (!aragonIDAddress) this.error('Local aragon ID deployment failed, aborting.')
+        if (!aragonIDAddress)
+          this.error('Local aragon ID deployment failed, aborting.')
         this.log('Deployed aragonID:', aragonIDAddress)
         this.aragonID = FIFSResolvingRegistrar.at(aragonIDAddress)
       } else {
-        this.error('Please provide an aragon ID instance or make sure there is one registered under "aragonid.eth", aborting.')
+        this.error(
+          'Please provide an aragon ID instance or make sure there is one registered under "aragonid.eth", aborting.'
+        )
       }
     }
   }
@@ -124,7 +158,11 @@ module.exports = class TemplateDeployer {
       this.log(`Using provided DAOFactory: ${this.options.daoFactory}`)
       this.daoFactory = DAOFactory.at(this.options.daoFactory)
     } else {
-      const { daoFactory } = await deployDAOFactory(null, { artifacts: this.artifacts, owner: this.owner, verbose: this.verbose })
+      const { daoFactory } = await deployDAOFactory(null, {
+        artifacts: this.artifacts,
+        owner: this.owner,
+        verbose: this.verbose,
+      })
       this.log('Deployed DAOFactory:', daoFactory.address)
       this.daoFactory = daoFactory
     }
@@ -133,7 +171,9 @@ module.exports = class TemplateDeployer {
   async _fetchOrDeployMiniMeFactory() {
     const MiniMeTokenFactory = this.artifacts.require('MiniMeTokenFactory')
     if (this.options.miniMeFactory) {
-      this.log(`Using provided MiniMeTokenFactory: ${this.options.miniMeFactory}`)
+      this.log(
+        `Using provided MiniMeTokenFactory: ${this.options.miniMeFactory}`
+      )
       this.miniMeFactory = MiniMeTokenFactory.at(this.options.miniMeFactory)
     } else {
       this.miniMeFactory = await MiniMeTokenFactory.new()
@@ -159,8 +199,20 @@ module.exports = class TemplateDeployer {
   }
 
   async _registerPackage(name, instance) {
-    this.log(`Registering package for ${instance.constructor.contractName} as "${name}.aragonpm.eth"`)
-    return this.apm.newRepoWithVersion(name, this.owner, [1, 0, 0], instance.address, '')
+    if (this.options.registerPackages) {
+      this.log(
+        `Registering package for ${
+          instance.constructor.contractName
+        } as "${name}.aragonpm.eth"`
+      )
+      return this.apm.newRepoWithVersion(
+        name,
+        this.owner,
+        [1, 0, 0],
+        instance.address,
+        ''
+      )
+    }
   }
 
   async _isAPMRegistered() {
@@ -177,12 +229,22 @@ module.exports = class TemplateDeployer {
 
   async _isRepoRegistered(hash) {
     const owner = await this.ens.owner(hash)
-    return owner !== '0x0000000000000000000000000000000000000000' && owner !== '0x'
+    return (
+      owner !== '0x0000000000000000000000000000000000000000' && owner !== '0x'
+    )
   }
 
   async _writeArappFile(templateName, template) {
-    const { address, constructor: { contractName } } = template
-    await this.arapp.write(templateName, address, contractName, this.ens.address)
+    const {
+      address,
+      constructor: { contractName },
+    } = template
+    await this.arapp.write(
+      templateName,
+      address,
+      contractName,
+      this.ens.address
+    )
     this.log(`Template addresses saved to ${await this.arapp.filePath()}`)
   }
 
