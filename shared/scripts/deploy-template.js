@@ -16,34 +16,11 @@ module.exports = async function deployTemplate(
 ) {
   let { ens, owner, verbose, daoFactory, miniMeFactory } = require('yargs')
     .option('e', { alias: 'ens', describe: 'ENS address', type: 'string' })
-    .option('o', {
-      alias: 'owner',
-      describe: 'Sender address. Will use first address if no one is given.',
-      type: 'string',
-    })
-    .option('v', {
-      alias: 'verbose',
-      describe: 'Verbose mode',
-      type: 'boolean',
-      default: false,
-    })
-    .option('df', {
-      alias: 'dao-factory',
-      describe: 'DAO Factory address. Will deploy new instance if not given.',
-      type: 'string',
-    })
-    .option('mf', {
-      alias: 'mini-me-factory',
-      describe:
-        'MiniMe Factory address. Will deploy new instance if not given.',
-      type: 'string',
-    })
-    .option('rp', {
-      alias: 'register-packages',
-      describe: 'Whether the script will register the packages to aragon',
-      type: 'boolean',
-      default: true,
-    })
+    .option('o', { alias: 'owner', describe: 'Sender address. Will use first address if no one is given.', type: 'string' })
+    .option('v', { alias: 'verbose', describe: 'Verbose mode', type: 'boolean', default: false })
+    .option('df', { alias: 'dao-factory', describe: 'DAO Factory address. Will deploy new instance if not given.', type: 'string' })
+    .option('mf', { alias: 'mini-me-factory', describe: 'MiniMe Factory address. Will deploy new instance if not given.', type: 'string' })
+    .option('rp', { alias: 'register-packages', describe: 'Whether the script will register the packages to aragon', type: 'boolean', default: true })
     .help('help')
     .parse()
 

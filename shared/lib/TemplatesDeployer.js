@@ -200,18 +200,8 @@ module.exports = class TemplateDeployer {
 
   async _registerPackage(name, instance) {
     if (this.options.registerPackages) {
-      this.log(
-        `Registering package for ${
-          instance.constructor.contractName
-        } as "${name}.aragonpm.eth"`
-      )
-      return this.apm.newRepoWithVersion(
-        name,
-        this.owner,
-        [1, 0, 0],
-        instance.address,
-        ''
-      )
+      this.log(`Registering package for ${instance.constructor.contractName} as "${name}.aragonpm.eth"`)
+      return this.apm.newRepoWithVersion(name, this.owner, [1, 0, 0], instance.address, '')
     }
   }
 
