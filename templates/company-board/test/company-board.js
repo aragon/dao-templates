@@ -21,7 +21,7 @@ const Payroll = artifacts.require('Payroll')
 const Finance = artifacts.require('Finance')
 const TokenManager = artifacts.require('TokenManager')
 const MiniMeToken = artifacts.require('MiniMeToken')
-const MockContract = artifacts.require('ExecutionTarget')
+const MockContract = artifacts.require('Migrations')
 const PublicResolver = artifacts.require('PublicResolver')
 const EVMScriptRegistry = artifacts.require('EVMScriptRegistry')
 
