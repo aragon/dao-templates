@@ -1,0 +1,17 @@
+{
+  "name": "@aragon/template-descriptor",
+  "version": "0.0.1",
+  "description": "Processes yaml files that describe Aragon organization templates",
+  "author": "Aragon Association <legal@aragon.org>",
+  "license": "GPL-3.0-or-later",
+  "scripts": {
+    "test": "mocha",
+    "permissionsTable": "node ./src/scripts/permissionsTable.js"
+  },
+  "dependencies": {
+    "js-yaml": "^3.13.1"
+  },
+  "devDependencies": {
+    "mocha": "^6.2.0"
+  }
+}
