@@ -1,5 +1,5 @@
 {
-  "name": "aragon-template-descriptor-util",
+  "name": "@aragon/template-descriptor",
   "version": "0.0.1",
   "description": "Processes yaml files that describe Aragon organization templates",
   "author": "Aragon Association <legal@aragon.org>",
