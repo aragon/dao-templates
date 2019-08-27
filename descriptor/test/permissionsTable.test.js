@@ -6,7 +6,7 @@ describe('permissionsTable script', () => {
   it('generates expected output', async () => {
     const result = await cli(
       'permissionsTable.js',
-      './descriptors/company.yaml',
+      './examples/company.yaml',
     )
     assert.equal(result.code, 0)
     assert.equal(result.stdout.includes('App | Permission | Grantee | Manager'), true)
