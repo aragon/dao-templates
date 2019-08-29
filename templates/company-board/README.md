@@ -75,9 +75,7 @@ The network details will be automatically selected by the `arapp.json`'s environ
 | App                 | Permission            | Grantee             | Manager       |
 |---------------------|-----------------------|---------------------|---------------|
 | Agent               | RUN_SCRIPT            | Board Voting        | Share Voting  |
-| Agent               | RUN_SCRIPT            | Share Voting        | Share Voting  |
 | Agent               | EXECUTE               | Board Voting        | Share Voting  |
-| Agent               | EXECUTE               | Share Voting        | Share Voting  |
 
 ### Additional permissions if the Payroll app is installed
 
