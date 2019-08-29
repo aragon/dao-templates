@@ -157,12 +157,28 @@ contract BaseTemplate is APMNamehash, IsContract {
         return _installVotingApp(_dao, _token, _votingSettings[0], _votingSettings[1], _votingSettings[2]);
     }
 
-    function _installVotingApp(Kernel _dao, MiniMeToken _token, uint64 _support, uint64 _acceptance, uint64 _duration) internal returns (Voting) {
+    function _installVotingApp(
+        Kernel _dao,
+        MiniMeToken _token,
+        uint64 _support,
+        uint64 _acceptance,
+        uint64 _duration
+    )
+        internal returns (Voting)
+    {
         bytes memory initializeData = abi.encodeWithSelector(Voting(0).initialize.selector, _token, _support, _acceptance, _duration);
         return Voting(_installNonDefaultApp(_dao, VOTING_APP_ID, initializeData));
     }
 
-    function _createVotingPermissions(ACL _acl, Voting _voting, address _settingsGrantee, address _createVotesGrantee, address _manager) internal {
+    function _createVotingPermissions(
+        ACL _acl,
+        Voting _voting,
+        address _settingsGrantee,
+        address _createVotesGrantee,
+        address _manager
+    )
+        internal
+    {
         _acl.createPermission(_settingsGrantee, _voting, _voting.MODIFY_QUORUM_ROLE(), _manager);
         _acl.createPermission(_settingsGrantee, _voting, _voting.MODIFY_SUPPORT_ROLE(), _manager);
         _acl.createPermission(_createVotesGrantee, _voting, _voting.CREATE_VOTES_ROLE(), _manager);
@@ -182,8 +198,22 @@ contract BaseTemplate is APMNamehash, IsContract {
 
     /* PAYROLL */
 
-    function _installPayrollApp(Kernel _dao, Finance _finance, address _denominationToken, IFeed _priceFeed, uint64 _rateExpiryTime) internal returns (Payroll) {
-        bytes memory initializeData = abi.encodeWithSelector(Payroll(0).initialize.selector, _finance, _denominationToken, _priceFeed, _rateExpiryTime);
+    function _installPayrollApp(
+        Kernel _dao,
+        Finance _finance,
+        address _denominationToken,
+        IFeed _priceFeed,
+        uint64 _rateExpiryTime
+    )
+        internal returns (Payroll)
+    {
+        bytes memory initializeData = abi.encodeWithSelector(
+            Payroll(0).initialize.selector,
+            _finance,
+            _denominationToken,
+            _priceFeed,
+            _rateExpiryTime
+        );
         return Payroll(_installNonDefaultApp(_dao, PAYROLL_APP_ID, initializeData));
     }
 
@@ -198,7 +228,15 @@ contract BaseTemplate is APMNamehash, IsContract {
     * @param _settingsManager Address that will receive permissions to manage payroll settings
     * @param _permissionsManager Address that will be the ACL manager for the payroll permissions
     */
-    function _createPayrollPermissions(ACL _acl, Payroll _payroll, address _employeeManager, address _settingsManager, address _permissionsManager) internal {
+    function _createPayrollPermissions(
+        ACL _acl,
+        Payroll _payroll,
+        address _employeeManager,
+        address _settingsManager,
+        address _permissionsManager
+    )
+        internal
+    {
         _acl.createPermission(_employeeManager, _payroll, _payroll.ADD_BONUS_ROLE(), _permissionsManager);
         _acl.createPermission(_employeeManager, _payroll, _payroll.ADD_EMPLOYEE_ROLE(), _permissionsManager);
         _acl.createPermission(_employeeManager, _payroll, _payroll.ADD_REIMBURSEMENT_ROLE(), _permissionsManager);
@@ -210,7 +248,11 @@ contract BaseTemplate is APMNamehash, IsContract {
         _acl.createPermission(_settingsManager, _payroll, _payroll.MANAGE_ALLOWED_TOKENS_ROLE(), _permissionsManager);
     }
 
-    function _unwrapPayrollSettings(uint256[4] memory _payrollSettings) internal pure returns (address denominationToken, IFeed priceFeed, uint64 rateExpiryTime, address employeeManager) {
+    function _unwrapPayrollSettings(
+        uint256[4] memory _payrollSettings
+    )
+        internal pure returns (address denominationToken, IFeed priceFeed, uint64 rateExpiryTime, address employeeManager)
+    {
         denominationToken = _toAddress(_payrollSettings[0]);
         priceFeed = IFeed(_toAddress(_payrollSettings[1]));
         rateExpiryTime = _payrollSettings[2].toUint64();
@@ -232,7 +274,14 @@ contract BaseTemplate is APMNamehash, IsContract {
 
     /* TOKEN MANAGER */
 
-    function _installTokenManagerApp(Kernel _dao, MiniMeToken _token, bool _transferable, uint256 _maxAccountTokens) internal returns (TokenManager) {
+    function _installTokenManagerApp(
+        Kernel _dao,
+        MiniMeToken _token,
+        bool _transferable,
+        uint256 _maxAccountTokens
+    )
+        internal returns (TokenManager)
+    {
         TokenManager tokenManager = TokenManager(_installNonDefaultApp(_dao, TOKEN_MANAGER_APP_ID));
         _token.changeController(tokenManager);
         tokenManager.initialize(_token, _transferable, _maxAccountTokens);

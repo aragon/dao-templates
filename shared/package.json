@@ -12,6 +12,9 @@
     "scripts/",
     "docker-compose.yml"
   ],
+  "scripts": {
+    "lint": "solium --dir ./contracts"
+  },
   "dependencies": {
     "@aragon/apps-agent": "^1.0.0",
     "@aragon/apps-finance": "^3.0.0",
