@@ -48,6 +48,7 @@ contract BaseTemplate is APMNamehash, IsContract {
     string constant private ERROR_MINIME_FACTORY_NOT_PROVIDED = "TEMPLATE_MINIME_FAC_NOT_PROVIDED";
     string constant private ERROR_MINIME_FACTORY_NOT_CONTRACT = "TEMPLATE_MINIME_FAC_NOT_CONTRACT";
     string constant private ERROR_CANNOT_CAST_VALUE_TO_ADDRESS = "TEMPLATE_CANNOT_CAST_VALUE_TO_ADDRESS";
+    string constant private ERROR_INVALID_ID = "TEMPLATE_INVALID_ID";
 
     ENS internal ens;
     DAOFactory internal daoFactory;
@@ -318,6 +319,10 @@ contract BaseTemplate is APMNamehash, IsContract {
     }
 
     /* IDS */
+
+    function _validateId(string memory _id) internal {
+        require(bytes(_id).length > 0, ERROR_INVALID_ID);
+    }
 
     function _registerID(string memory _name, address _owner) internal {
         require(address(aragonID) != address(0), ERROR_ARAGON_ID_NOT_PROVIDED);

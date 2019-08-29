@@ -94,6 +94,7 @@ contract TrustTemplate is BaseTemplate {
         public
         returns (Kernel)
     {
+        _validateId(_id);
         require(_hasDaoCache(msg.sender), ERROR_MISSING_SENDER_CACHE);
         require(_heirs.length == _heirsStakes.length, ERROR_BAD_HEIRS_LENGTH);
         require(_beneficiaryKeys.length == BENEFICIARY_KEYS_AMOUNT, ERROR_BAD_BENEFICIARY_KEYS_LENGTH);
