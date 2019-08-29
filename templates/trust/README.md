@@ -84,7 +84,7 @@ Aragon Trusts are composed of two sub-groups:
 | Vault                 | TRANSFER              | Finance             | Hold Voting        |
 | Finance               | CREATE_PAYMENTS       | Hold Voting         | Hold Voting        |
 | Finance               | EXECUTE_PAYMENTS      | Hold Voting         | Hold Voting        |
-| Finance               | DISABLE_PAYMENTS      | Hold Voting         | Hold Voting        |
+| Finance               | MANAGE_PAYMENTS       | Hold Voting         | Hold Voting        |
 | Hold Token Manager    | MINT                  | Multisig            | Multisig           |
 | Hold Token Manager    | BURN                  | Multisig            | Multisig           |
 | Hold Token Manager    | ASSIGN                | Hold Voting         | Hold Voting        |
