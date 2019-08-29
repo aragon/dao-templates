@@ -21,7 +21,7 @@ Finalize company-board entity:
 template.finalizeInstance(name, shareHolders, shareStakes, boardMembers, financePeriod, useAgentAsVault)
 ```
 
-- `name`: Name for org, will assign `[name].aragonid.eth`
+- `id`: Id for org, will assign `[id].aragonid.eth`
 - `shareHolders`: Array of share holder addresses
 - `shareStakes`: Array of token stakes for share holders (token has 18 decimals, multiply token amount `* 10^18`)
 - `boardMembers`: Array of board member addresses (1 token will be minted for each board member)

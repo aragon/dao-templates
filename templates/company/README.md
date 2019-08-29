@@ -19,7 +19,7 @@ Create a new company entity:
 template.newInstance(name, holders, stakes, votingSettings, financePeriod, useAgentAsVault)
 ```
 
-- `name`: Name for org, will assign `[name].aragonid.eth`
+- `id`: Id for org, will assign `[id].aragonid.eth`
 - `holders`: Array of token holder addresses
 - `stakes`: Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`)
 - `votingSettings`: Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
