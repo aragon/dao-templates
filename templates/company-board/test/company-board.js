@@ -241,8 +241,8 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
       })
 
       it('sets up DAO and ACL permissions correctly', async () => {
-        await assertRole(acl, dao, shareVoting, 'APP_MANAGER_ROLE', boardVoting)
-        await assertRole(acl, acl, shareVoting, 'CREATE_PERMISSIONS_ROLE', boardVoting)
+        await assertRole(acl, dao, shareVoting, 'APP_MANAGER_ROLE')
+        await assertRole(acl, acl, shareVoting, 'CREATE_PERMISSIONS_ROLE')
       })
 
       it('sets up EVM scripts registry permissions correctly', async () => {

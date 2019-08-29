@@ -97,7 +97,7 @@ contract CompanyBoardTemplate is BaseTemplate {
         _setupVaultAndFinanceApps(dao, _financePeriod, _useAgentAsVault, shareVoting, boardVoting);
         _finalizeApps(dao, _shareHolders, _shareStakes, _boardMembers, shareVoting, boardVoting);
 
-        _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, shareVoting, shareVoting);
+        _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, shareVoting);
         _registerID(_id, address(dao));
     }
 
@@ -132,7 +132,7 @@ contract CompanyBoardTemplate is BaseTemplate {
         _setupPayrollApp(dao, finance, _payrollSettings, boardVoting);
         _finalizeApps(dao, _shareHolders, _shareStakes, _boardMembers, shareVoting, boardVoting);
 
-        _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, boardVoting, shareVoting);
+        _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, shareVoting);
         _registerID(_id, address(dao));
     }
 
