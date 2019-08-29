@@ -320,7 +320,7 @@ contract BaseTemplate is APMNamehash, IsContract {
 
     /* IDS */
 
-    function _validateId(string memory _id) internal {
+    function _validateId(string memory _id) internal pure {
         require(bytes(_id).length > 0, ERROR_INVALID_ID);
     }
 
