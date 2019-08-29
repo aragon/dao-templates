@@ -125,7 +125,7 @@ contract ReputationTemplate is BaseTemplate, TokenCache {
         ACL _acl,
         address[] memory _holders,
         uint256[] memory _stakes,
-        uint64[3] _votingSettings,
+        uint64[3] memory _votingSettings,
         uint64 _financePeriod,
         bool _useAgentAsVault
     )
