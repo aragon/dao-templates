@@ -203,10 +203,10 @@ contract TrustTemplate is BaseTemplate {
     function _createMultiSigPermissions(ACL _acl, MultiSigWallet _multiSig, TokenManager _holdTokenManager, TokenManager _heirsTokenManager)
         internal
     {
-         _acl.createPermission(_multiSig, _holdTokenManager, _holdTokenManager.BURN_ROLE(), _multiSig);
-         _acl.createPermission(_multiSig, _holdTokenManager, _holdTokenManager.MINT_ROLE(), _multiSig);
-         _acl.createPermission(_multiSig, _heirsTokenManager, _heirsTokenManager.BURN_ROLE(), _multiSig);
-         _acl.createPermission(_multiSig, _heirsTokenManager, _heirsTokenManager.MINT_ROLE(), _multiSig);
+        _acl.createPermission(_multiSig, _holdTokenManager, _holdTokenManager.BURN_ROLE(), _multiSig);
+        _acl.createPermission(_multiSig, _holdTokenManager, _holdTokenManager.MINT_ROLE(), _multiSig);
+        _acl.createPermission(_multiSig, _heirsTokenManager, _heirsTokenManager.BURN_ROLE(), _multiSig);
+        _acl.createPermission(_multiSig, _heirsTokenManager, _heirsTokenManager.MINT_ROLE(), _multiSig);
     }
 
     function _storeDaoCache(address _owner, Kernel _dao, MiniMeToken _holdToken, MiniMeToken _heirsToken) internal {

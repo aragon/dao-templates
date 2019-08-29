@@ -12,12 +12,12 @@
     "no-empty-blocks": ["error"],
     "no-unused-vars": ["error"],
     "quotes": ["error"],
-    "indentation": 0,
+    "indentation": ["error", 4],
     "whitespace": ["error"],
     "deprecated-suicide": ["error"],
     "arg-overflow": ["error", 8],
     "pragma-on-top": ["error"],
     "security/enforce-explicit-visibility": ["error"],
-    "error-reason": 0
+    "error-reason": ["error"]
   }
 }
