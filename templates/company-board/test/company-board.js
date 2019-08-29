@@ -261,8 +261,6 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
         assert.equal(web3.toChecksumAddress(await finance.vault()), agent.address, 'finance vault is not linked to the agent app')
         assert.equal(web3.toChecksumAddress(await dao.getRecoveryVault()), agent.address, 'agent app is not being used as the vault app of the DAO')
 
-        await assertRole(acl, agent, shareVoting, 'EXECUTE_ROLE')
-        await assertRole(acl, agent, shareVoting, 'RUN_SCRIPT_ROLE')
         await assertRole(acl, agent, shareVoting, 'EXECUTE_ROLE', boardVoting)
         await assertRole(acl, agent, shareVoting, 'RUN_SCRIPT_ROLE', boardVoting)
         await assertRole(acl, agent, shareVoting, 'TRANSFER_ROLE', finance)
