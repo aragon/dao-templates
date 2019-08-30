@@ -57,7 +57,7 @@ The network details will be automatically selected by the `arapp.json`'s environ
 | Agent or Vault    | TRANSFER              | Finance       | Voting  |
 | Finance           | CREATE_PAYMENTS       | Voting        | Voting  |
 | Finance           | EXECUTE_PAYMENTS      | Voting        | Voting  |
-| Finance           | DISABLE_PAYMENTS      | Voting        | Voting  |
+| Finance           | MANAGE_PAYMENTS       | Voting        | Voting  |
 | Token Manager     | MINT                  | Voting        | Voting  |
 | Token Manager     | BURN                  | Voting        | Voting  |
 
