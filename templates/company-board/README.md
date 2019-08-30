@@ -64,7 +64,7 @@ The network details will be automatically selected by the `arapp.json`'s environ
 | Finance             | CREATE_PAYMENTS       | Board Voting        | Share Voting  |
 | Finance             | CREATE_PAYMENTS       | Share Voting        | Share Voting  |
 | Finance             | EXECUTE_PAYMENTS      | Share Voting        | Share Voting  |
-| Finance             | DISABLE_PAYMENTS      | Share Voting        | Share Voting  |
+| Finance             | MANAGE_PAYMENTS       | Share Voting        | Share Voting  |
 | Board Token Manager | MINT                  | Share Voting        | Share Voting  |
 | Board Token Manager | BURN                  | Share Voting        | Share Voting  |
 | Share Token Manager | MINT                  | Share Voting        | Share Voting  |
