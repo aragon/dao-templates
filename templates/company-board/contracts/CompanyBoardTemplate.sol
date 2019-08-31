@@ -90,6 +90,7 @@ contract CompanyBoardTemplate is BaseTemplate {
     )
         external
     {
+        _validateId(_id);
         _ensureFinalizationSettings(_shareHolders, _shareStakes, _boardMembers);
 
         (Kernel dao, Voting shareVoting, Voting boardVoting) = _popDaoCache();
@@ -123,6 +124,7 @@ contract CompanyBoardTemplate is BaseTemplate {
     )
         external
     {
+        _validateId(_id);
         _ensureFinalizationSettings(_shareHolders, _shareStakes, _boardMembers);
         require(_payrollSettings.length == 4, ERROR_BAD_PAYROLL_SETTINGS);
 

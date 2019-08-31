@@ -220,6 +220,10 @@ contract('Membership', ([_, owner, member1, member2, someone]) => {
       it('reverts when no members were given', async () => {
         await assertRevert(template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, randomId(), [], VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'MEMBERSHIP_MISSING_MEMBERS')
       })
+
+      it('reverts when an empty id is provided', async () => {
+        await assertRevert(template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, '', MEMBERS, VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'TEMPLATE_INVALID_ID')
+      })
     })
 
     context('when the creation succeeds', () => {
@@ -303,6 +307,10 @@ contract('Membership', ([_, owner, member1, member2, someone]) => {
 
         it('reverts when no members were given', async () => {
           await assertRevert(newInstance(randomId(), [], VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'MEMBERSHIP_MISSING_MEMBERS')
+        })
+
+        it('reverts when an empty id is provided', async () => {
+          await assertRevert(newInstance('', MEMBERS, VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'TEMPLATE_INVALID_ID')
         })
       })
     })
