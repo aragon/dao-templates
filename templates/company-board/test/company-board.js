@@ -89,6 +89,10 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
         await assertRevert(finalizeInstance(randomId(), [shareHolder1], SHARE_STAKES, BOARD_MEMBERS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANYBD_BAD_HOLDERS_STAKES_LEN')
         await assertRevert(finalizeInstance(randomId(), SHARE_HOLDERS, [1e18], BOARD_MEMBERS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANYBD_BAD_HOLDERS_STAKES_LEN')
       })
+
+      it('reverts when an empty id is provided', async () => {
+        await assertRevert(finalizeInstance('', SHARE_HOLDERS, SHARE_STAKES, BOARD_MEMBERS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'TEMPLATE_INVALID_ID')
+      })
     })
   })
 
