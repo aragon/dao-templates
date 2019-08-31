@@ -19,7 +19,7 @@ Create a new membership entity:
 template.newInstance(name, members, votingSettings, financePeriod, useAgentAsVault)
 ```
 
-- `name`: Name for org, will assign `[name].aragonid.eth`
+- `id`: Id for org, will assign `[id].aragonid.eth`
 - `members`: Array of member addresses (1 token will be minted for each member)
 - `votingSettings`: Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
 - `financePeriod`: Initial duration for accounting periods, it can be set to zero in order to use the default of 30 days.
