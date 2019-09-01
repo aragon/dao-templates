@@ -47,11 +47,11 @@ module.exports = class TemplateDeployer {
   }
 
   async _checkAppsDeployment() {
-    for (const { name, contractName } of this.options.apps) {
+    for (const { name, contractName, openApm } of this.options.apps) {
       if (await this._isPackageRegistered(name)) {
         this.log(`Using registered ${name} app`)
       } else if (await this.isLocal()) {
-        await this._registerApp(name, contractName)
+        await this._registerApp(name, contractName, openApm)
       } else {
         this.log(`No ${name} app registered`)
       }
@@ -110,7 +110,8 @@ module.exports = class TemplateDeployer {
         this.log(`Using Open APM registered at open.aragonpm.eth: ${openApmAddress}`)
         this.openApm = APM.at(openApmAddress)
       } else if (await this.isLocal()) {
-        this.openApm = (await this._deployOpenAPM()).openApm
+        const openApmAddress = (await this._deployOpenAPM()).openApm
+        this.openApm = APM.at(openApmAddress)
       } else {
         this.error('Please provide an Open APM instance or make sure there is one registered under "open.aragonpm.eth", aborting.')
       }
@@ -219,9 +220,13 @@ module.exports = class TemplateDeployer {
     return this.ens.owner(aragonIDHash)
   }
 
-  async _registerApp(name, contractName) {
+  async _registerApp(name, contractName, openApm) {
     const app = await this.artifacts.require(contractName).new()
-    return this._registerPackage(name, app)
+    if (openApm) {
+      return this._registerOpenPackage(name, app)
+    } else {
+      return this._registerPackage(name, app)
+    }
   }
 
   async _registerPackage(name, instance) {
