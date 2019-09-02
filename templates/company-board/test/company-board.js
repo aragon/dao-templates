@@ -236,9 +236,8 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
         assert.equal((await finance.getPeriodDuration()).toString(), expectedPeriod, 'finance period should be 30 days')
 
         await assertRole(acl, finance, shareVoting, 'CREATE_PAYMENTS_ROLE', boardVoting)
-        await assertRole(acl, finance, shareVoting, 'CREATE_PAYMENTS_ROLE')
-        await assertRole(acl, finance, shareVoting, 'EXECUTE_PAYMENTS_ROLE')
-        await assertRole(acl, finance, shareVoting, 'MANAGE_PAYMENTS_ROLE')
+        await assertRole(acl, finance, shareVoting, 'EXECUTE_PAYMENTS_ROLE', boardVoting)
+        await assertRole(acl, finance, shareVoting, 'MANAGE_PAYMENTS_ROLE', boardVoting)
 
         await assertMissingRole(acl, finance, 'CHANGE_PERIOD_ROLE')
         await assertMissingRole(acl, finance, 'CHANGE_BUDGETS_ROLE')
