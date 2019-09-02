@@ -188,7 +188,7 @@ contract CompanyBoardTemplate is BaseTemplate {
             _createCustomAgentPermissions(acl, Agent(agentOrVault), _shareVoting, _boardVoting);
         }
         _createVaultPermissions(acl, agentOrVault, finance, _shareVoting);
-        _createCustomFinancePermissions(acl, finance, _shareVoting, _boardVoting);
+        _createFinancePermissions(acl, finance, _boardVoting, _shareVoting);
 
         return finance;
     }
@@ -205,16 +205,6 @@ contract CompanyBoardTemplate is BaseTemplate {
     function _createCustomAgentPermissions(ACL _acl, Agent _agent, Voting _shareVoting, Voting _boardVoting) internal {
         _acl.createPermission(_boardVoting, _agent, _agent.EXECUTE_ROLE(), _shareVoting);
         _acl.createPermission(_boardVoting, _agent, _agent.RUN_SCRIPT_ROLE(), _shareVoting);
-    }
-
-    function _createCustomFinancePermissions(ACL _acl, Finance _finance, Voting _shareVoting, Voting _boardVoting) internal {
-        address[] memory grantees = new address[](2);
-        grantees[0] = address(_shareVoting);
-        grantees[1] = address(_boardVoting);
-
-        _createPermissions(_acl, grantees, _finance, _finance.CREATE_PAYMENTS_ROLE(), _shareVoting);
-        _acl.createPermission(_shareVoting, _finance, _finance.EXECUTE_PAYMENTS_ROLE(), _shareVoting);
-        _acl.createPermission(_shareVoting, _finance, _finance.MANAGE_PAYMENTS_ROLE(), _shareVoting);
     }
 
     function _cachePreparedDao(
