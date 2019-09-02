@@ -10,7 +10,7 @@ contract ExecutionTarget {
     }
 
     function failExecute() public pure {
-        revert();
+        revert("INTENTIONAL_ERROR");
     }
 
     function setCounter(uint x) public {
