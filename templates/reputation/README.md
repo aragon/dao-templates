@@ -19,7 +19,7 @@ Create a new reputation entity:
 template.newInstance(id, holders, stakes, votingSettings, financePeriod, useAgentAsVault)
 ```
 
-- `name`: Name for org, will assign `[name].aragonid.eth`
+- `id`: Id for org, will assign `[id].aragonid.eth`
 - `holders`: Array of token holder addresses
 - `stakes`: Array of token stakes for holders (token has 18 decimals, multiply token amount `* 10^18`)
 - `votingSettings`: Array of [supportRequired, minAcceptanceQuorum, voteDuration] to set up the voting app of the organization
@@ -58,7 +58,7 @@ The network details will be automatically selected by the `arapp.json`'s environ
 | Agent or Vault    | TRANSFER              | Finance       | Voting  |
 | Finance           | CREATE_PAYMENTS       | Voting        | Voting  |
 | Finance           | EXECUTE_PAYMENTS      | Voting        | Voting  |
-| Finance           | DISABLE_PAYMENTS      | Voting        | Voting  |
+| Finance           | MANAGE_PAYMENTS       | Voting        | Voting  |
 | Token Manager     | MINT                  | Voting        | Voting  |
 | Token Manager     | BURN                  | Voting        | Voting  |
 

@@ -89,6 +89,10 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
         await assertRevert(finalizeInstance(randomId(), [shareHolder1], SHARE_STAKES, BOARD_MEMBERS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANYBD_BAD_HOLDERS_STAKES_LEN')
         await assertRevert(finalizeInstance(randomId(), SHARE_HOLDERS, [1e18], BOARD_MEMBERS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'COMPANYBD_BAD_HOLDERS_STAKES_LEN')
       })
+
+      it('reverts when an empty id is provided', async () => {
+        await assertRevert(finalizeInstance('', SHARE_HOLDERS, SHARE_STAKES, BOARD_MEMBERS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'TEMPLATE_INVALID_ID')
+      })
     })
   })
 
@@ -240,8 +244,8 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
       })
 
       it('sets up DAO and ACL permissions correctly', async () => {
-        await assertRole(acl, dao, shareVoting, 'APP_MANAGER_ROLE', boardVoting)
-        await assertRole(acl, acl, shareVoting, 'CREATE_PERMISSIONS_ROLE', boardVoting)
+        await assertRole(acl, dao, shareVoting, 'APP_MANAGER_ROLE')
+        await assertRole(acl, acl, shareVoting, 'CREATE_PERMISSIONS_ROLE')
       })
 
       it('sets up EVM scripts registry permissions correctly', async () => {
@@ -260,8 +264,6 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
         assert.equal(web3.toChecksumAddress(await finance.vault()), agent.address, 'finance vault is not linked to the agent app')
         assert.equal(web3.toChecksumAddress(await dao.getRecoveryVault()), agent.address, 'agent app is not being used as the vault app of the DAO')
 
-        await assertRole(acl, agent, shareVoting, 'EXECUTE_ROLE')
-        await assertRole(acl, agent, shareVoting, 'RUN_SCRIPT_ROLE')
         await assertRole(acl, agent, shareVoting, 'EXECUTE_ROLE', boardVoting)
         await assertRole(acl, agent, shareVoting, 'RUN_SCRIPT_ROLE', boardVoting)
         await assertRole(acl, agent, shareVoting, 'TRANSFER_ROLE', finance)

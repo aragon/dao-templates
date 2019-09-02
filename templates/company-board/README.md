@@ -21,7 +21,7 @@ Finalize company-board entity:
 template.finalizeInstance(name, shareHolders, shareStakes, boardMembers, financePeriod, useAgentAsVault)
 ```
 
-- `name`: Name for org, will assign `[name].aragonid.eth`
+- `id`: Id for org, will assign `[id].aragonid.eth`
 - `shareHolders`: Array of share holder addresses
 - `shareStakes`: Array of token stakes for share holders (token has 18 decimals, multiply token amount `* 10^18`)
 - `boardMembers`: Array of board member addresses (1 token will be minted for each board member)
@@ -50,8 +50,8 @@ The network details will be automatically selected by the `arapp.json`'s environ
 
 | App                 | Permission            | Grantee             | Manager       |
 |---------------------|-----------------------|---------------------|---------------|
-| Kernel              | APP_MANAGER           | Board Voting        | Share Voting  |
-| ACL                 | CREATE_PERMISSIONS    | Board Voting        | Share Voting  |
+| Kernel              | APP_MANAGER           | Share Voting        | Share Voting  |
+| ACL                 | CREATE_PERMISSIONS    | Share Voting        | Share Voting  |
 | EVMScriptRegistry   | REGISTRY_MANAGER      | Share Voting        | Share Voting  |
 | EVMScriptRegistry   | REGISTRY_ADD_EXECUTOR | Share Voting        | Share Voting  |
 | Board Voting        | CREATE_VOTES          | Board Token Manager | Share Voting  |
@@ -74,9 +74,7 @@ The network details will be automatically selected by the `arapp.json`'s environ
 | App                 | Permission            | Grantee             | Manager       |
 |---------------------|-----------------------|---------------------|---------------|
 | Agent               | RUN_SCRIPT            | Board Voting        | Share Voting  |
-| Agent               | RUN_SCRIPT            | Share Voting        | Share Voting  |
 | Agent               | EXECUTE               | Board Voting        | Share Voting  |
-| Agent               | EXECUTE               | Share Voting        | Share Voting  |
 
 ### Additional permissions if the Payroll app is installed
 

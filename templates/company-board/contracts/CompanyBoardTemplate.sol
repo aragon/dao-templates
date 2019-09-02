@@ -90,6 +90,7 @@ contract CompanyBoardTemplate is BaseTemplate {
     )
         external
     {
+        _validateId(_id);
         _ensureFinalizationSettings(_shareHolders, _shareStakes, _boardMembers);
 
         (Kernel dao, Voting shareVoting, Voting boardVoting) = _popDaoCache();
@@ -97,7 +98,7 @@ contract CompanyBoardTemplate is BaseTemplate {
         _setupVaultAndFinanceApps(dao, _financePeriod, _useAgentAsVault, shareVoting, boardVoting);
         _finalizeApps(dao, _shareHolders, _shareStakes, _boardMembers, shareVoting, boardVoting);
 
-        _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, boardVoting, shareVoting);
+        _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, shareVoting);
         _registerID(_id, address(dao));
     }
 
@@ -123,6 +124,7 @@ contract CompanyBoardTemplate is BaseTemplate {
     )
         external
     {
+        _validateId(_id);
         _ensureFinalizationSettings(_shareHolders, _shareStakes, _boardMembers);
         require(_payrollSettings.length == 4, ERROR_BAD_PAYROLL_SETTINGS);
 
@@ -132,7 +134,7 @@ contract CompanyBoardTemplate is BaseTemplate {
         _setupPayrollApp(dao, finance, _payrollSettings, boardVoting);
         _finalizeApps(dao, _shareHolders, _shareStakes, _boardMembers, shareVoting, boardVoting);
 
-        _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, boardVoting, shareVoting);
+        _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, shareVoting);
         _registerID(_id, address(dao));
     }
 
@@ -201,12 +203,8 @@ contract CompanyBoardTemplate is BaseTemplate {
     }
 
     function _createCustomAgentPermissions(ACL _acl, Agent _agent, Voting _shareVoting, Voting _boardVoting) internal {
-        address[] memory grantees = new address[](2);
-        grantees[0] = address(_shareVoting);
-        grantees[1] = address(_boardVoting);
-
-        _createPermissions(_acl, grantees, _agent, _agent.EXECUTE_ROLE(), _shareVoting);
-        _createPermissions(_acl, grantees, _agent, _agent.RUN_SCRIPT_ROLE(), _shareVoting);
+        _acl.createPermission(_boardVoting, _agent, _agent.EXECUTE_ROLE(), _shareVoting);
+        _acl.createPermission(_boardVoting, _agent, _agent.RUN_SCRIPT_ROLE(), _shareVoting);
     }
 
     function _createCustomFinancePermissions(ACL _acl, Finance _finance, Voting _shareVoting, Voting _boardVoting) internal {
