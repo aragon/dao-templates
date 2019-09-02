@@ -203,12 +203,8 @@ contract CompanyBoardTemplate is BaseTemplate {
     }
 
     function _createCustomAgentPermissions(ACL _acl, Agent _agent, Voting _shareVoting, Voting _boardVoting) internal {
-        address[] memory grantees = new address[](2);
-        grantees[0] = address(_shareVoting);
-        grantees[1] = address(_boardVoting);
-
-        _createPermissions(_acl, grantees, _agent, _agent.EXECUTE_ROLE(), _shareVoting);
-        _createPermissions(_acl, grantees, _agent, _agent.RUN_SCRIPT_ROLE(), _shareVoting);
+        _acl.createPermission(_boardVoting, _agent, _agent.EXECUTE_ROLE(), _shareVoting);
+        _acl.createPermission(_boardVoting, _agent, _agent.RUN_SCRIPT_ROLE(), _shareVoting);
     }
 
     function _createCustomFinancePermissions(ACL _acl, Finance _finance, Voting _shareVoting, Voting _boardVoting) internal {
