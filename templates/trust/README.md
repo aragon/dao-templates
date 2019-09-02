@@ -84,7 +84,7 @@ Aragon Trusts are composed of two sub-groups:
 | Vault                 | TRANSFER              | Finance             | Hold Voting        |
 | Finance               | CREATE_PAYMENTS       | Hold Voting         | Hold Voting        |
 | Finance               | EXECUTE_PAYMENTS      | Hold Voting         | Hold Voting        |
-| Finance               | DISABLE_PAYMENTS      | Hold Voting         | Hold Voting        |
+| Finance               | MANAGE_PAYMENTS       | Hold Voting         | Hold Voting        |
 | Hold Token Manager    | MINT                  | Multisig            | Multisig           |
 | Hold Token Manager    | BURN                  | Multisig            | Multisig           |
 | Hold Token Manager    | ASSIGN                | Hold Voting         | Hold Voting        |
@@ -109,7 +109,7 @@ Setup trust DAO:
 template.setupInstance(name, beneficiaryKeys, heirs, heirsStakes)
 ```
 
-- `name`: Name for org, will assign `[name].aragonid.eth`
+- `id`: Id for org, will assign `[id].aragonid.eth`
 - `beneficiaryKeys`: 2-length array with the beneficiaries keys
 - `heirs`: Array of heirs addresses
 - `stakes`: Array of token stakes for heirs (token has 18 decimals, multiply token amount `* 10^18`)

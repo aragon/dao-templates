@@ -81,6 +81,7 @@ contract CompanyTemplate is BaseTemplate, TokenCache {
     )
         public
     {
+        _validateId(_id);
         _ensureCompanySettings(_holders, _stakes, _votingSettings);
 
         (Kernel dao, ACL acl) = _createDAO();
@@ -111,6 +112,7 @@ contract CompanyTemplate is BaseTemplate, TokenCache {
     )
         public
     {
+        _validateId(_id);
         _ensureCompanySettings(_holders, _stakes, _votingSettings, _payrollSettings);
 
         (Kernel dao, ACL acl) = _createDAO();

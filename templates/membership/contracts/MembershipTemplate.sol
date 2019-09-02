@@ -76,6 +76,7 @@ contract MembershipTemplate is BaseTemplate, TokenCache {
     )
         public
 	{
+        _validateId(_id);
         _ensureMembershipSettings(_members, _votingSettings);
 
         (Kernel dao, ACL acl) = _createDAO();
@@ -104,6 +105,7 @@ contract MembershipTemplate is BaseTemplate, TokenCache {
     )
         public
     {
+        _validateId(_id);
         _ensureMembershipSettings(_members, _votingSettings, _payrollSettings);
 
         (Kernel dao, ACL acl) = _createDAO();

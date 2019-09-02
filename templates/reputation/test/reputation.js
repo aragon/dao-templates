@@ -226,6 +226,10 @@ contract('Reputation', ([_, owner, holder1, holder2, someone]) => {
         await assertRevert(template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, randomId(), [holder1], STAKES, VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
         await assertRevert(template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, randomId(), HOLDERS, [1e18], VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
       })
+
+      it('reverts when an empty id is provided', async () => {
+        await assertRevert(template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, '', HOLDERS, STAKES, VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'TEMPLATE_INVALID_ID')
+      })
     })
 
     context('when the creation succeeds', () => {
@@ -314,6 +318,10 @@ contract('Reputation', ([_, owner, holder1, holder2, someone]) => {
         it('reverts when holders and stakes length do not match', async () => {
           await assertRevert(newInstance(randomId(), [holder1], STAKES, VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
           await assertRevert(newInstance(randomId(), HOLDERS, [1e18], VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'REPUTATION_BAD_HOLDERS_STAKES_LEN')
+        })
+
+        it('reverts when an empty id is provided', async () => {
+          await assertRevert(newInstance('', HOLDERS, STAKES, VOTING_SETTINGS, FINANCE_PERIOD, USE_AGENT_AS_VAULT), 'TEMPLATE_INVALID_ID')
         })
       })
     })
