@@ -80,7 +80,8 @@ contract MembershipTemplate is BaseTemplate, TokenCache {
         _ensureMembershipSettings(_members, _votingSettings);
 
         (Kernel dao, ACL acl) = _createDAO();
-        (, Voting voting) = _setupApps(dao, acl, _members, _votingSettings, _financePeriod, _useAgentAsVault);
+        (Finance finance, Voting voting) = _setupApps(dao, acl, _members, _votingSettings, _financePeriod, _useAgentAsVault);
+        _transferCreatePaymentManagerFromTemplate(acl, finance, voting);
         _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, voting);
         _registerID(_id, dao);
     }
@@ -111,6 +112,7 @@ contract MembershipTemplate is BaseTemplate, TokenCache {
         (Kernel dao, ACL acl) = _createDAO();
         (Finance finance, Voting voting) = _setupApps(dao, acl, _members, _votingSettings, _financePeriod, _useAgentAsVault);
         _setupPayrollApp(dao, acl, finance, voting, _payrollSettings);
+        _transferCreatePaymentManagerFromTemplate(acl, finance, voting);
         _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, voting);
         _registerID(_id, dao);
     }
@@ -144,6 +146,7 @@ contract MembershipTemplate is BaseTemplate, TokenCache {
 
         Payroll payroll = _installPayrollApp(_dao, _finance, denominationToken, priceFeed, rateExpiryTime);
         _createPayrollPermissions(_acl, payroll, manager, _voting, _voting);
+        _grantCreatePaymentPermission(_acl, _finance, payroll);
     }
 
     function _setupPermissions(
@@ -161,6 +164,7 @@ contract MembershipTemplate is BaseTemplate, TokenCache {
         }
         _createVaultPermissions(_acl, _agentOrVault, _finance, _voting);
         _createFinancePermissions(_acl, _finance, _voting, _voting);
+        _createFinanceCreatePaymentsPermission(_acl, _finance, _voting, address(this));
         _createEvmScriptsRegistryPermissions(_acl, _voting, _voting);
         _createVotingPermissions(_acl, _voting, _voting, _tokenManager, _voting);
         _createTokenManagerPermissions(_acl, _tokenManager, _voting, _voting);

@@ -10,6 +10,13 @@ module.exports = web3 => {
     assert.isTrue(await acl.hasPermission(grantee.address, app.address, permission), `Grantee should have ${appName} role ${roleName}`)
   }
 
+  async function assertRoleNotGranted(acl, app, roleName, to) {
+    const appName = app.constructor.contractName
+    const permission = await app[roleName]()
+
+    assert.isFalse(await acl.hasPermission(to.address, app.address, permission), `Given address should not have ${appName} role ${roleName}`)
+  }
+
   async function assertMissingRole(acl, app, roleName) {
     const appName = app.constructor.contractName
     const permission = await app[roleName]()
@@ -27,6 +34,7 @@ module.exports = web3 => {
 
   return {
     assertRole,
+    assertRoleNotGranted,
     assertMissingRole,
     assertBurnedRole
   }

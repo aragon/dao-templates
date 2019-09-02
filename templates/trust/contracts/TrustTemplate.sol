@@ -140,6 +140,7 @@ contract TrustTemplate is BaseTemplate {
         // Set up permissions
         _createVaultPermissions(acl, vault, finance, holdVoting);
         _createFinancePermissions(acl, finance, holdVoting, holdVoting);
+        _createFinanceCreatePaymentsPermission(acl, finance, holdVoting, holdVoting);
         _createEvmScriptsRegistryPermissions(acl, holdVoting, holdVoting);
         _createCustomAgentPermissions(acl, agent, holdVoting, heirsVoting);
         _createCustomVotingPermissions(acl, holdTokenManager, holdVoting);
