@@ -50,8 +50,8 @@ The network details will be automatically selected by the `arapp.json`'s environ
 
 | App                 | Permission            | Grantee             | Manager       |
 |---------------------|-----------------------|---------------------|---------------|
-| Kernel              | APP_MANAGER           | Board Voting        | Share Voting  |
-| ACL                 | CREATE_PERMISSIONS    | Board Voting        | Share Voting  |
+| Kernel              | APP_MANAGER           | Share Voting        | Share Voting  |
+| ACL                 | CREATE_PERMISSIONS    | Share Voting        | Share Voting  |
 | EVMScriptRegistry   | REGISTRY_MANAGER      | Share Voting        | Share Voting  |
 | EVMScriptRegistry   | REGISTRY_ADD_EXECUTOR | Share Voting        | Share Voting  |
 | Board Voting        | CREATE_VOTES          | Board Token Manager | Share Voting  |
