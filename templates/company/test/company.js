@@ -252,7 +252,7 @@ contract('Company', ([_, owner, holder1, holder2, someone]) => {
           const USE_AGENT_AS_VAULT = true
 
           createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
-          itCostsUpTo(6.71e6)
+          itCostsUpTo(6.72e6)
           itSetupsDAOCorrectly(FINANCE_PERIOD)
           itSetupsAgentAppCorrectly()
         })
@@ -261,7 +261,7 @@ contract('Company', ([_, owner, holder1, holder2, someone]) => {
           const USE_AGENT_AS_VAULT = false
 
           createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
-          itCostsUpTo(6.52e6)
+          itCostsUpTo(6.53e6)
           itSetupsDAOCorrectly(FINANCE_PERIOD)
           itSetupsVaultAppCorrectly()
         })
@@ -274,7 +274,7 @@ contract('Company', ([_, owner, holder1, holder2, someone]) => {
           const USE_AGENT_AS_VAULT = true
 
           createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
-          itCostsUpTo(6.71e6)
+          itCostsUpTo(6.72e6)
           itSetupsDAOCorrectly(FINANCE_PERIOD)
           itSetupsAgentAppCorrectly()
         })
@@ -283,7 +283,7 @@ contract('Company', ([_, owner, holder1, holder2, someone]) => {
           const USE_AGENT_AS_VAULT = false
 
           createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
-          itCostsUpTo(6.52e6)
+          itCostsUpTo(6.53e6)
           itSetupsDAOCorrectly(FINANCE_PERIOD)
           itSetupsVaultAppCorrectly()
         })
