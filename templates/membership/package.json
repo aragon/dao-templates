@@ -37,7 +37,7 @@
     "publish:mainnet": "aragon apm publish major $(npm run deploy:mainnet | tail -n 1) --environment mainnet"
   },
   "dependencies": {
-    "@aragon/os": "4.2.0",
+    "@aragon/os": "4.3.0",
     "@aragon/id": "2.0.3",
     "@aragon/apps-agent": "^1.0.0",
     "@aragon/apps-vault": "^4.1.0",

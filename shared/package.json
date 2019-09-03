@@ -23,7 +23,7 @@
     "@aragon/apps-vault": "^4.1.0",
     "@aragon/apps-voting": "^2.1.0",
     "@aragon/id": "2.0.3",
-    "@aragon/os": "4.2.0",
+    "@aragon/os": "4.3.0",
     "eth-ens-namehash": "^2.0.8",
     "yargs": "^13.2.4"
   },
