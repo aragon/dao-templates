@@ -72,6 +72,7 @@ The network details will be automatically selected by the `arapp.json`'s environ
 
 | App                 | Permission                 | Grantee             | Manager       |
 |---------------------|----------------------------|---------------------|---------------|
+| Finance             | CREATE_PAYMENTS            | Payroll             | Voting        |
 | Payroll             | ADD_BONUS_ROLE             | EOA or Voting       | Voting        |
 | Payroll             | ADD_EMPLOYEE_ROLE          | EOA or Voting       | Voting        |
 | Payroll             | ADD_REIMBURSEMENT_ROLE     | EOA or Voting       | Voting        |

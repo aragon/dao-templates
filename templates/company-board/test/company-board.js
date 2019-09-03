@@ -7,7 +7,7 @@ const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
 const { getEventArgument } = require('@aragon/test-helpers/events')
 const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
 const { getInstalledAppsById } = require('@aragon/templates-shared/helpers/events')(artifacts)
-const { assertRole, assertMissingRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
+const { assertRole, assertMissingRole, assertRoleNotGranted } = require('@aragon/templates-shared/helpers/assertRole')(web3)
 
 const CompanyTemplate = artifacts.require('CompanyBoardTemplate')
 
@@ -246,6 +246,9 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
       it('sets up DAO and ACL permissions correctly', async () => {
         await assertRole(acl, dao, shareVoting, 'APP_MANAGER_ROLE')
         await assertRole(acl, acl, shareVoting, 'CREATE_PERMISSIONS_ROLE')
+
+        await assertRoleNotGranted(acl, dao, 'APP_MANAGER_ROLE', template)
+        await assertRoleNotGranted(acl, acl, 'CREATE_PERMISSIONS_ROLE', template)
       })
 
       it('sets up EVM scripts registry permissions correctly', async () => {
@@ -293,13 +296,16 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
         assert.equal(await payroll.denominationToken(), PAYROLL_DENOMINATION_TOKEN)
         assert.equal(web3.toChecksumAddress(await payroll.finance()), finance.address)
 
-        const expectedManager = employeeManager === ZERO_ADDRESS ? boardVoting : { address: employeeManager }
+        await assertRole(acl, finance, shareVoting, 'CREATE_PAYMENTS_ROLE', payroll)
+        await assertRoleNotGranted(acl, finance, 'CREATE_PAYMENTS_ROLE', template)
 
-        await assertRole(acl, payroll, boardVoting, 'ADD_BONUS_ROLE', expectedManager)
-        await assertRole(acl, payroll, boardVoting, 'ADD_EMPLOYEE_ROLE', expectedManager)
-        await assertRole(acl, payroll, boardVoting, 'ADD_REIMBURSEMENT_ROLE', expectedManager)
-        await assertRole(acl, payroll, boardVoting, 'TERMINATE_EMPLOYEE_ROLE', expectedManager)
-        await assertRole(acl, payroll, boardVoting, 'SET_EMPLOYEE_SALARY_ROLE', expectedManager)
+        const expectedGrantee = employeeManager === ZERO_ADDRESS ? boardVoting : { address: employeeManager }
+
+        await assertRole(acl, payroll, boardVoting, 'ADD_BONUS_ROLE', expectedGrantee)
+        await assertRole(acl, payroll, boardVoting, 'ADD_EMPLOYEE_ROLE', expectedGrantee)
+        await assertRole(acl, payroll, boardVoting, 'ADD_REIMBURSEMENT_ROLE', expectedGrantee)
+        await assertRole(acl, payroll, boardVoting, 'TERMINATE_EMPLOYEE_ROLE', expectedGrantee)
+        await assertRole(acl, payroll, boardVoting, 'SET_EMPLOYEE_SALARY_ROLE', expectedGrantee)
 
         await assertRole(acl, payroll, boardVoting, 'MODIFY_PRICE_FEED_ROLE', boardVoting)
         await assertRole(acl, payroll, boardVoting, 'MODIFY_RATE_EXPIRY_ROLE', boardVoting)
@@ -337,7 +343,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
           const USE_AGENT_AS_VAULT = false
 
           createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
-          itCostsUpTo(4e6)
+          itCostsUpTo(4.03e6)
           itSetupsDAOCorrectly(FINANCE_PERIOD)
           itSetupsVaultAppCorrectly()
         })
@@ -359,7 +365,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
           const USE_AGENT_AS_VAULT = false
 
           createDAO(USE_AGENT_AS_VAULT, FINANCE_PERIOD)
-          itCostsUpTo(4e6)
+          itCostsUpTo(4.03e6)
           itSetupsDAOCorrectly(FINANCE_PERIOD)
           itSetupsVaultAppCorrectly()
         })
@@ -390,7 +396,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
         const EMPLOYEE_MANAGER = someone
 
         createDAO(EMPLOYEE_MANAGER)
-        itCostsUpTo(5.5e6)
+        itCostsUpTo(5.55e6)
         itSetupsDAOCorrectly(FINANCE_PERIOD)
         itSetupsAgentAppCorrectly()
         itSetupsPayrollAppCorrectly(EMPLOYEE_MANAGER)
@@ -400,7 +406,7 @@ contract('Company with board', ([_, owner, boardMember1, boardMember2, shareHold
         const EMPLOYEE_MANAGER = ZERO_ADDRESS
 
         createDAO(EMPLOYEE_MANAGER)
-        itCostsUpTo(5.5e6)
+        itCostsUpTo(5.55e6)
         itSetupsDAOCorrectly(FINANCE_PERIOD)
         itSetupsAgentAppCorrectly()
         itSetupsPayrollAppCorrectly(EMPLOYEE_MANAGER)
