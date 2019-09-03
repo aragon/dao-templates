@@ -95,9 +95,10 @@ contract CompanyBoardTemplate is BaseTemplate {
 
         (Kernel dao, Voting shareVoting, Voting boardVoting) = _popDaoCache();
 
-        _setupVaultAndFinanceApps(dao, _financePeriod, _useAgentAsVault, shareVoting, boardVoting);
+        Finance finance = _setupVaultAndFinanceApps(dao, _financePeriod, _useAgentAsVault, shareVoting, boardVoting);
         _finalizeApps(dao, _shareHolders, _shareStakes, _boardMembers, shareVoting, boardVoting);
 
+        _transferCreatePaymentManagerFromTemplate(ACL(dao.acl()), finance, shareVoting);
         _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, shareVoting);
         _registerID(_id, address(dao));
     }
@@ -134,6 +135,7 @@ contract CompanyBoardTemplate is BaseTemplate {
         _setupPayrollApp(dao, finance, _payrollSettings, boardVoting);
         _finalizeApps(dao, _shareHolders, _shareStakes, _boardMembers, shareVoting, boardVoting);
 
+        _transferCreatePaymentManagerFromTemplate(ACL(dao.acl()), finance, shareVoting);
         _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, shareVoting);
         _registerID(_id, address(dao));
     }
@@ -189,6 +191,7 @@ contract CompanyBoardTemplate is BaseTemplate {
         }
         _createVaultPermissions(acl, agentOrVault, finance, _shareVoting);
         _createFinancePermissions(acl, finance, _boardVoting, _shareVoting);
+        _createFinanceCreatePaymentsPermission(acl, finance, _boardVoting, address(this));
 
         return finance;
     }
@@ -200,6 +203,7 @@ contract CompanyBoardTemplate is BaseTemplate {
         Payroll payroll = _installPayrollApp(_dao, _finance, denominationToken, priceFeed, rateExpiryTime);
         ACL acl = ACL(_dao.acl());
         _createPayrollPermissions(acl, payroll, manager, _boardVoting, _boardVoting);
+        _grantCreatePaymentPermission(acl, _finance, payroll);
     }
 
     function _createCustomAgentPermissions(ACL _acl, Agent _agent, Voting _shareVoting, Voting _boardVoting) internal {

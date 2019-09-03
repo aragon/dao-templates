@@ -268,9 +268,20 @@ contract BaseTemplate is APMNamehash, IsContract {
     }
 
     function _createFinancePermissions(ACL _acl, Finance _finance, address _grantee, address _manager) internal {
-        _acl.createPermission(_grantee, _finance, _finance.CREATE_PAYMENTS_ROLE(), _manager);
         _acl.createPermission(_grantee, _finance, _finance.EXECUTE_PAYMENTS_ROLE(), _manager);
         _acl.createPermission(_grantee, _finance, _finance.MANAGE_PAYMENTS_ROLE(), _manager);
+    }
+
+    function _createFinanceCreatePaymentsPermission(ACL _acl, Finance _finance, address _grantee, address _manager) internal {
+        _acl.createPermission(_grantee, _finance, _finance.CREATE_PAYMENTS_ROLE(), _manager);
+    }
+
+    function _grantCreatePaymentPermission(ACL _acl, Finance _finance, address _to) internal {
+        _acl.grantPermission(_to, _finance, _finance.CREATE_PAYMENTS_ROLE());
+    }
+
+    function _transferCreatePaymentManagerFromTemplate(ACL _acl, Finance _finance, address _manager) internal {
+        _acl.setPermissionManager(_manager, _finance, _finance.CREATE_PAYMENTS_ROLE());
     }
 
     /* TOKEN MANAGER */
