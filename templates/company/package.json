@@ -37,7 +37,7 @@
     "publish:mainnet": "aragon apm publish major $(npm run deploy:mainnet | tail -n 1) --environment mainnet"
   },
   "dependencies": {
-    "@aragon/apps-agent": "^1.0.0",
+    "@aragon/apps-agent": "^2.0.0",
     "@aragon/apps-finance": "^3.0.0",
     "@aragon/apps-payroll": "^1.0.0",
     "@aragon/apps-shared-minime": "^1.0.0",
