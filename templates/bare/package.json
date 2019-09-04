@@ -23,7 +23,7 @@
     "deploy:mainnet": "npm run compile && truffle exec ./scripts/deploy.js --network mainnet --ens 0x314159265dd8dbb310642f98f50c066173c1259b --dao-factory 0xc29f0599df12eb4cbe1a34354c4bac6d944071d1 --mini-me-factory 0x909d05f384d0663ed4be59863815ab43b4f347ec",
     "publish:rpc": "aragon apm publish major $(npm run deploy:rpc | tail -n 1) --environment default",
     "publish:devnet": "aragon apm publish major $(npm run deploy:devnet | tail -n 1) --environment default",
-    "publish:staging": "aragon apm publish major $(npm run deploy:rinkeby | tail -n 1) --environment rinkeby",
+    "publish:staging": "aragon apm publish major $(npm run deploy:staging | tail -n 1) --environment staging",
     "publish:rinkeby": "aragon apm publish major $(npm run deploy:rinkeby | tail -n 1) --environment rinkeby",
     "publish:ropsten": "aragon apm publish major $(npm run deploy:ropsten | tail -n 1) --environment ropsten",
     "publish:mainnet": "aragon apm publish major $(npm run deploy:mainnet | tail -n 1) --environment mainnet"
