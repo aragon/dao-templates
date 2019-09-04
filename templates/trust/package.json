@@ -49,7 +49,7 @@
     "@aragon/templates-shared": "^1.0.0-rc.1"
   },
   "devDependencies": {
-    "@aragon/apps-payroll": "^1.0.0-rc.1",
+    "@aragon/apps-payroll": "^1.0.0",
     "@aragon/apps-survey": "^1.0.0",
     "@aragon/test-helpers": "^2.0.0",
     "eth-ens-namehash": "^2.0.8",
