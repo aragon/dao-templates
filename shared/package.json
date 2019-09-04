@@ -15,7 +15,7 @@
   "dependencies": {
     "@aragon/apps-agent": "^1.0.0",
     "@aragon/apps-finance": "^3.0.0",
-    "@aragon/apps-payroll": "^1.0.0-rc.1",
+    "@aragon/apps-payroll": "^1.0.0",
     "@aragon/apps-shared-migrations": "^1.0.0",
     "@aragon/apps-shared-minime": "^1.0.0",
     "@aragon/apps-survey": "^1.0.0",
