@@ -1,7 +1,8 @@
 const fs = require('fs')
 const { hash } = require('eth-ens-namehash')
 const { getEventArgument } = require('@aragon/test-helpers/events')
-const { fileName, deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
+const { fileName } = require('@aragon/templates-shared/lib/arapp-file')(web3)
+const { getTemplateAddress } = require('@aragon/templates-shared/lib/ens')(web3, artifacts)
 
 const isArray = (e, l = 0) => Array.isArray(e) && (l === 0 || e.length === l)
 const isArrayOfAddresses = (e, l = 0) => isArray(e, l) && e.every(web3.isAddress)
@@ -51,7 +52,7 @@ async function create() {
   if (process.argv.length !== 7) errorOut('Usage: truffle exec --network <network> ./scripts/create.js <json_input_file>')
   const network = process.argv[4]
 
-  const { address: trustTemplateAddress } = (await deployedAddresses()) || {}
+  const { address: trustTemplateAddress } = (await getTemplateAddress()) || {}
   if (!trustTemplateAddress) errorOut(`Missing trust template address for network ${network} in ${await fileName()}`)
   else console.log(`Using trust template deployed at ${trustTemplateAddress}...`)
 
