@@ -1,7 +1,7 @@
 const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
-const { getEventArgument } = require('@aragon/test-helpers/events')
-const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
 const { assertRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
+const { getEventArgument } = require('@aragon/test-helpers/events')
+const { getENS, getTemplateAddress } = require('@aragon/templates-shared/lib/ens')(web3, artifacts)
 const { getInstalledAppsById } = require('@aragon/templates-shared/helpers/events')(artifacts)
 
 const ACL = artifacts.require('ACL')
@@ -17,8 +17,7 @@ contract('Bare', ([_, deployer, tokenAddress, authorized]) => {
   const VOTING_DURATION = 60
 
   before('fetch bare template', async () => {
-    const { address } = await deployedAddresses()
-    bareTemplate = BareTemplate.at(address)
+    bareTemplate = BareTemplate.at(await getTemplateAddress())
   })
 
   before('create bare entity', async () => {

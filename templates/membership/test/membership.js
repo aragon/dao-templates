@@ -5,13 +5,12 @@ const { hash: namehash } = require('eth-ens-namehash')
 const { APP_IDS } = require('@aragon/templates-shared/helpers/apps')
 const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
 const { getEventArgument } = require('@aragon/test-helpers/events')
-const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
+const { getENS, getTemplateAddress } = require('@aragon/templates-shared/lib/ens')(web3, artifacts)
 const { getInstalledAppsById } = require('@aragon/templates-shared/helpers/events')(artifacts)
 const { assertRole, assertMissingRole, assertRoleNotGranted } = require('@aragon/templates-shared/helpers/assertRole')(web3)
 
 const MembershipTemplate = artifacts.require('MembershipTemplate')
 
-const ENS = artifacts.require('ENS')
 const ACL = artifacts.require('ACL')
 const Kernel = artifacts.require('Kernel')
 const Agent = artifacts.require('Agent')
@@ -47,9 +46,8 @@ contract('Membership', ([_, owner, member1, member2, someone]) => {
   const PAYROLL_RATE_EXPIRY_TIME = THIRTY_DAYS
 
   before('fetch membership template and ENS', async () => {
-    const { registry, address } = await deployedAddresses()
-    ens = ENS.at(registry)
-    template = MembershipTemplate.at(address)
+    ens = await getENS()
+    template = MembershipTemplate.at(await getTemplateAddress())
   })
 
   const newInstance = (...params) => {

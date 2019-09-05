@@ -1,14 +1,13 @@
 const { hash: namehash } = require('eth-ens-namehash')
 const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
 const { getEventArgument } = require('@aragon/test-helpers/events')
-const { deployedAddresses } = require('@aragon/templates-shared/lib/arapp-file')(web3)
+const { getENS, getTemplateAddress } = require('@aragon/templates-shared/lib/ens')(web3, artifacts)
 const { getInstalledAppsById } = require('@aragon/templates-shared/helpers/events')(artifacts)
 const { assertRole, assertMissingRole } = require('@aragon/templates-shared/helpers/assertRole')(web3)
 const assertRevert = require('@aragon/templates-shared/helpers/assertRevert')(web3)
 
 const TrustTemplate = artifacts.require('TrustTemplate')
 
-const ENS = artifacts.require('ENS')
 const ACL = artifacts.require('ACL')
 const Kernel = artifacts.require('Kernel')
 const Vault = artifacts.require('Vault')
@@ -33,9 +32,8 @@ contract('Trust', ([_, owner, beneficiaryKey1, beneficiaryKey2, heir1, heir2, mu
   const BENEFICIARY_KEYS = [beneficiaryKey1, beneficiaryKey2]
 
   before('fetch trust template and ENS', async () => {
-    const { registry, address } = await deployedAddresses()
-    ens = ENS.at(registry)
-    template = TrustTemplate.at(address)
+    ens = await getENS()
+    template = TrustTemplate.at(await getTemplateAddress())
   })
 
   context('when the creation fails', () => {

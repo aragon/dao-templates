@@ -181,13 +181,13 @@ module.exports = class TemplateDeployer {
   }
 
   async _writeArappFile(templateName, template) {
-    const { address, constructor: { contractName } } = template
-    await this.arapp.write(templateName, address, contractName, this.ens.address)
+    const { constructor: { contractName } } = template
+    await this.arapp.write(templateName, contractName, this.ens.address)
     this.log(`Template addresses saved to ${await this.arapp.filePath()}`)
   }
 
   async arappENS() {
-    const environment = await this.arapp.deployedAddresses()
+    const environment = await this.arapp.getDeployedData()
     return environment.registry
   }
 

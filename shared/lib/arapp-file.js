@@ -23,25 +23,26 @@ module.exports = web3 => {
     return file
   }
 
-  async function deployedAddresses() {
+  async function getDeployedData() {
     const network = await getNetworkName()
     const file = await read()
     return file.environments[network] || {}
   }
 
-  async function write(appName, address, contractName, registry) {
+  async function write(appName, contractName, registry) {
     const network = await getNetworkName()
     const data = await read()
     data.path = `contracts/${contractName}.sol`
     if (data.environments === undefined) data.environments = {}
-    data.environments[network] = { appName: `${appName}.aragonpm.eth`, address, network, registry }
+    const wsRPC = `wss://${network}.eth.aragon.network/ws`
+    data.environments[network] = { appName: `${appName}.aragonpm.eth`, network, registry, wsRPC }
     fs.writeFileSync(await arappFilePath(), JSON.stringify(data, null, 2))
   }
 
   return {
     read,
     write,
-    deployedAddresses,
+    getDeployedData,
     fileName: arappFileName,
     filePath: arappFilePath,
   }

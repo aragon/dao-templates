@@ -1,6 +1,6 @@
 const config = require('@aragon/os/truffle-config')
 
-const gasLimit = 7e6
+const gasLimit = 7e6 - 1
 
 config.networks.rpc.gas = gasLimit
 config.networks.devnet.gas = gasLimit
