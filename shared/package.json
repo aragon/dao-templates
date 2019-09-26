@@ -10,6 +10,7 @@
     "helpers/",
     "lib/",
     "scripts/",
+    "truffle.js",
     "docker-compose.yml"
   ],
   "scripts": {
