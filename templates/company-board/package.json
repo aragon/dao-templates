@@ -15,7 +15,7 @@
   "scripts": {
     "prepublishOnly": "npm run compile && npm run abi:extract -- --no-compile",
     "abi:extract": "truffle-extract --output abi/ --keys abi",
-    "compile": "truffle compile --all",
+    "compile": "aragon contracts compile",
     "lint": "solium --dir ./contracts",
     "test": "npm run test:ganache",
     "test:ganache": "./node_modules/@aragon/templates-shared/scripts/test-ganache.sh",
