@@ -35,3 +35,7 @@ These templates were audited as part of the 0.6 and 0.7 releases by WHG and Cons
 ## Build your own template!
 
 `@aragon/templates-shared` is published on npm and contains contract, deployment, and testing utilities to help you build your own template. All of the templates in this monorepo use `templates-shared` internally.
+
+## Help
+
+For help and support, feel free to contact us at any time on [Spectrum](https://spectrum.chat/aragon/app-development).
