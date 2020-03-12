@@ -10,6 +10,6 @@ Everyone participating in this project is governed by the [Aragon Code of Conduc
 
 Please report unacceptable behavior to a maintainer through either Twitter or by shooting us an e-mail at contact [at] aragon.one.
 
-## I Just Have A Question
+## Getting help
 
-Please don't file an issue with questions. It's easier for you and for us if you go directly to [our chat](https://aragon.chat), since it will keep our repositories clean and you will get a faster response.
+If you need help, please reach out to Aragon core contributors and community members on [Spectrum](https://spectrum.chat/aragon).  We'd love to hear from you and know what you're working on!
