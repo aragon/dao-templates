@@ -2,8 +2,9 @@
   "environments": {
     "default": {
       "appName": "company-template.aragonpm.eth",
-      "network": "rpc",
-      "registry": "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1"
+      "network": "devnet",
+      "registry": "0x13199fa47e33332669776cbd1aee101cc2acfa25",
+      "wsRPC": "ws://135.181.123.210:8545"
     },
     "mainnet": {
       "appName": "company-template.aragonpm.eth",
