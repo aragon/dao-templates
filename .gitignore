@@ -13,5 +13,9 @@ lerna-debug.log
 arapp_local.json
 */**/abi
 */**/build
+*/**/artifacts
 */**/abis.json
 */**/flattened_contracts
+*/**/dist
+*/**/.env
+.env

@@ -11,7 +11,7 @@ module.exports = async function deployTemplate(web3, artifacts, templateName, co
   let { ens, owner, verbose, daoFactory, miniMeFactory, register } = require('yargs')
     .option('e', { alias: 'ens', describe: 'ENS address', type: 'string' })
     .option('o', { alias: 'owner', describe: 'Sender address. Will use first address if no one is given.', type: 'string' })
-    .option('v', { alias: 'verbose', describe: 'Verbose mode', type: 'boolean', default: false })
+    .option('v', { alias: 'verbose', describe: 'Verbose mode', type: 'boolean', default: true })
     .option('df', { alias: 'dao-factory', describe: 'DAO Factory address. Will deploy new instance if not given.', type: 'string' })
     .option('mf', { alias: 'mini-me-factory', describe: 'MiniMe Factory address. Will deploy new instance if not given.', type: 'string' })
     .option('r', { alias: 'register', describe: 'Whether the script will register the packages to aragon', type: 'boolean', default: true })

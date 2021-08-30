@@ -36,7 +36,8 @@
     "publish:staging": "aragon apm publish major $(npm run deploy:staging | tail -n 1) --environment staging",
     "publish:rinkeby": "aragon apm publish major $(npm run deploy:rinkeby | tail -n 1) --environment rinkeby",
     "publish:ropsten": "aragon apm publish major $(npm run deploy:ropsten | tail -n 1) --environment ropsten",
-    "publish:mainnet": "aragon apm publish major $(npm run deploy:mainnet | tail -n 1) --environment mainnet"
+    "publish:mainnet": "aragon apm publish major $(npm run deploy:mainnet | tail -n 1) --environment mainnet",
+    "deploy:mumbai": "truffle exec ./scripts/deploy.js --network mumbai --ens 0x431f0eed904590b176f9ff8c36a1c4ff0ee9b982 --dao-factory 0xa48e321d8ebab7ccd52503d630c894b62a2f639b --mini-me-factory 0xf9986e96366b2023a354372f8c50bc440393132e"
   },
   "dependencies": {
     "@aragon/apps-agent": "^2.0.0",
@@ -46,19 +47,34 @@
     "@aragon/apps-token-manager": "^2.1.0",
     "@aragon/apps-vault": "^4.1.0",
     "@aragon/apps-voting": "^2.1.0",
+    "@aragon/buidler-aragon": "^0.2.9",
+    "@aragon/cli": "^7.1.6",
     "@aragon/id": "2.0.3",
     "@aragon/os": "4.3.0",
     "@aragon/templates-shared": "^1.0.0"
   },
   "devDependencies": {
     "@aragon/apps-survey": "^1.0.0",
+    "@aragon/buidler-aragon": "^0.2.9",
+    "@aragon/contract-helpers-test": "^0.1.0",
     "@aragon/test-helpers": "^2.0.0",
+    "@nomiclabs/buidler": "^1.4.3",
+    "@nomiclabs/buidler-etherscan": "1.3.0",
+    "@nomiclabs/buidler-ganache": "^1.3.3",
+    "@nomiclabs/buidler-truffle5": "^1.3.4",
+    "@nomiclabs/buidler-web3": "^1.3.4",
+    "buidler-extract": "^1.0.0",
+    "chai": "^4.2.0",
+    "dotenv": "^10.0.0",
     "eth-ens-namehash": "^2.0.8",
     "eth-gas-reporter": "^0.1.1",
     "ganache-cli": "^6.0.3",
-    "solium": "^1.0.4",
+    "buidler-gas-reporter": "^0.1.3",
+    "solidity-coverage": "^0.7.9",
+    "solium": "^1.2.5",
     "truffle": "4.1.14",
     "truffle-extract": "^1.2.1",
-    "truffle-hdwallet-provider": "0.0.3"
+    "truffle-hdwallet-provider": "0.0.3",
+    "web3": "^1.2.11"
   }
 }

@@ -17,7 +17,7 @@ module.exports = class TemplateDeployer {
   async deploy(templateName, contractName) {
     await this.fetchOrDeployDependencies()
     const template = await this.deployTemplate(contractName)
-    await this.registerDeploy(templateName, template)
+    // await this.registerDeploy(templateName, template)
     return template
   }
 
@@ -34,7 +34,7 @@ module.exports = class TemplateDeployer {
     await this._fetchOrDeployAragonID()
     await this._fetchOrDeployDAOFactory()
     await this._fetchOrDeployMiniMeFactory()
-    await this._checkAppsDeployment()
+    // await this._checkAppsDeployment()
   }
 
   async registerDeploy(templateName, template) {

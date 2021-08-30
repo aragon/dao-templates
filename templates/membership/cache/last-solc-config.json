@@ -1,0 +1,10 @@
+{
+  "solc": {
+    "version": "0.4.24",
+    "optimizer": {
+      "enabled": true,
+      "runs": 10000
+    }
+  },
+  "buidlerVersion": "1.4.8"
+}
