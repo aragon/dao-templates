@@ -37,7 +37,7 @@
     "publish:rinkeby": "aragon apm publish major $(npm run deploy:rinkeby | tail -n 1) --environment rinkeby",
     "publish:ropsten": "aragon apm publish major $(npm run deploy:ropsten | tail -n 1) --environment ropsten",
     "publish:mainnet": "aragon apm publish major $(npm run deploy:mainnet | tail -n 1) --environment mainnet",
-    "deploy:mumbai": "truffle exec ./scripts/deploy.js --network mumbai --ens 0x431f0eed904590b176f9ff8c36a1c4ff0ee9b982 --dao-factory 0xa48e321d8ebab7ccd52503d630c894b62a2f639b --mini-me-factory 0xf9986e96366b2023a354372f8c50bc440393132e"
+    "deploy:mumbai": "truffle exec ./scripts/deploy.js --network mumbai --ens 0x3c70a0190d09f34519e6e218364451add21b7d4b --dao-factory 0x81bc5c75ab0937cdbad1f40ac585be6800a39448 --mini-me-factory 0xf46d61ad92977fabcaa7653e79b820bd5d4c023c"
   },
   "dependencies": {
     "@aragon/apps-agent": "^2.0.0",
@@ -50,25 +50,27 @@
     "@aragon/id": "2.0.3",
     "@aragon/os": "4.3.0",
     "@aragon/templates-shared": "^1.0.0",
-    "@aragon/truffle-config-v4": "^1.1.1"
+    "@aragon/truffle-config-v4": "^1.2.0"
   },
   "devDependencies": {
     "@aragon/apps-survey": "^1.0.0",
+    "@aragon/buidler-aragon": "^0.2.12",
     "@aragon/test-helpers": "^2.0.0",
     "@nomiclabs/buidler": "^1.4.8",
-    "@nomiclabs/buidler-etherscan": "1.3.0",
+    "@nomiclabs/buidler-etherscan": "^1.3.0",
     "@nomiclabs/buidler-ganache": "^1.3.3",
     "@nomiclabs/buidler-truffle5": "^1.3.4",
     "@nomiclabs/buidler-web3": "^1.3.4",
-    "buidler-gas-reporter": "^0.1.3",
+    "buidler-gas-reporter": "^0.1.4",
     "dotenv": "^10.0.0",
     "eth-ens-namehash": "^2.0.8",
     "eth-gas-reporter": "^0.1.1",
     "ganache-cli": "^6.0.3",
-    "solidity-coverage": "^0.7.9",
+    "solidity-coverage": "^0.7.16",
     "solium": "^1.0.4",
     "truffle": "4.1.14",
     "truffle-extract": "^1.2.1",
-    "truffle-hdwallet-provider": "0.0.3"
+    "truffle-hdwallet-provider": "0.0.3",
+    "web3": "1.2.11"
   }
 }

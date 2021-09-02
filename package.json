@@ -24,6 +24,6 @@
   "dependencies": {
     "@aragon/buidler-aragon": "^0.2.9",
     "@aragon/cli": "^7.1.6",
-    "@aragon/truffle-config-v4": "^1.0.1"
+    "@aragon/truffle-config-v4": "^1.2.0"
   }
 }
