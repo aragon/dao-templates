@@ -25,6 +25,8 @@
     "docker:wait-gas": "truffle exec ./node_modules/@aragon/templates-shared/scripts/sleep-until-gaslimit.js --network devnet 6900000",
     "deploy:rpc": "npm run compile && truffle exec ./scripts/deploy.js --network rpc",
     "deploy:devnet": "npm run compile && truffle exec ./scripts/deploy.js --network devnet",
+    "deploy:harmony": "truffle exec ./scripts/deploy.js --network harmony --ens <ENS Registry address from step 2> --dao-factory <DAO Factory address from step 2>",
+    "deploy:harmonyTestnet": "truffle exec ./scripts/deploy.js --network harmonyTest --ens 0x3c682c41409e18af890545ab17ab0dc8a90777f1 --dao-factory 0x4ee819385f6426af33fb10365c9b06d8c42d4684 --minime-token-factory 0xa7ee7a38c0f8af8511b45629a9827f76dc4b2674",
     "deploy:aragen": "npm run compile && truffle exec ./scripts/deploy.js --network rpc --ens 0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1 --dao-factory 0x5d94e3e7aec542ab0f9129b9a7badeb5b3ca0f77 --mini-me-factory 0xd526b7aba39cccf76422835e7fd5327b98ad73c9 --register false",
     "deploy:staging": "npm run compile && truffle exec ./scripts/deploy.js --network rinkeby --ens 0xfe03625ea880a8cba336f9b5ad6e15b0a3b5a939 --dao-factory 0xf959e8953e2fe03782a7b86a7a5d948cb511ef5d --mini-me-factory 0xac443f983c38c02149ce2ffcff8b7de90dccf77c",
     "deploy:rinkeby": "npm run compile && truffle exec ./scripts/deploy.js --network rinkeby --ens 0x98Df287B6C145399Aaa709692c8D308357bC085D --dao-factory 0xad4d106b43b480faa3ef7f98464ffc27fc1faa96 --mini-me-factory 0x6ffeb4038f7f077c4d20eaf1706980caec31e2bf",

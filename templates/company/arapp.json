@@ -5,6 +5,18 @@
       "network": "rpcs",
       "registry": "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1"
     },
+    "harmony": {
+      "appName": "company-template.aragonpm.eth",
+      "network": "harmony",
+      "registry": "0x3c682c41409e18af890545ab17ab0dc8a90777f1",
+      "wsRPC": "wss://ws.s0.t.hmny.io"
+    },
+    "harmonyTest": {
+      "appName": "company-template.aragonpm.eth",
+      "network": "harmonyTest",
+      "registry": "0x3c682c41409e18af890545ab17ab0dc8a90777f1",
+      "wsRPC": "wss://ws.s0.pops.one/"
+    },
     "mainnet": {
       "appName": "company-template.aragonpm.eth",
       "network": "mainnet",
