@@ -1,5 +1,4 @@
 const { usePlugin } = require('@nomiclabs/buidler/config')
-const hooks = require('./scripts/buidler-hooks')
 const homedir = require('homedir')
 const path = require('path')
 
@@ -47,12 +46,5 @@ module.exports = {
   },
   gasReporter: {
     enabled: process.env.GAS_REPORTER ? true : false,
-  },
-  aragon: {
-    appServePort: 3001,
-    clientServePort: 3000,
-    appSrcPath: 'app/',
-    appBuildOutputPath: 'dist/',
-    hooks,
-  },
+  }
 }
