@@ -14,6 +14,7 @@ The dandelion organization template consists of the Agent (optional), Finance, a
 - [Token Request](https://github.com/1Hive/token-request-app): Allows users to propose minting tokens in exchange for a payment to the organization, subject to the approval of existing members.
 - [Time Lock](https://github.com/1Hive/time-lock-app): Allows an organization to require users to lock a configure amount of tokens for a configurable amount of time in order to forward an intent.
 - [Dandelion Voting](https://github.com/1Hive/dandelion-voting-app) An enhanced version of Aragon One's voting app which implements an ACL Oracle which allows an organization to configure permissions that restrict actions based on whether an address has recently voted Yes.
+- [Token Oracle](https://github.com/1Hive/token-oracle) is an [ACL Oracle](https://hack.aragon.org/docs/acl_IACLOracle)
 
 ## Permissions
 
