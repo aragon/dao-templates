@@ -2,6 +2,8 @@
 
 The Open Enterprise template includes the collection of Aragon apps that enable organizations to curate issues, collectively budget, and design custom reward and bounty programs.
 
+For more information about the bounties contracts, see the [original](https://github.com/AutarkLabs/open-enterprise/tree/master/shared/integrations/StandardBounties).
+
 ## Usage
 
 Create a new token for the Open Enterprise entity:
