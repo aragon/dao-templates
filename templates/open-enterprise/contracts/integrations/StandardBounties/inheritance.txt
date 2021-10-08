@@ -1,6 +1,0 @@
-digraph G {
-  graph [ ratio = "auto", page = "40" ];
-  "BountiesMetaTxRelayer";
-  "StandardBounties";
-}
-
