@@ -37,7 +37,8 @@
     "publish:rinkeby": "aragon apm publish major $(npm run deploy:rinkeby | tail -n 1) --environment rinkeby",
     "publish:ropsten": "aragon apm publish major $(npm run deploy:ropsten | tail -n 1) --environment ropsten",
     "publish:mainnet": "aragon apm publish major $(npm run deploy:mainnet | tail -n 1) --environment mainnet",
-    "deploy:mumbai": "truffle exec ./scripts/deploy.js --network mumbai --ens 0x3c70a0190d09f34519e6e218364451add21b7d4b --dao-factory 0x81bc5c75ab0937cdbad1f40ac585be6800a39448"
+    "deploy:mumbai": "truffle exec ./scripts/deploy.js --network mumbai --ens 0x3c70a0190d09f34519e6e218364451add21b7d4b --dao-factory 0x81bc5c75ab0937cdbad1f40ac585be6800a39448",
+    "deploy:harmonyTest": "truffle exec ./scripts/deploy.js --network harmonyTest --ens 0x6679ff29c4f450cab0e0eeb798fb47877add98f3 --dao-factory 0x308a1dc5020c4b5d992f5543a7236c465997fecb --mini-me-factory 0x1382a6370744c5ed5aac737b4d13223240d8fd3c"
   },
   "dependencies": {
     "@aragon/apps-agent": "^2.0.0",
