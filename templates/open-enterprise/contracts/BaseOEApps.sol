@@ -2,12 +2,12 @@ pragma solidity 0.4.24;
 
 import "@aragon/templates-shared/contracts/TokenCache.sol";
 
-import "@tps/apps-address-book/contracts/AddressBook.sol";
-import "@tps/apps-allocations/contracts/Allocations.sol";
-import "@tps/apps-discussions/contracts/DiscussionApp.sol";
-import { DotVoting } from "@tps/apps-dot-voting/contracts/DotVoting.sol";
-import "@tps/apps-projects/contracts/Projects.sol";
-import "@tps/apps-rewards/contracts/Rewards.sol";
+import "@aragon/apps-address-book/contracts/AddressBook.sol";
+import "@aragon/apps-allocations/contracts/Allocations.sol";
+import "@aragon/apps-discussions/contracts/DiscussionApp.sol";
+import { DotVoting } from "@aragon/apps-dot-voting/contracts/DotVoting.sol";
+import "@aragon/apps-projects/contracts/Projects.sol";
+import "@aragon/apps-rewards/contracts/Rewards.sol";
 
 import "./BaseCache.sol";
 

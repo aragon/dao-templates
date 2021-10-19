@@ -37,13 +37,18 @@ template.newInstance(name, members, votingSettings, financePeriod, useAgentAsVau
 
 ## Deploying templates
 
-After deploying ENS, APM and AragonID, just run:
+After deploying ENS, APM, AragonID, run:
 
 ```
-npm run deploy:rinkeby
+npx hardhat deploy-contract --contract StandardBounties --network <network>
+npx hardhat deploy-contract --contract BountiesMetaTxRelayer --network <network> <StandardBounties Address>
+# update constructor-args/<network>.js with the address of StandardBounties
+npx hardhat publish major --ipfs-api-url <ipfs-url> --network <network> --constructor-args-path constructor-args/<network>.js --skip-validation
 ```
 
 The network details will be automatically selected by the `arapp.json`'s environments.
+
+If want to automatically verify the contract as part of the publish command, need to pass option `--verify` and export environment variable ETHERSCAN_API_KEY.  Note that Polygon uses different ETHERSCAN_API_KEY you can obtained from [https://polygonscan.com/](https://polygonscan.com/).
 
 ## Permissions
 

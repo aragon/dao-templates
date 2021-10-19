@@ -19,3 +19,4 @@ arapp_local.json
 */**/dist
 */**/.env
 .env
+cache
