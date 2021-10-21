@@ -54,6 +54,10 @@ module.exports = {
     matic: {
       url: 'https://polygon-mainnet.g.alchemy.com/v2/VUyk2zak-hvcH902FZoSrxBHB7CEN52w',
       accounts: ACCOUNTS,
+    },
+    harmonyTest: {
+      url: "https://api.s0.pops.one",
+      accounts: ACCOUNTS,	    
     }
   },
   solc: {
