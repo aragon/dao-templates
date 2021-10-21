@@ -1,4 +1,3 @@
-require('./tasks/deploy-contract')
 const config = require('@aragon/hardhat-config')
 
 config.solidity = {

@@ -28,6 +28,16 @@
       "registry": "0x98df287b6c145399aaa709692c8d308357bc085d",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws"
     },
+    "harmony": {
+      "registry": "0x5d0d0212199b2c041483226b20f1e4ed6ca4a4de",
+      "appName": "open-enterprise-template.aragonpm.eth",
+      "network": "harmony"
+    },
+    "harmonyTest": {
+      "registry": "0xbc7828fa8665c637901ad5abd5c7e647c9ab140f",
+      "appName": "open-enterprise-template.aragonpm.eth",
+      "network": "harmonyTest"
+    },
     "mumbai": {
       "registry": "0x431f0eed904590b176f9ff8c36a1c4ff0ee9b982",
       "appName": "open-enterprise-template.aragonpm.eth",
