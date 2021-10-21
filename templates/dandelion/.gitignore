@@ -1,0 +1,16 @@
+# Dependencies
+node_modules
+
+# lerna
+lerna-debug.log
+
+# lock files
+yarn.lock
+package-lock.json
+
+# truffle build artifacts
+arapp_local.json
+abi/
+build/
+*/abis.json
+flattened_contracts/
