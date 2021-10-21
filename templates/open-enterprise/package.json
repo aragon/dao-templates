@@ -42,7 +42,7 @@
     "start:template:aragen": "truffle exec ./scripts/create-dao.js --network rpc"
   },
   "dependencies": {
-    "@aragon/apps-address-book": "^0.0.1",
+    "@aragon/apps-address-book": "^0.0.2",
     "@aragon/apps-agent": "^2.0.0",
     "@aragon/apps-allocations": "^0.0.1",
     "@aragon/apps-discussions": "^0.0.1",
