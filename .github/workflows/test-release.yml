@@ -1,4 +1,4 @@
-name: Test Release
+name: test Release
 
 on:
   pull_request_target:
@@ -10,7 +10,7 @@ env:
 jobs:
   checkLabels:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged && github.event.pull_request.labels.*.name && github.base_ref == 'test-deploy-donot-merge'
+    if: github.event.pull_request.merged && github.event.pull_request.labels.*.name && github.base_ref == 'test-base-donot-merge'
     steps:
       - run: echo Check labels is not empty and pull is merged
   buildMatrix:
@@ -101,8 +101,8 @@ jobs:
         id: publish
         run:  |
           cd templates/${{ matrix.app }}
-          PUBLISH_LOG=$(npx hardhat publish ${{ matrix.level }} --constructor-args-path ${{ steps.prepare.outputs.args }} --dry-run --skip-validation --skip-app-build --network ${{ matrix.network }})
-          echo "::set-output name=version::$(echo $PUBLISH_LOG | sed -nE 's/^.*next version: *([^ ]*) *.*$/\1/p')"
+          PUBLISH_MESSAGE=$(npx hardhat publish ${{ matrix.level }} --constructor-args-path ${{ steps.prepare.outputs.args }} --dry-run --skip-validation --skip-app-build --network ${{ matrix.network }})
+          echo "::set-output name=version::$(echo $PUBLISH_MESSAGE | sed -nE 's/^.*next version: *([^ ]*) *.*$/\1/p')"
       - name: create tag
         uses: actions/github-script@v5
         env:
