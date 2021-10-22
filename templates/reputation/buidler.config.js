@@ -58,6 +58,10 @@ module.exports = {
     harmonyTest: {
       url: "https://api.s0.pops.one",
       accounts: ACCOUNTS,	    
+    },
+    bscTest: {
+      url : 'https://data-seed-prebsc-2-s3.binance.org:8545',
+      accounts: ACCOUNTS
     }
   },
   solc: {
