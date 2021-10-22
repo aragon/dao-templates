@@ -2,14 +2,30 @@ pragma solidity 0.4.24;
 
 import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 
-import "@1hive/apps-redemptions/contracts/Redemptions.sol";
-import "@1hive/apps-time-lock/contracts/TimeLock.sol";
-import "@1hive/apps-token-request/contracts/TokenRequest.sol";
-import "@1hive/apps-dandelion-voting/contracts/DandelionVoting.sol";
-import "@1hive/oracle-token-balance/contracts/TokenBalanceOracle.sol";
+import "@aragon/apps-redemptions/contracts/Redemptions.sol";
+import "@aragon/apps-time-lock/contracts/TimeLock.sol";
+import "@aragon/apps-token-request/contracts/TokenRequest.sol";
+import "@aragon/oracle-token-balance/contracts/TokenBalanceOracle.sol";
 
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
 
+
+interface DandelionVoting {
+    function initialize(
+        MiniMeToken _token,
+        uint64 _supportRequiredPct,
+        uint64 _minAcceptQuorumPct,
+        uint64 _durationBlocks,
+        uint64 _bufferBlocks,
+        uint64 _executionDelayBlocks
+    ) external;
+
+    function CREATE_VOTES_ROLE() external pure returns (bytes32);
+    function MODIFY_SUPPORT_ROLE() external pure returns (bytes32);
+    function MODIFY_QUORUM_ROLE() external pure returns (bytes32);
+    function MODIFY_BUFFER_BLOCKS_ROLE() external pure returns (bytes32);
+    function MODIFY_EXECUTION_DELAY_ROLE() external pure returns (bytes32);
+}
 
 contract DandelionOrg is BaseTemplate {
     string constant private ERROR_EMPTY_HOLDERS = "DANDELION_EMPTY_HOLDERS";

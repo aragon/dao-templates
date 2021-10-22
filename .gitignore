@@ -19,4 +19,10 @@ arapp_local.json
 */**/dist
 */**/.env
 .env
-cache
+
+# hardhat build artifacts
+*/**/cache
+
+# yarn log
+yarn-error.log
+*/**/yarn-error.log

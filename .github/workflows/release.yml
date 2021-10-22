@@ -95,18 +95,16 @@ jobs:
         id: prepare
         run: |
           if [[ "${{ matrix.app }}" == "open-enterprise" ]]; then
-            echo "::set-output name=args::./shared/constructor-args/${{ matrix.network }}.js"
+            echo "::set-output name=args::./constructor-args/${{ matrix.network }}.js"
           else
             echo "::set-output name=args::../../shared/constructor-args/${{ matrix.network }}.js"
           fi
       - name: publish
         id: publish
-        env:
-          PUBLISH_LOG: ./publish-release.log
         run:  |
           cd templates/${{ matrix.app }}
-          npx hardhat publish ${{ matrix.level }} --constructor-args-path ${{ steps.prepare.outputs.args }} --dry-run --skip-validation --skip-app-build --network ${{ matrix.network }} | tee $PUBLISH_LOG
-          echo "::set-output name=version::$(cat $PUBLISH_LOG | sed -nE 's/^.*next version: *([^ ]*) *.*$/\1/p')"
+          PUBLISH_MESSAGE=$(npx hardhat publish ${{ matrix.level }} --constructor-args-path ${{ steps.prepare.outputs.args }} --dry-run --skip-validation --skip-app-build --network ${{ matrix.network }})
+          echo "::set-output name=version::$(echo $PUBLISH_MESSAGE | sed -nE 's/^.*next version: *([^ ]*) *.*$/\1/p')"
       - name: create tag
         uses: actions/github-script@v5
         env:
