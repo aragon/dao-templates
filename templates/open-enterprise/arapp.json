@@ -28,6 +28,11 @@
       "registry": "0x98df287b6c145399aaa709692c8d308357bc085d",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws"
     },
+    "bscTest": {
+      "registry": "0x843ddfab8406e752d03fa75dbb275070f368658d",
+      "appName": "open-enterprise-template.aragonpm.eth",
+      "network": "bscTest"
+    },
     "harmony": {
       "registry": "0x5d0d0212199b2c041483226b20f1e4ed6ca4a4de",
       "appName": "open-enterprise-template.aragonpm.eth",
