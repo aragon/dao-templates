@@ -25,3 +25,4 @@ arapp_local.json
 
 # yarn log
 yarn-error.log
+*/**/yarn-error.log
