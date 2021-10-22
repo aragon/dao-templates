@@ -9,6 +9,6 @@ module.exports = [
     // aragonID address 
     "0x58cd7d773389F68250338C13A1BB5662CFBd0C9A",
     // standardBounties address 
-    "TODO"
+    "0x77c4e9BD579F2F1bB0C93fc03B2446769b6a85FF"
   ]
 ]
