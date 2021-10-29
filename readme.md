@@ -2,7 +2,7 @@
 
 ## What is a template
 
-The best way to kickstart an Aragon organization is by using a template. Templates are a set of smart contracts that will create an organization from scratch and configure it according to some provided parameters.
+The best way to kickstart an Aragon organization is by using a template. A template are a set of smart contracts that will create an organization from scratch and configure it according to some provided parameters.
 
 Because they involve smart contract code, modifying a template, even though it's usually really easy, must be done with extreme care. It is always recommended to do a third party security audit to review the template code when modified.
 
