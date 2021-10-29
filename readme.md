@@ -38,4 +38,4 @@ These templates were audited as part of the 0.6 and 0.7 releases by WHG and Cons
 
 ## Help
 
-For help and support, feel free to contact us at any time on [Spectrum](https://spectrum.chat/aragon/app-development).
+For help and support, feel free to contact us at any time on [Discord](https://discord.gg/MxA2KDfS).
