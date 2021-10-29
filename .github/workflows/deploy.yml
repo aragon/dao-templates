@@ -65,7 +65,7 @@ jobs:
           id: prepare
           run: |
             if [[ "${{ matrix.app }}" == "open-enterprise" ]]; then
-              echo "::set-output name=args::./shared/constructor-args/${{ matrix.network }}.js"
+              echo "::set-output name=args::../../shared/constructor-args/${{ matrix.network }}-${{ matrix.app }}.js"
             else
               echo "::set-output name=args::../../shared/constructor-args/${{ matrix.network }}.js"
             fi
