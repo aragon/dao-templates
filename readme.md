@@ -1,6 +1,6 @@
 # DAO Templates [![Build Status](https://travis-ci.org/aragon/dao-templates.svg?branch=master)](https://travis-ci.org/aragon/dao-templates)
 
-## What is a template
+## What is a DAO template
 
 The best way to kickstart an Aragon organization is by using a template. A template are a set of smart contracts that will create an organization from scratch and configure it according to some provided parameters.
 
