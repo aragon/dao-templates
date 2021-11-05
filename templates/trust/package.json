@@ -31,6 +31,7 @@
     "deploy:rinkeby": "npm run compile && truffle exec ./scripts/deploy.js --network rinkeby --ens 0x98Df287B6C145399Aaa709692c8D308357bC085D --dao-factory 0xad4d106b43b480faa3ef7f98464ffc27fc1faa96 --mini-me-factory 0x6ffeb4038f7f077c4d20eaf1706980caec31e2bf",
     "deploy:ropsten": "npm run compile && truffle exec ./scripts/deploy.js --network ropsten --ens 0x6afe2cacee211ea9179992f89dc61ff25c61e923 --dao-factory 0x233c587095d066bafe44b543a719c93ff16423f3 --mini-me-factory 0x1ce5621d386b2801f5600f1dbe29522805b8ac11",
     "deploy:mainnet": "npm run compile && truffle exec ./scripts/deploy.js --network mainnet --ens 0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e --dao-factory 0xb9da44c051c6cc9e04b7e0f95e95d69c6a6d8031 --mini-me-factory 0x909d05f384d0663ed4be59863815ab43b4f347ec",
+    "deploy:fuji": "npm run compile && truffle exec ./scripts/deploy.js --network fuji --ens 0x5b442a5e9020a886354c77e4ad10b11ddd883714 --dao-factory 0x162a99aef64fe71f135f866348910e9df1ac6e1b --mini-me-factory 0x6b9bc13f873614a9ac7c8c2c0bf3d37d45ee2cdd",
     "publish:rpc": "aragon apm publish major $(npm run deploy:rpc | tail -n 1) --environment default",
     "publish:devnet": "aragon apm publish major $(npm run deploy:devnet | tail -n 1) --environment default",
     "publish:aragen": "aragon apm publish major $(npm run deploy:aragen | tail -n 1) --environment default",
