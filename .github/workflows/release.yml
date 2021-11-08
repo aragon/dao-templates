@@ -73,7 +73,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: 'master'
+          ref: "master"
       - name: Install node
         uses: actions/setup-node@v1
         with:
@@ -82,13 +82,15 @@ jobs:
         uses: ibnesayeed/setup-ipfs@master
         with:
           run_daemon: true
-      - name: Configure aragon cli 
+      - name: Configure aragon cli
         run: |
           mkdir -p ~/.aragon
-          echo ${{ secrets.ARAGON_CLI_JSON }} >> ~/.aragon/${{ matrix.network }}_key.json
+          echo "$SECRET" > ~/.aragon/${{ matrix.network }}_key.json
+        env:
+          SECRET: ${{ secrets.ARAGON_CLI_JSON }}
       - name: install, build, publish and package
         id: build
-        run: | 
+        run: |
           cd templates/${{ matrix.app }}
           yarn --ignore-engines --dev
       - name: prepare arguments for publish
@@ -101,7 +103,7 @@ jobs:
           fi
       - name: publish
         id: publish
-        run:  |
+        run: |
           cd templates/${{ matrix.app }}
           PUBLISH_MESSAGE=$(npx hardhat publish ${{ matrix.level }} --constructor-args-path ${{ steps.prepare.outputs.args }} --dry-run --skip-validation --skip-app-build --network ${{ matrix.network }})
           echo "::set-output name=version::$(echo $PUBLISH_MESSAGE | sed -nE 's/^.*next version: *([^ ]*) *.*$/\1/p')"
