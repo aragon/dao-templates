@@ -34,7 +34,6 @@
     "deploy:mainnet": "npm run compile && truffle exec ./scripts/deploy.js --network mainnet --ens 0x314159265dd8dbb310642f98f50c066173c1259b --dao-factory 0xb9da44c051c6cc9e04b7e0f95e95d69c6a6d8031 --mini-me-factory 0x909d05f384d0663ed4be59863815ab43b4f347ec --standard-bounties 0x6e77f91ba0ae5278763ec3f044a1f0e5f85fac0a",
     "deploy:fuji": "npm run compile && truffle exec ./scripts/deploy.js --network fuji --ens 0x5b442a5e9020a886354c77e4ad10b11ddd883714 --dao-factory 0x162a99aef64fe71f135f866348910e9df1ac6e1b --mini-me-factory 0x6b9bc13f873614a9ac7c8c2c0bf3d37d45ee2cdd --standard-bounties 0x2E0656a4ACcAd0971B1E5D9Cec4AD5C690B2aC63",
     "publish:rpc": "aragon apm publish major $(npm run deploy:rpc | tail -n 1) --environment default",
-    
     "publish:devnet": "aragon apm publish major $(npm run deploy:devnet | tail -n 1) --environment default",
     "publish:aragen": "aragon apm publish major $(npm run deploy:aragen | tail -n 1) --environment default --files public --skip-confirmation --no-propagate-content --no-prepublish --no-build",
     "publish:staging": "aragon apm publish major $(npm run deploy:staging | tail -n 1) --environment staging",
