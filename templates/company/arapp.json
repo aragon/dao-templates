@@ -58,6 +58,18 @@
       "network": "bscTest",
       "registry": "0x843ddfab8406e752d03fa75dbb275070f368658d",
       "wsRPC": "wss://speedy-nodes-nyc.moralis.io/e2537fd4d6ad21265cf9d450/bsc/testnet/ws"
+    },
+    "stardust": {
+      "appName": "company-template.aragonpm.eth",
+      "network": "stardust",
+      "registry": "0x843ddfab8406e752d03fa75dbb275070f368658d",
+      "wsRPC": "wss://stardust-ws.metis.io"
+    },
+    "andromeda": {
+      "appName": "company-template.aragonpm.eth",
+      "network": "andromeda",
+      "registry": "0x843ddfab8406e752d03fa75dbb275070f368658d",
+      "wsRPC": "wss://andromeda-ws.metis.io"
     }
   },
   "roles": [],
