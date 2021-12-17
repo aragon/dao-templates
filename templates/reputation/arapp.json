@@ -54,6 +54,18 @@
       "appName": "reputation-template.aragonpm.eth",
       "network": "bscTest",
       "registry": "0x843ddfab8406e752d03fa75dbb275070f368658d"
+    },
+    "stardust": {
+      "appName": "reputation-template.aragonpm.eth",
+      "network": "stardust",
+      "registry": "0x843ddfab8406e752d03fa75dbb275070f368658d",
+      "wsRPC": "wss://stardust-ws.metis.io"
+    },
+    "andromeda": {
+      "appName": "reputation-template.aragonpm.eth",
+      "network": "andromeda",
+      "registry": "0x843ddfab8406e752d03fa75dbb275070f368658d",
+      "wsRPC": "wss://andromeda-ws.metis.io"
     }
   },
   "roles": [],
