@@ -62,14 +62,12 @@
     "stardust": {
       "appName": "company-template.aragonpm.eth",
       "network": "stardust",
-      "registry": "0x843ddfab8406e752d03fa75dbb275070f368658d",
-      "wsRPC": "wss://stardust-ws.metis.io"
+      "registry": "0x843ddfab8406e752d03fa75dbb275070f368658d"
     },
     "andromeda": {
       "appName": "company-template.aragonpm.eth",
       "network": "andromeda",
-      "registry": "0x843ddfab8406e752d03fa75dbb275070f368658d",
-      "wsRPC": "wss://andromeda-ws.metis.io"
+      "registry": "0x843ddfab8406e752d03fa75dbb275070f368658d"
     }
   },
   "roles": [],
