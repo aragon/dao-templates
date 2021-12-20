@@ -10,5 +10,5 @@ module.exports = {
   minimeFactory: "0x35b62715459cb60bf6dc17ff8cfe138ea305e7ee",
   // aragonID address
   aragonID: "0x5ec029bE8A0d322a54bb9C672cc0feB7dDD5C88F",
-  standardBounties: "TODO"
+  standardBounties: "0xd2d56B5d4B0425E6706FB59773397c3CB892cEB7"
 }
