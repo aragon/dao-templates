@@ -67,9 +67,9 @@ jobs:
         id: prepare
         run: |
           ARGS_DIR=$(mktemp -d)
-          node ./shared/scripts/prepare-args.js ${{ matrix.network }} ${{ needs.checkTag.outputs.app }} $ARGS_DIR
+          node ./shared/scripts/prepare-args.js ${{ needs.checkTag.outputs.network }} ${{ needs.checkTag.outputs.app }} $ARGS_DIR
           ls $ARGS_DIR
-          echo "::set-output name=args::$ARGS_DIR/${{ matrix.network }}-${{ needs.checkTag.outputs.app }}.js"
+          echo "::set-output name=args::$ARGS_DIR/${{ needs.checkTag.outputs.network }}-${{ needs.checkTag.outputs.app }}.js"
       - name: publish
         id: publish
         run: |
