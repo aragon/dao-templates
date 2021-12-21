@@ -66,11 +66,10 @@ jobs:
       - name: prepare arguments for publish
         id: prepare
         run: |
-          if [[ "${{ matrix.app }}" == "open-enterprise" ]]; then
-            echo "::set-output name=args::../../shared/constructor-args/${{ needs.checkTag.outputs.network }}-${{ matrix.app }}.js"
-          else
-            echo "::set-output name=args::../../shared/constructor-args/${{ needs.checkTag.outputs.network }}.js"
-          fi
+          ARGS_DIR=$(mktemp -d)
+          node ./shared/scripts/prepare-args.js ${{ matrix.network }} ${{ matrix.app }} $ARGS_DIR
+          ls $ARGS_DIR
+          echo "::set-output name=args::$ARGS_DIR/${{ matrix.network }}-${{ matrix.app }}.js"
       - name: publish
         id: publish
         run: |
@@ -136,6 +135,8 @@ jobs:
         run: |
           mkdir -p deployments/environments/${{ needs.checkTag.outputs.network }}/${{ needs.checkTag.outputs.app }}.aragonpm.eth/
           cp  ${{ steps.packaging.outputs.tar }} deployments/environments/${{ needs.checkTag.outputs.network }}/${{ needs.checkTag.outputs.app }}.aragonpm.eth/
+      - name: Increase git limits
+        run: git config --global http.version HTTP/1.1
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         id: cpr
