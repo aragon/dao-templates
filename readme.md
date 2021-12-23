@@ -20,6 +20,7 @@ With Aragon 0.8, the client has switched to the following templates:
 - [Company-Board](https://github.com/aragon/dao-templates/tree/master/templates/company-board): `company-board-template.aragonpm.eth`
 - [Membership](https://github.com/aragon/dao-templates/tree/master/templates/membership): `membership-template.aragonpm.eth`
 - [Reputation](https://github.com/aragon/dao-templates/tree/master/templates/reputation): `reputation-template.aragonpm.eth`
+- [Open Enterprise](https://github.com/aragon/dao-templates/tree/master/templates/open-enterprise): `open-enterprise-template.aragonpm.eth`
 
 These templates were audited as part of the 0.8 release.
 
