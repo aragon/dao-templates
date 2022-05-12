@@ -31,6 +31,12 @@
       "appName": "trust-template.aragonpm.eth",
       "network": "bscTest"
     },
+    "fuji": {
+      "registry": "0x5b442a5e9020a886354c77e4ad10b11ddd883714",
+      "appName": "trust-template.aragonpm.eth",
+      "network": "fuji",
+      "wsRpc": "wss://api.avax-test.network/ext/bc/C/ws"
+    },
     "mainnet": {
       "appName": "trust-template.aragonpm.eth",
       "network": "mainnet",
