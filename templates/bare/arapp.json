@@ -53,6 +53,11 @@
       "network": "rinkeby",
       "registry": "0xfe03625ea880a8cba336f9b5ad6e15b0a3b5a939",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws"
+    },
+    "goerli": {
+      "registry": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+      "appName": "bare-template.aragonpm.eth",
+      "network": "goerli"
     }
   },
   "roles": [],
