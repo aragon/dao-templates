@@ -1,4 +1,5 @@
 const { hash: namehash } = require('eth-ens-namehash')
+const keccak256 = require('js-sha3').keccak_256
 
 const logDeploy = require('@aragon/os/scripts/helpers/deploy-logger')
 const deployAPM = require('@aragon/os/scripts/deploy-apm')
@@ -31,6 +32,7 @@ module.exports = class TemplateDeployer {
   async fetchOrDeployDependencies() {
     await this._fetchOrDeployENS()
     await this._fetchOrDeployAPM()
+    await this._fetchOrDeployOpenAPM()
     await this._fetchOrDeployAragonID()
     await this._fetchOrDeployDAOFactory()
     await this._fetchOrDeployMiniMeFactory()
@@ -45,11 +47,11 @@ module.exports = class TemplateDeployer {
   }
 
   async _checkAppsDeployment() {
-    for (const { name, contractName } of this.options.apps) {
+    for (const { name, contractName, openApm } of this.options.apps) {
       if (await this._isPackageRegistered(name)) {
         this.log(`Using registered ${name} app`)
       } else if (await this.isLocal()) {
-        await this._registerApp(name, contractName)
+        await this._registerApp(name, contractName, openApm)
       } else {
         this.log(`No ${name} app registered`)
       }
@@ -85,7 +87,8 @@ module.exports = class TemplateDeployer {
         this.log(`Using APM registered at aragonpm.eth: ${apmAddress}`)
         this.apm = APM.at(apmAddress)
       } else if (await this.isLocal()) {
-        await deployAPM(null, { artifacts: this.artifacts, web3: this.web3, owner: this.owner, ensAddress: this.ens.address, verbose: this.verbose })
+        const { apmFactory } = await deployAPM(null, { artifacts: this.artifacts, web3: this.web3, owner: this.owner, ensAddress: this.ens.address, verbose: this.verbose })
+        this.apmFactory = apmFactory
         const apmAddress = await this._fetchRegisteredAPM()
         if (!apmAddress) this.error('Local APM deployment failed, aborting.')
         this.log('Deployed APM:', apmAddress)
@@ -94,6 +97,62 @@ module.exports = class TemplateDeployer {
         this.error('Please provide an APM instance or make sure there is one registered under "aragonpm.eth", aborting.')
       }
     }
+  }
+
+  async _fetchOrDeployOpenAPM() {
+    const APM = this.artifacts.require('APMRegistry')
+    if (this.options.openApm) {
+      this.log(`Using provided Open APM: ${this.options.openApm}`)
+      this.openApm = APM.at(this.options.openApm)
+    } else {
+      if (await this._isOpenAPMRegistered()) {
+        const openApmAddress = await this._fetchRegisteredOpenAPM()
+        this.log(`Using Open APM registered at open.aragonpm.eth: ${openApmAddress}`)
+        this.openApm = APM.at(openApmAddress)
+      } else if (await this.isLocal()) {
+        const openApmAddress = (await this._deployOpenAPM()).openApm
+        this.openApm = APM.at(openApmAddress)
+      } else {
+        this.error('Please provide an Open APM instance or make sure there is one registered under "open.aragonpm.eth", aborting.')
+      }
+    }
+  }
+
+  async _deployOpenAPM() {
+    const Kernel = this.artifacts.require('Kernel')
+    const ACL = this.artifacts.require('ACL')
+    const ENSSubdomainRegistrar = this.artifacts.require('ENSSubdomainRegistrar')
+
+    const tldName = 'aragonpm.eth'
+    const labelName = 'open'
+    const tldHash = namehash(tldName)
+    const labelHash = '0x' + keccak256(labelName)
+
+    const apmENSSubdomainRegistrar = await ENSSubdomainRegistrar.at(await this.apm.registrar())
+    const create_name_role = await apmENSSubdomainRegistrar.CREATE_NAME_ROLE()
+    const kernel = Kernel.at(await this.apm.kernel())
+    const acl = ACL.at(await kernel.acl())
+
+    this.log('=========')
+    this.log(`Granting owner (${this.owner}) CREAT_NAME_ROLE permission on APM Factory...`)
+    await acl.grantPermission(this.owner, apmENSSubdomainRegistrar.address, create_name_role)
+
+    this.log(`Assigning ENS name (${labelName}.${tldName}) to APM factory...`)
+    await apmENSSubdomainRegistrar.createName(labelHash, this.apmFactory.address, {
+      from: this.owner,
+    })
+
+    this.log('Deploying Open APM...')
+    const receipt = await this.apmFactory.newAPM(tldHash, labelHash, this.owner)
+
+    this.log('=========')
+    const openApm = receipt.logs.filter(l => l.event == 'DeployAPM')[0].args.apm
+    this.log('# Open APM:')
+    this.log('Address:', openApm)
+    this.log('Transaction hash:', receipt.tx)
+    this.log('=========')
+
+    return { openApm, receipt }
   }
 
   async _fetchOrDeployAragonID() {
@@ -142,7 +201,15 @@ module.exports = class TemplateDeployer {
   }
 
   async _fetchRegisteredAPM() {
-    const aragonPMHash = namehash('aragonpm.eth')
+    return this._fetchRegisteredRegistry('aragonpm.eth')
+  }
+
+  async _fetchRegisteredOpenAPM() {
+    return this._fetchRegisteredRegistry('open.aragonpm.eth')
+  }
+
+  async _fetchRegisteredRegistry(ensName) {
+    const aragonPMHash = namehash(ensName)
     const PublicResolver = this.artifacts.require('PublicResolver')
     const resolver = PublicResolver.at(await this.ens.resolver(aragonPMHash))
     return resolver.addr(aragonPMHash)
@@ -153,9 +220,13 @@ module.exports = class TemplateDeployer {
     return this.ens.owner(aragonIDHash)
   }
 
-  async _registerApp(name, contractName) {
+  async _registerApp(name, contractName, openApm) {
     const app = await this.artifacts.require(contractName).new()
-    return this._registerPackage(name, app)
+    if (openApm) {
+      return this._registerOpenPackage(name, app)
+    } else {
+      return this._registerPackage(name, app)
+    }
   }
 
   async _registerPackage(name, instance) {
@@ -165,8 +236,17 @@ module.exports = class TemplateDeployer {
     }
   }
 
+  async _registerOpenPackage(name, instance) {
+    this.log(`Registering package for ${instance.constructor.contractName} as "${name}.open.aragonpm.eth"`)
+    return this.openApm.newRepoWithVersion(name, this.owner, [1, 0, 0], instance.address, '')
+  }
+
   async _isAPMRegistered() {
     return this._isRepoRegistered(namehash('aragonpm.eth'))
+  }
+
+  async _isOpenAPMRegistered() {
+    return this._isRepoRegistered(namehash('open.aragonpm.eth'))
   }
 
   async _isAragonIdRegistered() {
@@ -175,6 +255,10 @@ module.exports = class TemplateDeployer {
 
   async _isPackageRegistered(name) {
     return this._isRepoRegistered(namehash(`${name}.aragonpm.eth`))
+  }
+
+  async _isOpenPackageRegistered(name) {
+    return this._isRepoRegistered(namehash(`${name}.open.aragonpm.eth`))
   }
 
   async _isRepoRegistered(hash) {
